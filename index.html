@@ -459,10 +459,14 @@ async function processImage(dataUrl) {
 }
 
 async function callClaude(base64, mediaType) {
+  // ASCII 범위 외 문자 제거 (붙여넣기 오류 방지)
+  const apiKey = CFG.apiKey.replace(/[^\x20-\x7E]/g, '').trim();
+  if (!apiKey) throw new Error('API Key가 설정되지 않았습니다');
+
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
-      'x-api-key': CFG.apiKey,
+      'x-api-key': apiKey,
       'anthropic-version': '2023-06-01',
       'content-type': 'application/json',
       'anthropic-dangerous-direct-browser-access': 'true'
