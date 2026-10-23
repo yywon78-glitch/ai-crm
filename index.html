@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>명함 CRM</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0f1923;--surface:#1a2535;--card:#212f43;
+  --accent:#4a9eff;--accent2:#00d4aa;--danger:#ff4d6d;
+  --text:#f0f4f8;--muted:#8a9bb0;--border:rgba(255,255,255,0.1);
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;}
+
+/* ── 카메라 화면 ── */
+#cam-screen{position:fixed;inset:0;display:flex;flex-direction:column;background:#000;}
+#video{width:100%;height:100%;object-fit:cover;}
+#cam-overlay{position:absolute;inset:0;pointer-events:none;}
+
+/* 명함 가이드 박스 */
+#guide-box{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-54%);
+  width:82vw;height:52vw;border:2px solid rgba(74,158,255,0.7);border-radius:12px;
+  box-shadow:0 0 0 9999px rgba(0,0,0,0.45);
+}
+.guide-corner{position:absolute;width:22px;height:22px;border-color:var(--accent);border-style:solid;}
+.guide-corner.tl{top:-2px;left:-2px;border-width:3px 0 0 3px;border-radius:4px 0 0 0;}
+.guide-corner.tr{top:-2px;right:-2px;border-width:3px 3px 0 0;border-radius:0 4px 0 0;}
+.guide-corner.bl{bottom:-2px;left:-2px;border-width:0 0 3px 3px;border-radius:0 0 0 4px;}
+.guide-corner.br{bottom:-2px;right:-2px;border-width:0 3px 3px 0;border-radius:0 0 4px 0;}
+
+#cam-hint{position:absolute;bottom:calc(50% - 26vw - 40px);left:0;right:0;text-align:center;color:rgba(255,255,255,0.75);font-size:13px;letter-spacing:.5px;}
+
+/* 하단 캡처 버튼 */
+#cam-bottom{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:20px 0 calc(20px + env(safe-area-inset-bottom));
+  display:flex;align-items:center;justify-content:center;gap:32px;
+  background:linear-gradient(transparent,rgba(0,0,0,0.7));
+}
+#btn-capture{
+  width:72px;height:72px;border-radius:50%;
+  background:white;border:4px solid rgba(255,255,255,0.5);
+  cursor:pointer;position:relative;transition:.15s;
+  box-shadow:0 0 0 3px rgba(255,255,255,0.2);
+}
+#btn-capture:active{transform:scale(.93);}
+#btn-capture::after{content:'';position:absolute;inset:6px;border-radius:50%;background:white;}
+
+#btn-gallery{
+  width:48px;height:48px;border-radius:12px;background:rgba(255,255,255,0.15);
+  border:1.5px solid rgba(255,255,255,0.3);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:white;font-size:22px;
+}
+#btn-history{
+  width:48px;height:48px;border-radius:12px;background:rgba(255,255,255,0.15);
+  border:1.5px solid rgba(255,255,255,0.3);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:white;font-size:20px;
+}
+#file-input{display:none;}
+
+/* ── 처리 중 오버레이 ── */
+#processing{
+  position:fixed;inset:0;background:rgba(0,0,0,0.82);
+  display:none;flex-direction:column;align-items:center;justify-content:center;gap:20px;z-index:200;
+}
+#processing.on{display:flex;}
+.spinner{width:52px;height:52px;border:4px solid rgba(74,158,255,0.2);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+#proc-msg{color:var(--text);font-size:16px;font-weight:600;letter-spacing:.5px;}
+#proc-img{width:140px;height:90px;object-fit:cover;border-radius:10px;border:2px solid var(--accent);opacity:.8;}
+
+/* ── 결과 패널 ── */
+#result-panel{
+  position:fixed;inset:0;background:var(--bg);
+  display:none;flex-direction:column;z-index:100;
+  transform:translateY(100%);transition:transform .32s cubic-bezier(.4,0,.2,1);
+}
+#result-panel.open{display:flex;transform:translateY(0);}
+
+#rp-header{
+  display:flex;align-items:center;gap:12px;
+  padding:calc(env(safe-area-inset-top)+16px) 16px 14px;
+  background:var(--surface);border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+#rp-header h2{flex:1;font-size:17px;font-weight:700;color:var(--text);}
+#btn-back{width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,0.08);border:none;color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+
+#rp-thumb{width:100%;max-height:160px;object-fit:cover;flex-shrink:0;filter:brightness(.9);}
+
+#rp-body{flex:1;overflow-y:auto;padding:16px;}
+.field-group{margin-bottom:12px;}
+.field-group label{display:block;font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;}
+.field-group input,.field-group textarea{
+  width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:10px;
+  color:var(--text);font-size:15px;padding:11px 13px;outline:none;
+  transition:border-color .2s;font-family:inherit;
+}
+.field-group input:focus,.field-group textarea:focus{border-color:var(--accent);}
+.field-group textarea{resize:none;height:72px;}
+.field-icon{position:relative;}
+.field-icon input{padding-left:38px;}
+.field-icon .fi{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.6;}
+
+#rp-actions{
+  padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+  display:flex;gap:10px;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;
+}
+.btn-save{
+  flex:1;padding:15px;border-radius:12px;font-size:16px;font-weight:700;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--accent),#3a7fd4);color:white;transition:.15s;
+}
+.btn-save:active{opacity:.85;}
+.btn-discard{
+  width:52px;height:52px;border-radius:12px;background:rgba(255,77,109,0.15);
+  border:1.5px solid rgba(255,77,109,0.3);color:var(--danger);font-size:20px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* ── 히스토리 패널 ── */
+#history-panel{
+  position:fixed;inset:0;background:var(--bg);display:none;flex-direction:column;z-index:100;
+  transform:translateY(100%);transition:transform .32s cubic-bezier(.4,0,.2,1);
+}
+#history-panel.open{display:flex;transform:translateY(0);}
+#hp-header{
+  display:flex;align-items:center;gap:12px;
+  padding:calc(env(safe-area-inset-top)+16px) 16px 14px;
+  background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;
+}
+#hp-header h2{flex:1;font-size:17px;font-weight:700;}
+#hp-count{font-size:12px;color:var(--accent);font-weight:700;background:rgba(74,158,255,0.12);padding:3px 8px;border-radius:20px;}
+#btn-hp-back{width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,0.08);border:none;color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+#hp-actions{padding:10px 16px;display:flex;gap:8px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;}
+#btn-export{flex:1;padding:10px;border-radius:10px;background:rgba(0,212,170,0.15);border:1.5px solid rgba(0,212,170,0.35);color:var(--accent2);font-size:14px;font-weight:700;cursor:pointer;}
+#btn-clear-all{padding:10px 14px;border-radius:10px;background:rgba(255,77,109,0.1);border:1.5px solid rgba(255,77,109,0.25);color:var(--danger);font-size:14px;cursor:pointer;}
+#hp-search{margin:10px 16px;position:relative;}
+#hp-search input{width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:10px;color:var(--text);padding:10px 12px 10px 36px;font-size:14px;outline:none;}
+#hp-search input:focus{border-color:var(--accent);}
+#hp-search::before{content:'🔍';position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:14px;}
+#hp-list{flex:1;overflow-y:auto;padding:8px 16px 16px;}
+.hp-card{
+  background:var(--card);border-radius:14px;padding:14px;margin-bottom:10px;
+  border:1px solid var(--border);cursor:pointer;transition:.15s;
+  display:flex;align-items:center;gap:12px;
+}
+.hp-card:active{background:rgba(74,158,255,0.08);}
+.hp-avatar{
+  width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#6a3fff);
+  display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:white;
+  flex-shrink:0;
+}
+.hp-info{flex:1;min-width:0;}
+.hp-name{font-size:15px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hp-sub{font-size:12px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hp-date{font-size:11px;color:var(--muted);flex-shrink:0;}
+#hp-empty{text-align:center;padding:60px 20px;color:var(--muted);}
+#hp-empty .ei{font-size:48px;display:block;margin-bottom:12px;}
+
+/* ── 설정 버튼 ── */
+#btn-settings{
+  position:absolute;top:calc(env(safe-area-inset-top)+12px);right:16px;
+  width:38px;height:38px;border-radius:10px;background:rgba(0,0,0,0.4);border:1.5px solid rgba(255,255,255,0.2);
+  color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;
+}
+/* ── 설정 모달 ── */
+#settings-modal{
+  position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:flex-end;z-index:300;
+}
+#settings-modal.on{display:flex;}
+#settings-box{
+  width:100%;background:var(--surface);border-radius:20px 20px 0 0;padding:24px 20px calc(24px + env(safe-area-inset-bottom));
+}
+#settings-box h3{font-size:17px;font-weight:700;margin-bottom:18px;}
+.s-field{margin-bottom:14px;}
+.s-field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:600;}
+.s-field input{width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:10px;color:var(--text);padding:11px 13px;font-size:14px;outline:none;}
+.s-field input:focus{border-color:var(--accent);}
+.s-note{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5;}
+#btn-save-settings{width:100%;padding:14px;border-radius:12px;background:var(--accent);border:none;color:white;font-size:16px;font-weight:700;cursor:pointer;margin-top:6px;}
+
+/* ── 토스트 ── */
+#toast{
+  position:fixed;bottom:calc(90px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(20px);
+  background:rgba(30,40,55,0.97);color:var(--text);padding:11px 22px;border-radius:24px;
+  font-size:14px;font-weight:600;opacity:0;transition:.3s;pointer-events:none;z-index:400;
+  white-space:nowrap;border:1px solid var(--border);
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── 상세보기 패널 ── */
+#detail-panel{
+  position:fixed;inset:0;background:var(--bg);display:none;flex-direction:column;z-index:150;
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
+}
+#detail-panel.open{display:flex;transform:translateY(0);}
+#dp-header{
+  display:flex;align-items:center;gap:12px;
+  padding:calc(env(safe-area-inset-top)+16px) 16px 14px;
+  background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;
+}
+#dp-header h2{flex:1;font-size:17px;font-weight:700;}
+#btn-dp-back{width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,0.08);border:none;color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+#btn-dp-delete{width:36px;height:36px;border-radius:9px;background:rgba(255,77,109,0.12);border:none;color:var(--danger);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+#dp-body{flex:1;overflow-y:auto;padding:20px 16px;}
+.dp-field{margin-bottom:16px;display:flex;align-items:flex-start;gap:12px;}
+.dp-icon{font-size:18px;margin-top:1px;flex-shrink:0;}
+.dp-label{font-size:11px;color:var(--muted);font-weight:600;margin-bottom:2px;}
+.dp-val{font-size:15px;color:var(--text);}
+.dp-val a{color:var(--accent);text-decoration:none;}
+#dp-bottom{padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--border);display:flex;gap:10px;flex-shrink:0;}
+.dp-btn{flex:1;padding:13px;border-radius:11px;border:none;font-size:14px;font-weight:700;cursor:pointer;}
+#btn-dp-call{background:rgba(0,212,170,0.15);color:var(--accent2);border:1.5px solid rgba(0,212,170,0.3);}
+#btn-dp-email{background:rgba(74,158,255,0.15);color:var(--accent);border:1.5px solid rgba(74,158,255,0.3);}
+</style>
+</head>
+<body>
+
+<!-- ══════════ 카메라 화면 ══════════ -->
+<div id="cam-screen">
+  <video id="video" autoplay playsinline muted></video>
+  <div id="cam-overlay">
+    <div id="guide-box">
+      <div class="guide-corner tl"></div>
+      <div class="guide-corner tr"></div>
+      <div class="guide-corner bl"></div>
+      <div class="guide-corner br"></div>
+    </div>
+    <div id="cam-hint">명함을 가이드 안에 맞춰주세요</div>
+  </div>
+  <button id="btn-settings">⚙️</button>
+  <div id="cam-bottom">
+    <button id="btn-gallery" onclick="document.getElementById('file-input').click()">🖼️</button>
+    <button id="btn-capture"></button>
+    <button id="btn-history">📋</button>
+  </div>
+  <input type="file" id="file-input" accept="image/*" capture="environment">
+</div>
+
+<!-- ══════════ 처리 중 ══════════ -->
+<div id="processing">
+  <img id="proc-img" src="" alt="">
+  <div class="spinner"></div>
+  <div id="proc-msg">명함 분석 중...</div>
+</div>
+
+<!-- ══════════ 결과 패널 ══════════ -->
+<div id="result-panel">
+  <div id="rp-header">
+    <button id="btn-back">✕</button>
+    <h2>명함 정보 확인</h2>
+  </div>
+  <img id="rp-thumb" src="" alt="">
+  <div id="rp-body">
+    <div class="field-group">
+      <label>이름</label>
+      <div class="field-icon"><span class="fi">👤</span><input type="text" id="f-name" placeholder="이름"></div>
+    </div>
+    <div class="field-group">
+      <label>회사</label>
+      <div class="field-icon"><span class="fi">🏢</span><input type="text" id="f-company" placeholder="회사명"></div>
+    </div>
+    <div class="field-group">
+      <label>직책</label>
+      <div class="field-icon"><span class="fi">💼</span><input type="text" id="f-title" placeholder="직책/부서"></div>
+    </div>
+    <div class="field-group">
+      <label>전화</label>
+      <div class="field-icon"><span class="fi">📞</span><input type="tel" id="f-phone" placeholder="전화번호"></div>
+    </div>
+    <div class="field-group">
+      <label>이메일</label>
+      <div class="field-icon"><span class="fi">✉️</span><input type="email" id="f-email" placeholder="이메일"></div>
+    </div>
+    <div class="field-group">
+      <label>주소</label>
+      <div class="field-icon"><span class="fi">📍</span><input type="text" id="f-address" placeholder="주소"></div>
+    </div>
+    <div class="field-group">
+      <label>메모</label>
+      <textarea id="f-memo" placeholder="메모를 입력하세요..."></textarea>
+    </div>
+  </div>
+  <div id="rp-actions">
+    <button class="btn-discard" onclick="discardResult()" title="버리기">🗑️</button>
+    <button class="btn-save" onclick="saveCard()">💾 저장</button>
+  </div>
+</div>
+
+<!-- ══════════ 히스토리 패널 ══════════ -->
+<div id="history-panel">
+  <div id="hp-header">
+    <button id="btn-hp-back">✕</button>
+    <h2>저장된 명함</h2>
+    <span id="hp-count">0</span>
+  </div>
+  <div id="hp-actions">
+    <button id="btn-export" onclick="exportCSV()">📥 CSV 내보내기</button>
+    <button id="btn-clear-all" onclick="clearAll()">전체삭제</button>
+  </div>
+  <div id="hp-search"><input type="text" placeholder="이름, 회사 검색..." oninput="renderHistory(this.value)"></div>
+  <div id="hp-list"></div>
+</div>
+
+<!-- ══════════ 상세보기 패널 ══════════ -->
+<div id="detail-panel">
+  <div id="dp-header">
+    <button id="btn-dp-back">←</button>
+    <h2 id="dp-title">상세보기</h2>
+    <button id="btn-dp-delete">🗑️</button>
+  </div>
+  <div id="dp-body"></div>
+  <div id="dp-bottom">
+    <button class="dp-btn" id="btn-dp-call" onclick="dpCall()">📞 전화</button>
+    <button class="dp-btn" id="btn-dp-email" onclick="dpEmail()">✉️ 이메일</button>
+  </div>
+</div>
+
+<!-- ══════════ 설정 모달 ══════════ -->
+<div id="settings-modal">
+  <div id="settings-box">
+    <h3>⚙️ 설정</h3>
+    <div class="s-field">
+      <label>Claude API Key</label>
+      <input type="password" id="s-api-key" placeholder="sk-ant-...">
+      <div class="s-note">Anthropic Console에서 발급. 기기에만 저장됩니다.</div>
+    </div>
+    <div class="s-field">
+      <label>Google Sheets URL (선택)</label>
+      <input type="url" id="s-sheets-url" placeholder="https://script.google.com/...">
+      <div class="s-note">Google Apps Script 웹앱 URL. 없으면 기기 저장만 사용.</div>
+    </div>
+    <button id="btn-save-settings" onclick="saveSettings()">저장</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+//  설정
+// ══════════════════════════════════════════
+let CFG = {
+  apiKey: '',
+  sheetsUrl: ''
+};
+
+function loadCFG() {
+  try {
+    const s = localStorage.getItem('crm_cfg');
+    if (s) CFG = { ...CFG, ...JSON.parse(s) };
+  } catch(e) {}
+}
+
+function saveSettings() {
+  CFG.apiKey    = document.getElementById('s-api-key').value.trim();
+  CFG.sheetsUrl = document.getElementById('s-sheets-url').value.trim();
+  localStorage.setItem('crm_cfg', JSON.stringify(CFG));
+  document.getElementById('settings-modal').classList.remove('on');
+  toast('설정 저장됨');
+}
+
+function openSettings() {
+  document.getElementById('s-api-key').value    = CFG.apiKey    || '';
+  document.getElementById('s-sheets-url').value = CFG.sheetsUrl || '';
+  document.getElementById('settings-modal').classList.add('on');
+}
+
+document.getElementById('settings-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('settings-modal'))
+    document.getElementById('settings-modal').classList.remove('on');
+});
+
+// ══════════════════════════════════════════
+//  카메라
+// ══════════════════════════════════════════
+let stream = null;
+
+async function startCamera() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width:{ideal:1920}, height:{ideal:1080} }
+    });
+    document.getElementById('video').srcObject = stream;
+  } catch(e) {
+    // 카메라 없거나 거부 → 갤러리만 사용
+    document.getElementById('cam-hint').textContent = '갤러리 버튼으로 이미지를 선택하세요';
+    document.getElementById('btn-capture').style.opacity = '.3';
+    document.getElementById('btn-capture').style.pointerEvents = 'none';
+  }
+}
+
+function captureFrame() {
+  const video = document.getElementById('video');
+  if (!video.videoWidth) return null;
+  const c = document.createElement('canvas');
+  c.width = video.videoWidth; c.height = video.videoHeight;
+  c.getContext('2d').drawImage(video, 0, 0);
+  return c.toDataURL('image/jpeg', 0.85);
+}
+
+document.getElementById('btn-capture').addEventListener('click', () => {
+  const dataUrl = captureFrame();
+  if (!dataUrl) { toast('카메라가 준비되지 않았습니다'); return; }
+  processImage(dataUrl);
+});
+
+document.getElementById('file-input').addEventListener('change', e => {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => processImage(ev.target.result);
+  reader.readAsDataURL(file);
+  e.target.value = '';
+});
+
+// ══════════════════════════════════════════
+//  이미지 처리 → Claude API
+// ══════════════════════════════════════════
+let currentDataUrl = '';
+
+async function processImage(dataUrl) {
+  if (!CFG.apiKey) { openSettings(); toast('API Key를 먼저 입력해주세요'); return; }
+
+  currentDataUrl = dataUrl;
+  const base64 = dataUrl.split(',')[1];
+  const mtype  = dataUrl.startsWith('data:image/png') ? 'image/png' : 'image/jpeg';
+
+  // 처리 중 화면
+  document.getElementById('proc-img').src = dataUrl;
+  document.getElementById('processing').classList.add('on');
+
+  try {
+    const result = await callClaude(base64, mtype);
+    showResult(result, dataUrl);
+  } catch(e) {
+    toast('오류: ' + (e.message || '분석 실패'));
+    console.error(e);
+  } finally {
+    document.getElementById('processing').classList.remove('on');
+  }
+}
+
+async function callClaude(base64, mediaType) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': CFG.apiKey,
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-opus-4-5',
+      max_tokens: 1024,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+          { type: 'text', text: `이 명함 이미지에서 정보를 추출해 아래 JSON 형식으로 반환해줘. JSON만 반환, 설명 없이.
+
+{
+  "name": "이름 (한글/영문)",
+  "company": "회사명",
+  "title": "직책/직위/부서",
+  "phone": "전화번호 (여러 개면 쉼표로 구분)",
+  "email": "이메일",
+  "address": "주소",
+  "memo": ""
+}
+
+없는 항목은 빈 문자열("")로. JSON만 반환.` }
+        ]
+      }]
+    })
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || `API 오류 ${res.status}`);
+  }
+
+  const data = await res.json();
+  const text = data.content[0].text.trim();
+  // JSON 파싱 (```json ... ``` 래핑 제거)
+  const jsonStr = text.replace(/^```json?\s*/i,'').replace(/\s*```$/,'').trim();
+  return JSON.parse(jsonStr);
+}
+
+// ══════════════════════════════════════════
+//  결과 패널
+// ══════════════════════════════════════════
+function showResult(card, dataUrl) {
+  document.getElementById('rp-thumb').src = dataUrl;
+  document.getElementById('f-name').value    = card.name    || '';
+  document.getElementById('f-company').value = card.company || '';
+  document.getElementById('f-title').value   = card.title   || '';
+  document.getElementById('f-phone').value   = card.phone   || '';
+  document.getElementById('f-email').value   = card.email   || '';
+  document.getElementById('f-address').value = card.address || '';
+  document.getElementById('f-memo').value    = card.memo    || '';
+
+  const rp = document.getElementById('result-panel');
+  rp.style.display = 'flex';
+  requestAnimationFrame(() => rp.classList.add('open'));
+}
+
+function discardResult() {
+  closePanel('result-panel');
+}
+
+document.getElementById('btn-back').addEventListener('click', discardResult);
+
+async function saveCard() {
+  const card = {
+    id: Date.now(),
+    date: new Date().toLocaleDateString('ko-KR'),
+    name:    document.getElementById('f-name').value.trim(),
+    company: document.getElementById('f-company').value.trim(),
+    title:   document.getElementById('f-title').value.trim(),
+    phone:   document.getElementById('f-phone').value.trim(),
+    email:   document.getElementById('f-email').value.trim(),
+    address: document.getElementById('f-address').value.trim(),
+    memo:    document.getElementById('f-memo').value.trim(),
+    image:   currentDataUrl
+  };
+
+  // 로컬 저장
+  const cards = getCards();
+  cards.unshift(card);
+  localStorage.setItem('crm_cards', JSON.stringify(cards));
+
+  // Google Sheets 전송 (선택)
+  if (CFG.sheetsUrl) {
+    try {
+      await sendToSheets(card);
+      toast('저장됨 ✓  (Sheets 연동 완료)');
+    } catch(e) {
+      toast('로컬 저장됨 (Sheets 전송 실패)');
+    }
+  } else {
+    toast('저장됨 ✓');
+  }
+
+  closePanel('result-panel');
+}
+
+// ══════════════════════════════════════════
+//  Google Sheets
+// ══════════════════════════════════════════
+async function sendToSheets(card) {
+  const body = {
+    date: card.date, name: card.name, company: card.company,
+    title: card.title, phone: card.phone, email: card.email,
+    address: card.address, memo: card.memo
+  };
+  await fetch(CFG.sheetsUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+}
+
+// ══════════════════════════════════════════
+//  히스토리
+// ══════════════════════════════════════════
+function getCards() {
+  try { return JSON.parse(localStorage.getItem('crm_cards') || '[]'); } catch(e) { return []; }
+}
+
+function renderHistory(q = '') {
+  const cards = getCards();
+  const kw = q.toLowerCase();
+  const filtered = kw ? cards.filter(c =>
+    (c.name||'').toLowerCase().includes(kw) ||
+    (c.company||'').toLowerCase().includes(kw) ||
+    (c.phone||'').includes(kw)
+  ) : cards;
+
+  document.getElementById('hp-count').textContent = filtered.length;
+  const list = document.getElementById('hp-list');
+
+  if (!filtered.length) {
+    list.innerHTML = '<div id="hp-empty"><span class="ei">📭</span>저장된 명함이 없습니다</div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(c => `
+    <div class="hp-card" onclick="openDetail(${c.id})">
+      <div class="hp-avatar">${(c.name||'?')[0]}</div>
+      <div class="hp-info">
+        <div class="hp-name">${c.name || '(이름 없음)'}</div>
+        <div class="hp-sub">${[c.company,c.title].filter(Boolean).join(' · ')}</div>
+        <div class="hp-sub">${c.phone || c.email || ''}</div>
+      </div>
+      <div class="hp-date">${c.date}</div>
+    </div>
+  `).join('');
+}
+
+function openHistory() {
+  renderHistory();
+  const hp = document.getElementById('history-panel');
+  hp.style.display = 'flex';
+  requestAnimationFrame(() => hp.classList.add('open'));
+}
+
+document.getElementById('btn-history').addEventListener('click', openHistory);
+document.getElementById('btn-hp-back').addEventListener('click', () => closePanel('history-panel'));
+
+function clearAll() {
+  if (!confirm('저장된 명함을 모두 삭제할까요?')) return;
+  localStorage.removeItem('crm_cards');
+  renderHistory();
+  toast('전체 삭제됨');
+}
+
+function exportCSV() {
+  const cards = getCards();
+  if (!cards.length) { toast('저장된 명함이 없습니다'); return; }
+  const header = ['날짜','이름','회사','직책','전화','이메일','주소','메모'];
+  const rows = cards.map(c => [c.date,c.name,c.company,c.title,c.phone,c.email,c.address,c.memo].map(v=>`"${(v||'').replace(/"/g,'""')}"`));
+  const csv = '﻿' + [header, ...rows].map(r => r.join(',')).join('\n');
+  const blob = new Blob([csv], { type:'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `명함_${new Date().toLocaleDateString('ko-KR').replace(/\./g,'-').replace(/ /g,'')}.csv`;
+  a.click();
+}
+
+// ══════════════════════════════════════════
+//  상세보기
+// ══════════════════════════════════════════
+let detailId = null;
+
+function openDetail(id) {
+  const card = getCards().find(c => c.id === id);
+  if (!card) return;
+  detailId = id;
+
+  document.getElementById('dp-title').textContent = card.name || '상세보기';
+
+  const rows = [
+    card.name    && { icon:'👤', label:'이름',   val: card.name },
+    card.company && { icon:'🏢', label:'회사',   val: card.company },
+    card.title   && { icon:'💼', label:'직책',   val: card.title },
+    card.phone   && { icon:'📞', label:'전화',   val: `<a href="tel:${card.phone}">${card.phone}</a>` },
+    card.email   && { icon:'✉️', label:'이메일', val: `<a href="mailto:${card.email}">${card.email}</a>` },
+    card.address && { icon:'📍', label:'주소',   val: card.address },
+    card.memo    && { icon:'📝', label:'메모',   val: card.memo },
+    { icon:'📅', label:'등록일', val: card.date },
+  ].filter(Boolean);
+
+  document.getElementById('dp-body').innerHTML =
+    (card.image ? `<img src="${card.image}" style="width:100%;max-height:160px;object-fit:cover;border-radius:12px;margin-bottom:16px;">` : '') +
+    rows.map(r => `<div class="dp-field"><div class="dp-icon">${r.icon}</div><div><div class="dp-label">${r.label}</div><div class="dp-val">${r.val}</div></div></div>`).join('');
+
+  document.getElementById('btn-dp-call').style.display  = card.phone ? '' : 'none';
+  document.getElementById('btn-dp-email').style.display = card.email ? '' : 'none';
+
+  const dp = document.getElementById('detail-panel');
+  dp.style.display = 'flex';
+  requestAnimationFrame(() => dp.classList.add('open'));
+}
+
+function dpCall() {
+  const card = getCards().find(c => c.id === detailId);
+  if (card?.phone) location.href = 'tel:' + card.phone;
+}
+function dpEmail() {
+  const card = getCards().find(c => c.id === detailId);
+  if (card?.email) location.href = 'mailto:' + card.email;
+}
+
+document.getElementById('btn-dp-back').addEventListener('click', () => closePanel('detail-panel'));
+document.getElementById('btn-dp-delete').addEventListener('click', () => {
+  if (!confirm('이 명함을 삭제할까요?')) return;
+  const cards = getCards().filter(c => c.id !== detailId);
+  localStorage.setItem('crm_cards', JSON.stringify(cards));
+  closePanel('detail-panel');
+  renderHistory();
+  toast('삭제됨');
+});
+
+// ══════════════════════════════════════════
+//  유틸
+// ══════════════════════════════════════════
+function closePanel(id) {
+  const el = document.getElementById(id);
+  el.classList.remove('open');
+  setTimeout(() => { el.style.display = 'none'; }, 320);
+}
+
+let toastTimer;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+document.getElementById('btn-settings').addEventListener('click', openSettings);
+
+// ══════════════════════════════════════════
+//  초기화
+// ══════════════════════════════════════════
+loadCFG();
+startCamera();
+
+// API 키 없으면 설정 안내
+setTimeout(() => {
+  if (!CFG.apiKey) toast('⚙️ 설정에서 API Key를 입력해주세요');
+}, 1000);
+</script>
+</body>
+</html>
