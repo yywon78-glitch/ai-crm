@@ -290,7 +290,12 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-sy
     <div class="segtabs">
       <div class="segtab on" id="seg-name"    onclick="cardTab('name',this)">이름순</div>
       <div class="segtab"    id="seg-co"      onclick="cardTab('co',this)">거래처순</div>
-      <div class="segtab"    id="seg-fav"     onclick="cardTab('fav',this)">즐겨찾기</div>
+      <div class="segtab"    id="seg-fav"     onclick="cardTab('fav',this)">즐겨찾기 ⭐</div>
+    </div>
+    <div style="background:var(--bg2);border-bottom:1px solid var(--bdr);padding:8px 14px;display:flex;gap:16px;flex-shrink:0;">
+      <span id="stat-cards" style="font-size:12px;color:var(--t2);"></span>
+      <span id="stat-vip"   style="font-size:12px;color:var(--amb);"></span>
+      <span id="stat-fav"   style="font-size:12px;color:var(--t2);"></span>
     </div>
     <div class="body"><div class="bp" id="cards-list"></div></div>
   </div>
@@ -301,12 +306,17 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-sy
       <div class="hdr-t">거래처</div>
       <button class="hdr-btn" onclick="openModal('modal-co')">+ 등록</button>
     </div>
-    <div class="srch-wrap"><input class="srch" placeholder="🔍  거래처명 검색"></div>
+    <div class="srch-wrap"><input class="srch" placeholder="🔍  거래처명 검색" oninput="filterCos(this.value)"></div>
     <div class="pills">
-      <div class="pill on" onclick="pillOn(this,'cos')">전체</div>
-      <div class="pill"    onclick="pillOn(this,'cos')">활성</div>
-      <div class="pill"    onclick="pillOn(this,'cos')">잠재</div>
-      <div class="pill"    onclick="pillOn(this,'cos')">휴면</div>
+      <div class="pill on" onclick="filterCoSt('all',this)">전체</div>
+      <div class="pill"    onclick="filterCoSt('active',this)">활성</div>
+      <div class="pill"    onclick="filterCoSt('potential',this)">잠재</div>
+      <div class="pill"    onclick="filterCoSt('dormant',this)">휴면</div>
+    </div>
+    <div style="background:var(--bg2);border-bottom:1px solid var(--bdr);padding:8px 14px;display:flex;gap:16px;flex-shrink:0;">
+      <span id="stat-cos"  style="font-size:12px;color:var(--t2);"></span>
+      <span id="stat-act"  style="font-size:12px;color:var(--grn);"></span>
+      <span id="stat-dorm" style="font-size:12px;color:var(--t3);"></span>
     </div>
     <div class="body"><div class="bp" id="cos-list"></div></div>
   </div>
@@ -326,14 +336,24 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-sy
       <div class="map-road v" style="left:20%"></div>
       <div class="map-road v" style="left:53%"></div>
       <div class="map-road v" style="left:84%"></div>
-      <!-- 핀 -->
-      <div class="mp" style="left:37%;top:32%" onclick="mapPop('삼성전자','서울 서초구 서초동','co1')"><div class="mp-pin bl"><span>🏢</span></div></div>
-      <div class="mp" style="left:66%;top:24%" onclick="mapPop('LG화학','서울 영등포구 여의도동','co2')"><div class="mp-pin gn"><span>🏢</span></div></div>
-      <div class="mp" style="left:54%;top:55%" onclick="mapPop('현대모비스','경기 성남시 분당구','co3')"><div class="mp-pin am"><span>🏢</span></div></div>
-      <div class="mp" style="left:24%;top:58%" onclick="mapPop('SK텔레콤','서울 중구 을지로','co4')"><div class="mp-pin bl"><span>🏢</span></div></div>
-      <div class="mp" style="left:71%;top:66%" onclick="mapPop('KT','서울 종로구 광화문','co5')"><div class="mp-pin am"><span>🏢</span></div></div>
+      <!-- 핀 (활성:blue / 잠재:amber / 휴면:gray) -->
+      <div class="mp" style="left:46%;top:54%" onclick="mapPop('삼성전자(주)','서울 서초구 서초동 1321','co01')"><div class="mp-pin bl"><span>🏢</span></div></div>
+      <div class="mp" style="left:21%;top:41%" onclick="mapPop('LG화학(주)','서울 영등포구 여의도동 20','co02')"><div class="mp-pin bl"><span>🏢</span></div></div>
+      <div class="mp" style="left:66%;top:73%" onclick="mapPop('현대모비스(주)','경기 성남시 분당구 수내동','co03')"><div class="mp-pin am"><span>🏢</span></div></div>
+      <div class="mp" style="left:37%;top:35%" onclick="mapPop('SK텔레콤(주)','서울 중구 을지로 65','co04')"><div class="mp-pin bl"><span>🏢</span></div></div>
+      <div class="mp" style="left:33%;top:22%" onclick="mapPop('KT(주)','서울 종로구 광화문','co05')"><div class="mp-pin am"><span>🏢</span></div></div>
+      <div class="mp" style="left:63%;top:67%" onclick="mapPop('네이버(주)','경기 성남시 분당구 정자동','co06')"><div class="mp-pin bl"><span>🏢</span></div></div>
+      <div class="mp" style="left:68%;top:74%" onclick="mapPop('카카오(주)','경기 성남시 분당구 판교로','co07')"><div class="mp-pin bl"><span>🏢</span></div></div>
+      <div class="mp" style="left:54%;top:57%" onclick="mapPop('POSCO홀딩스','서울 강남구 테헤란로 440','co08')"><div class="mp-pin" style="background:#484f58;"><span>🏢</span></div></div>
+      <div class="mp" style="left:73%;top:44%" onclick="mapPop('롯데케미칼(주)','서울 강동구 천호대로 1000','co09')"><div class="mp-pin am"><span>🏢</span></div></div>
+      <div class="mp" style="left:52%;top:59%" onclick="mapPop('GS칼텍스(주)','서울 강남구 역삼동 679','co10')"><div class="mp-pin bl"><span>🏢</span></div></div>
+      <div class="mp" style="left:40%;top:33%" onclick="mapPop('CJ제일제당(주)','서울 중구 쌍림동 150','co11')"><div class="mp-pin bl"><span>🏢</span></div></div>
+      <div class="mp" style="left:31%;top:24%" onclick="mapPop('한화솔루션(주)','서울 종로구 장교동 1','co12')"><div class="mp-pin am"><span>🏢</span></div></div>
+      <div class="mp" style="left:38%;top:37%" onclick="mapPop('두산인프라코어','서울 중구 을지로 30','co13')"><div class="mp-pin" style="background:#484f58;"><span>🏢</span></div></div>
+      <div class="mp" style="left:36%;top:39%" onclick="mapPop('(주)신세계','서울 중구 소공로 63','co14')"><div class="mp-pin am"><span>🏢</span></div></div>
+      <div class="mp" style="left:57%;top:54%" onclick="mapPop('한국전력공사','서울 강남구 삼성동 167','co15')"><div class="mp-pin bl"><span>🏢</span></div></div>
       <!-- 내 위치 -->
-      <div class="mp-me" style="left:46%;top:44%"><div class="mp-me-d"></div></div>
+      <div class="mp-me" style="left:43%;top:46%"><div class="mp-me-d"></div></div>
       <!-- 컨트롤 -->
       <div class="map-ctrls">
         <div class="map-ctrl on" onclick="this.classList.toggle('on')">📍 내 주변</div>
@@ -367,11 +387,15 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-sy
       <button class="hdr-btn" onclick="openModal('modal-visit')">+ 기록</button>
     </div>
     <div class="pills">
-      <div class="pill on" onclick="pillOn(this,'visits')">전체</div>
-      <div class="pill"    onclick="pillOn(this,'visits')">이번달</div>
-      <div class="pill"    onclick="pillOn(this,'visits')">상담</div>
-      <div class="pill"    onclick="pillOn(this,'visits')">인사</div>
-      <div class="pill"    onclick="pillOn(this,'visits')">견적</div>
+      <div class="pill on" onclick="filterVisits('all',this)">전체</div>
+      <div class="pill"    onclick="filterVisits('month',this)">이번달</div>
+      <div class="pill"    onclick="filterVisits('상담',this)">💬 상담</div>
+      <div class="pill"    onclick="filterVisits('인사',this)">🤝 인사</div>
+      <div class="pill"    onclick="filterVisits('견적',this)">📄 견적</div>
+    </div>
+    <div style="background:var(--bg2);border-bottom:1px solid var(--bdr);padding:8px 14px;display:flex;gap:16px;flex-shrink:0;">
+      <span id="stat-vis"  style="font-size:12px;color:var(--t2);"></span>
+      <span id="stat-next" style="font-size:12px;color:var(--amb);"></span>
     </div>
     <div class="body"><div class="tl" id="visits-tl" style="padding-top:14px;"></div></div>
   </div>
@@ -554,27 +578,85 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-sy
 <script>
 /* ═══════════════════════ DATA ═══════════════════════ */
 const CARDS = [
-  {id:'c1',nm:'김철수',co:'삼성전자',tl:'영업팀 부장',  mob:'010-1234-5678',ph:'02-2255-0000',em:'cskim@samsung.com',  addr:'서울 서초구', tag:'고객', cl:'#58a6ff',fav:true},
-  {id:'c2',nm:'이영희',co:'LG화학',  tl:'구매팀 대리',  mob:'010-9876-5432',ph:'02-3777-1000',em:'ylee@lgchem.com',    addr:'서울 영등포구',tag:'VIP',  cl:'#3fb950',fav:false},
-  {id:'c3',nm:'박민준',co:'현대모비스',tl:'개발팀 과장', mob:'010-5555-1234',ph:'031-485-0000',em:'mjpark@mobis.com',  addr:'경기 성남시', tag:'잠재', cl:'#d29922',fav:false},
-  {id:'c4',nm:'최지연',co:'SK텔레콤',tl:'기업영업 팀장',mob:'010-7777-8888',ph:'02-6100-0000',em:'jychoi@skt.com',    addr:'서울 중구',   tag:'고객', cl:'#bc8cff',fav:true},
-  {id:'c5',nm:'정현우',co:'KT',      tl:'B2B 사업부',   mob:'010-2222-3333',ph:'02-981-0000', em:'hwjung@kt.com',     addr:'서울 종로구', tag:'잠재', cl:'#f85149',fav:false},
-  {id:'c6',nm:'송미래',co:'네이버',  tl:'파트너십 PM',  mob:'010-4444-5555',ph:'031-888-0000',em:'mrsong@naver.com',  addr:'경기 성남시', tag:'고객', cl:'#3fb950',fav:false},
+  // 삼성전자 (3)
+  {id:'c01',nm:'김철수',co:'삼성전자(주)',tl:'B2B영업팀 부장',   mob:'010-1234-5678',ph:'02-2255-1100',em:'cskim@samsung.com',   addr:'서울 서초구 서초동 1321',  tag:'VIP',  cl:'#58a6ff',fav:true},
+  {id:'c02',nm:'이민아',co:'삼성전자(주)',tl:'구매전략팀 차장',  mob:'010-2341-8800',ph:'02-2255-2200',em:'malee@samsung.com',    addr:'서울 서초구 서초동 1321',  tag:'고객', cl:'#58a6ff',fav:false},
+  {id:'c03',nm:'박상현',co:'삼성전자(주)',tl:'파트너십 대리',    mob:'010-9988-1234',ph:'02-2255-3300',em:'shpark@samsung.com',   addr:'서울 서초구 서초동 1321',  tag:'고객', cl:'#58a6ff',fav:false},
+  // LG화학 (2)
+  {id:'c04',nm:'이영희',co:'LG화학(주)',   tl:'구매팀 대리',     mob:'010-9876-5432',ph:'02-3777-1000',em:'ylee@lgchem.com',      addr:'서울 영등포구 여의도동 20', tag:'VIP',  cl:'#3fb950',fav:true},
+  {id:'c05',nm:'최진석',co:'LG화학(주)',   tl:'기술영업 과장',   mob:'010-3344-7788',ph:'02-3777-2000',em:'jschoi@lgchem.com',    addr:'서울 영등포구 여의도동 20', tag:'고객', cl:'#3fb950',fav:false},
+  // 현대모비스 (2)
+  {id:'c06',nm:'박민준',co:'현대모비스(주)',tl:'개발팀 과장',    mob:'010-5555-1234',ph:'031-485-1000',em:'mjpark@mobis.com',     addr:'경기 성남시 분당구 수내동', tag:'잠재', cl:'#d29922',fav:false},
+  {id:'c07',nm:'김도영',co:'현대모비스(주)',tl:'구매팀 사원',    mob:'010-7722-3366',ph:'031-485-2000',em:'dykim@mobis.com',      addr:'경기 성남시 분당구 수내동', tag:'잠재', cl:'#d29922',fav:false},
+  // SK텔레콤 (2)
+  {id:'c08',nm:'최지연',co:'SK텔레콤(주)', tl:'기업영업 팀장',  mob:'010-7777-8888',ph:'02-6100-0000',em:'jychoi@skt.com',       addr:'서울 중구 을지로 65',      tag:'고객', cl:'#bc8cff',fav:true},
+  {id:'c09',nm:'강지훈',co:'SK텔레콤(주)', tl:'B2B 솔루션 대리',mob:'010-8833-4411',ph:'02-6100-1111',em:'jhkang@skt.com',       addr:'서울 중구 을지로 65',      tag:'고객', cl:'#bc8cff',fav:false},
+  // KT (1)
+  {id:'c10',nm:'정현우',co:'KT(주)',        tl:'기업사업부 사원', mob:'010-2222-3333',ph:'02-981-0000', em:'hwjung@kt.com',        addr:'서울 종로구 광화문 KT빌딩', tag:'잠재', cl:'#f85149',fav:false},
+  // 네이버 (2)
+  {id:'c11',nm:'송미래',co:'네이버(주)',    tl:'파트너십 PM',     mob:'010-4444-5555',ph:'031-888-6600',em:'mrsong@navercorp.com', addr:'경기 성남시 분당구 정자동', tag:'고객', cl:'#3fb950',fav:false},
+  {id:'c12',nm:'한수진',co:'네이버(주)',    tl:'기술협력 리드',   mob:'010-6655-2211',ph:'031-888-6700',em:'sjhan@navercorp.com',  addr:'경기 성남시 분당구 정자동', tag:'고객', cl:'#3fb950',fav:true},
+  // 카카오 (2)
+  {id:'c13',nm:'오준혁',co:'카카오(주)',    tl:'사업개발 매니저', mob:'010-1122-9988',ph:'031-8000-1000',em:'jhooh@kakao.com',     addr:'경기 성남시 분당구 판교로', tag:'고객', cl:'#fbbf24',fav:false},
+  {id:'c14',nm:'이채린',co:'카카오(주)',    tl:'디자인 시니어',   mob:'010-3399-8877',ph:'031-8000-2000',em:'crlee@kakao.com',     addr:'경기 성남시 분당구 판교로', tag:'잠재', cl:'#fbbf24',fav:false},
+  // POSCO (1)
+  {id:'c15',nm:'황민철',co:'POSCO홀딩스',  tl:'구매전략 상무',   mob:'010-9900-1122',ph:'02-3457-0000',em:'mchwang@posco.com',    addr:'서울 강남구 테헤란로 440',  tag:'휴면', cl:'#8b949e',fav:false},
+  // 롯데케미칼 (1)
+  {id:'c16',nm:'류성민',co:'롯데케미칼(주)',tl:'원료구매 팀장',  mob:'010-5511-7733',ph:'02-829-4000', em:'smryu@lottechem.com',   addr:'서울 강동구 천호대로 1000', tag:'잠재', cl:'#fb923c',fav:false},
+  // GS칼텍스 (2)
+  {id:'c17',nm:'윤서영',co:'GS칼텍스(주)', tl:'B2B영업 차장',   mob:'010-2244-6688',ph:'02-2005-1000',em:'syyoon@gscaltex.com',  addr:'서울 강남구 역삼동 679',   tag:'고객', cl:'#a78bfa',fav:false},
+  {id:'c18',nm:'임대현',co:'GS칼텍스(주)', tl:'기술지원 과장',   mob:'010-7766-3322',ph:'02-2005-2000',em:'dhlim@gscaltex.com',   addr:'서울 강남구 역삼동 679',   tag:'고객', cl:'#a78bfa',fav:true},
+  // CJ제일제당 (2)
+  {id:'c19',nm:'신동혁',co:'CJ제일제당(주)',tl:'소재구매 부장',  mob:'010-4422-8899',ph:'02-6740-1000',em:'dhshin@cj.net',         addr:'서울 중구 쌍림동 150',     tag:'고객', cl:'#34d399',fav:false},
+  {id:'c20',nm:'조민지',co:'CJ제일제당(주)',tl:'파트너십 과장',  mob:'010-6688-1144',ph:'02-6740-2000',em:'mjcho@cj.net',          addr:'서울 중구 쌍림동 150',     tag:'고객', cl:'#34d399',fav:false},
+  // 한화솔루션 (1)
+  {id:'c21',nm:'류성호',co:'한화솔루션(주)',tl:'신사업 팀장',    mob:'010-3355-9900',ph:'02-729-3000', em:'shryu@hanwha.com',      addr:'서울 종로구 장교동 1',     tag:'잠재', cl:'#f472b6',fav:false},
+  // 두산인프라코어 (1)
+  {id:'c22',nm:'서병찬',co:'두산인프라코어',tl:'기술영업 과장',  mob:'010-9911-4455',ph:'02-3398-8000',em:'bcseo@doosan.com',      addr:'서울 중구 을지로 30',      tag:'휴면', cl:'#8b949e',fav:false},
+  // 신세계 (1)
+  {id:'c23',nm:'권미나',co:'(주)신세계',   tl:'MD 선임',        mob:'010-1177-5566',ph:'02-310-1000', em:'mnkwon@shinsegae.com',  addr:'서울 중구 소공로 63',      tag:'잠재', cl:'#60a5fa',fav:false},
+  // 한국전력 (2)
+  {id:'c24',nm:'김태준',co:'한국전력공사',  tl:'스마트그리드 차장',mob:'010-8800-2233',ph:'02-3456-3000',em:'tjkim@kepco.co.kr',   addr:'서울 강남구 삼성동 167',   tag:'고객', cl:'#22d3ee',fav:false},
+  {id:'c25',nm:'박유진',co:'한국전력공사',  tl:'B2B 솔루션 대리',mob:'010-4477-6655',ph:'02-3456-4000',em:'yjpark@kepco.co.kr',   addr:'서울 강남구 삼성동 167',   tag:'고객', cl:'#22d3ee',fav:false},
 ];
 const COS = [
-  {id:'co1',nm:'삼성전자',  addr:'서울 서초구 서초동 1321', ind:'전자/IT',   st:'active',   cnt:3,last:'2026-10-20'},
-  {id:'co2',nm:'LG화학',    addr:'서울 영등포구 여의도동',  ind:'화학/소재', st:'active',   cnt:2,last:'2026-10-15'},
-  {id:'co3',nm:'현대모비스',addr:'경기 성남시 분당구',      ind:'자동차부품',st:'potential',cnt:1,last:'2026-09-28'},
-  {id:'co4',nm:'SK텔레콤',  addr:'서울 중구 을지로',        ind:'통신',       st:'active',   cnt:4,last:'2026-10-18'},
-  {id:'co5',nm:'KT',        addr:'서울 종로구 광화문',      ind:'통신',       st:'potential',cnt:1,last:'2026-09-10'},
-  {id:'co6',nm:'네이버',    addr:'경기 성남시 분당구',      ind:'IT/플랫폼', st:'active',   cnt:1,last:'2026-10-05'},
+  {id:'co01',nm:'삼성전자(주)',  addr:'서울 서초구 서초동 1321',    ind:'전자/IT',    st:'active',   cnt:3,last:'2026-10-20'},
+  {id:'co02',nm:'LG화학(주)',    addr:'서울 영등포구 여의도동 20',   ind:'화학/소재',  st:'active',   cnt:2,last:'2026-10-15'},
+  {id:'co03',nm:'현대모비스(주)',addr:'경기 성남시 분당구 수내동',   ind:'자동차부품', st:'potential',cnt:2,last:'2026-09-28'},
+  {id:'co04',nm:'SK텔레콤(주)', addr:'서울 중구 을지로 65',         ind:'통신/ICT',   st:'active',   cnt:2,last:'2026-10-22'},
+  {id:'co05',nm:'KT(주)',        addr:'서울 종로구 광화문 KT빌딩',   ind:'통신',       st:'potential',cnt:1,last:'2026-09-10'},
+  {id:'co06',nm:'네이버(주)',    addr:'경기 성남시 분당구 정자동',   ind:'IT/플랫폼',  st:'active',   cnt:2,last:'2026-10-12'},
+  {id:'co07',nm:'카카오(주)',    addr:'경기 성남시 분당구 판교로',   ind:'IT/플랫폼',  st:'active',   cnt:2,last:'2026-10-08'},
+  {id:'co08',nm:'POSCO홀딩스',  addr:'서울 강남구 테헤란로 440',    ind:'철강/소재',  st:'dormant',  cnt:1,last:'2026-07-14'},
+  {id:'co09',nm:'롯데케미칼(주)',addr:'서울 강동구 천호대로 1000',   ind:'화학',       st:'potential',cnt:1,last:'2026-09-05'},
+  {id:'co10',nm:'GS칼텍스(주)', addr:'서울 강남구 역삼동 679',      ind:'에너지',     st:'active',   cnt:2,last:'2026-10-17'},
+  {id:'co11',nm:'CJ제일제당(주)',addr:'서울 중구 쌍림동 150',        ind:'식품/소재',  st:'active',   cnt:2,last:'2026-10-14'},
+  {id:'co12',nm:'한화솔루션(주)',addr:'서울 종로구 장교동 1',        ind:'화학/에너지',st:'potential',cnt:1,last:'2026-08-22'},
+  {id:'co13',nm:'두산인프라코어',addr:'서울 중구 을지로 30',         ind:'기계/제조',  st:'dormant',  cnt:1,last:'2026-06-30'},
+  {id:'co14',nm:'(주)신세계',   addr:'서울 중구 소공로 63',         ind:'유통/리테일',st:'potential',cnt:1,last:'2026-09-18'},
+  {id:'co15',nm:'한국전력공사', addr:'서울 강남구 삼성동 167',       ind:'에너지/인프라',st:'active',  cnt:2,last:'2026-10-20'},
 ];
 const VISITS = [
-  {id:'v1',co:'삼성전자',coId:'co1',tp:'💬 상담',dt:'2026-10-20',memo:'Q4 물량 협의. 단가 조율 필요. 다음달 재미팅 예정.',next:'2026-11-15'},
-  {id:'v2',co:'SK텔레콤',coId:'co4',tp:'🤝 인사',dt:'2026-10-18',memo:'신규 담당자 최지연 팀장 첫 방문. 명함 수령.',next:null},
-  {id:'v3',co:'LG화학',  coId:'co2',tp:'📄 견적',dt:'2026-10-15',memo:'2027년 공급 계획서 전달. 2주내 검토 후 회신.',next:'2026-11-01'},
-  {id:'v4',co:'네이버',  coId:'co6',tp:'💬 상담',dt:'2026-10-05',memo:'파트너십 제안 검토 미팅. 긍정적 반응.',next:null},
-  {id:'v5',co:'현대모비스',coId:'co3',tp:'🔧 AS',dt:'2026-09-28',memo:'설치 장비 점검 및 교체 완료.',next:null},
+  {id:'v01',co:'삼성전자(주)',  coId:'co01',tp:'💬 상담',dt:'2026-10-22',memo:'Q4 공급 물량 최종 협의. 단가 5% 인하 요청 접수. 11월 중 공식 답변 예정.', next:'2026-11-15'},
+  {id:'v02',co:'SK텔레콤(주)', coId:'co04',tp:'🤝 인사',dt:'2026-10-21',memo:'신규 담당자 강지훈 대리 소개 미팅. 내년 ICT 솔루션 도입 계획 청취.', next:null},
+  {id:'v03',co:'한국전력공사', coId:'co15',tp:'📄 견적',dt:'2026-10-20',memo:'스마트그리드 장비 견적서 제출. 납기 3개월, 총 2.4억 규모. 검토 요청.', next:'2026-11-10'},
+  {id:'v04',co:'LG화학(주)',   coId:'co02',tp:'💬 상담',dt:'2026-10-17',memo:'2027년 소재 공급 MOU 초안 검토. 법무팀 의견 대기 중.', next:'2026-11-01'},
+  {id:'v05',co:'GS칼텍스(주)', coId:'co10',tp:'🤝 인사',dt:'2026-10-16',memo:'임대현 과장 첫 방문. 윤 차장 소개로 방문. 기술지원 협력 가능성 탐색.', next:null},
+  {id:'v06',co:'CJ제일제당(주)',coId:'co11',tp:'📄 견적',dt:'2026-10-14',memo:'식품 소재 포장 솔루션 견적 전달. 경쟁사 대비 가격 우위 강조.', next:'2026-10-28'},
+  {id:'v07',co:'SK텔레콤(주)', coId:'co04',tp:'💬 상담',dt:'2026-10-12',memo:'AI 기반 고객분석 솔루션 PoC 결과 보고. 다음 단계 상용화 논의.', next:'2026-10-21'},
+  {id:'v08',co:'네이버(주)',   coId:'co06',tp:'🤝 인사',dt:'2026-10-12',memo:'파트너십 계약 갱신 미팅. 한수진 리드와 신규 협력 방향 논의.', next:null},
+  {id:'v09',co:'카카오(주)',   coId:'co07',tp:'💬 상담',dt:'2026-10-08',memo:'카카오T 연동 API 공급 협의. 오준혁 매니저, 2주 내 개발팀 리뷰 예정.', next:'2026-10-25'},
+  {id:'v10',co:'삼성전자(주)', coId:'co01',tp:'🔧 AS',  dt:'2026-10-06',memo:'테스트 장비 오작동 현장 점검. 펌웨어 업데이트로 해결 완료.', next:null},
+  {id:'v11',co:'GS칼텍스(주)', coId:'co10',tp:'📄 견적',dt:'2026-10-04',memo:'에너지 모니터링 시스템 3차 견적서 제출. 최종 의사결정 11월 예정.', next:'2026-11-20'},
+  {id:'v12',co:'CJ제일제당(주)',coId:'co11',tp:'🤝 인사',dt:'2026-09-30',memo:'조민지 과장 신임 인사. 신동혁 부장과 전략 파트너십 의향 확인.', next:null},
+  {id:'v13',co:'현대모비스(주)',coId:'co03',tp:'💬 상담',dt:'2026-09-28',memo:'EV 부품 공급망 재편 관련 미팅. 내년 Q1 신규 RFQ 접수 예정.', next:'2026-10-30'},
+  {id:'v14',co:'네이버(주)',   coId:'co06',tp:'📦 납품',dt:'2026-09-25',memo:'데이터 솔루션 2차 모듈 납품 완료. 검수 통과. 잔금 청구 예정.', next:null},
+  {id:'v15',co:'한화솔루션(주)',coId:'co12',tp:'🤝 인사',dt:'2026-09-22',memo:'류성호 팀장 신사업 미팅. 태양광 소재 공급 파트너십 가능성 탐색.', next:'2026-10-15'},
+  {id:'v16',co:'LG화학(주)',   coId:'co02',tp:'🔧 AS',  dt:'2026-09-18',memo:'설비 이상 긴급 출동. 공정 라인 1개 중단. 당일 복구 완료.', next:null},
+  {id:'v17',co:'롯데케미칼(주)',coId:'co09',tp:'💬 상담',dt:'2026-09-15',memo:'류성민 팀장과 원료 조달 협력 논의. 장기 공급 계약 관심 표명.', next:'2026-10-20'},
+  {id:'v18',co:'한국전력공사', coId:'co15',tp:'🤝 인사',dt:'2026-09-10',memo:'박유진 대리 첫 방문. 스마트그리드 사업 담당자로 연결됨.', next:null},
+  {id:'v19',co:'카카오(주)',   coId:'co07',tp:'📄 견적',dt:'2026-09-05',memo:'모빌리티 데이터 API 공급 초기 견적 제출. 이채린 디자이너팀 레퍼런스 요청.', next:'2026-10-08'},
+  {id:'v20',co:'(주)신세계',  coId:'co14',tp:'🤝 인사',dt:'2026-09-02',memo:'권미나 MD 첫 방문. 리테일 IT 솔루션 도입 계획 청취. 연말 예산 협의 예정.', next:'2026-11-05'},
 ];
 
 /* ═══════════════════════ STATE ═══════════════════════ */
@@ -588,8 +670,26 @@ let curCoId = null;
 (function init(){
   document.getElementById('v-date').value = new Date().toISOString().split('T')[0];
   if(API_KEY){ showMain(); } else { document.getElementById('scr-key').classList.add('active'); }
-  renderCards(); renderCos(); renderVisits();
+  renderCards(); renderCos(); renderVisits(); renderStats();
 })();
+
+function renderStats(){
+  const vip  = CARDS.filter(c=>c.tag==='VIP').length;
+  const favs = CARDS.filter(c=>c.fav).length;
+  const act  = COS.filter(c=>c.st==='active').length;
+  const dorm = COS.filter(c=>c.st==='dormant').length;
+  const thisMonth = VISITS.filter(v=>v.dt.startsWith('2026-10')).length;
+  const hasNext   = VISITS.filter(v=>v.next).length;
+  _t('stat-cards', `🪪 총 ${CARDS.length}장`);
+  _t('stat-vip',   `⭐ VIP ${vip}명`);
+  _t('stat-fav',   `즐겨찾기 ${favs}명`);
+  _t('stat-cos',   `🏢 거래처 ${COS.length}곳`);
+  _t('stat-act',   `활성 ${act}곳`);
+  _t('stat-dorm',  `휴면 ${dorm}곳`);
+  _t('stat-vis',   `📝 총 ${VISITS.length}건`);
+  _t('stat-next',  `📅 다음 예정 ${hasNext}건`);
+}
+function _t(id,v){ const el=document.getElementById(id); if(el) el.textContent=v; }
 
 function showMain(){
   document.getElementById('scr-key').classList.remove('active');
@@ -769,9 +869,16 @@ function goCoFromCard(){
 /* ═══════════════════════ RENDER COS ═══════════════════════ */
 const stCls={active:'b-gn',potential:'b-am',dormant:'b-rd'};
 const stLb={active:'활성',potential:'잠재',dormant:'휴면'};
-function renderCos(){
+function filterCos(q){ renderCos(q); }
+function filterCoSt(st,el){
+  document.querySelectorAll('#tab-cos .pill').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on'); renderCos('',st);
+}
+function renderCos(q='',st='all'){
   const el=document.getElementById('cos-list');
-  el.innerHTML=COS.map(c=>`
+  let list=COS.filter(c=>(!q||c.nm.includes(q))&&(st==='all'||c.st===st));
+  if(!list.length){ el.innerHTML=`<div class="empty"><div class="empty-ic">🏢</div><div class="empty-t">거래처가 없습니다</div></div>`; return; }
+  el.innerHTML=list.map(c=>`
     <div class="li" onclick="openCoDetail('${c.id}')">
       <div class="av" style="background:var(--blue-lt);color:var(--blue);font-size:20px;">🏢</div>
       <div class="li-info"><div class="li-name">${c.nm}</div><div class="li-sub">${c.addr} · 명함 ${c.cnt}장</div></div>
@@ -804,6 +911,14 @@ function openCoDetail(id){
 }
 
 /* ═══════════════════════ VISITS ═══════════════════════ */
+function filterVisits(f,el){
+  document.querySelectorAll('#tab-visits .pill').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  let list=VISITS;
+  if(f==='month') list=VISITS.filter(v=>v.dt.startsWith('2026-10'));
+  else if(f!=='all') list=VISITS.filter(v=>v.tp.includes(f));
+  document.getElementById('visits-tl').innerHTML=list.map(v=>visitHTML(v)).join('');
+}
 function renderVisits(){
   document.getElementById('visits-tl').innerHTML=VISITS.map(v=>visitHTML(v)).join('');
 }
