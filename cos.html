@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="shared.css">
 </head>
 <body>
+<!-- ① 거래처 목록 -->
 <div class="page">
   <header class="hdr">
     <span class="hdr-t">거래처</span>
@@ -16,17 +17,39 @@
     <input class="srch" id="srch" placeholder="🔍  거래처명 검색" oninput="render()">
   </div>
   <div class="pills">
-    <div class="pill on" id="f-all"  onclick="setFilter('all',this)">전체</div>
-    <div class="pill"    id="f-act"  onclick="setFilter('active',this)">활성</div>
-    <div class="pill"    id="f-pot"  onclick="setFilter('potential',this)">잠재</div>
-    <div class="pill"    id="f-dor"  onclick="setFilter('dormant',this)">휴면</div>
+    <div class="pill on" onclick="setFilter('all',this)">전체</div>
+    <div class="pill"    onclick="setFilter('active',this)">활성</div>
+    <div class="pill"    onclick="setFilter('potential',this)">잠재</div>
+    <div class="pill"    onclick="setFilter('dormant',this)">휴면</div>
   </div>
   <div class="body"><div class="bp" id="list"></div></div>
   <nav class="tabbar" id="tabbar"></nav>
 </div>
 
-<!-- 거래처 추가 모달 -->
-<div class="moverlay" id="modal-co" onclick="if(event.target===this)closeAddModal()">
+<!-- ② 거래처 상세 오버레이 -->
+<div class="overlay" id="overlay-co" style="z-index:100;"></div>
+
+<!-- ③ 방문기록 추가 모달 -->
+<div class="moverlay" id="modal-visit" style="z-index:200;" onclick="if(event.target===this)closeVisitModal()">
+  <div class="msheet">
+    <div class="m-handle"></div>
+    <div class="m-title">방문 기록 추가</div>
+    <div class="m-body">
+      <div style="font-size:13px;font-weight:600;color:var(--blue);padding:2px 0;" id="v-co-lbl"></div>
+      <div>
+        <div class="flb">방문 유형</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;" id="type-grid"></div>
+      </div>
+      <div><div class="flb">방문 날짜</div><input class="finp" type="date" id="v-dt"></div>
+      <div><div class="flb">메모</div><textarea class="finp" id="v-memo" rows="3" style="resize:none;" placeholder="미팅 내용을 입력하세요..."></textarea></div>
+      <div><div class="flb">다음 일정</div><input class="finp" type="date" id="v-next"></div>
+      <button class="m-btn" onclick="saveVisit()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- ④ 거래처 추가 모달 -->
+<div class="moverlay" id="modal-add-co" style="z-index:200;" onclick="if(event.target===this)closeAddModal()">
   <div class="msheet">
     <div class="m-handle"></div>
     <div class="m-title">거래처 등록</div>
@@ -46,23 +69,22 @@ let filter = 'all';
 const stLbl = {active:'활성',potential:'잠재',dormant:'휴면'};
 const stCls  = {active:'b-gn',potential:'b-am',dormant:'b-rd'};
 
-function setFilter(f, el){
-  filter = f;
+function setFilter(f, el) {
+  filter=f;
   document.querySelectorAll('.pills .pill').forEach(p=>p.classList.remove('on'));
   el.classList.add('on');
   render();
 }
 
-function render(){
+function render() {
   const q = document.getElementById('srch').value;
   let list = DB.getCos();
   if(filter!=='all') list=list.filter(c=>c.st===filter);
   if(q) list=list.filter(c=>c.nm.includes(q)||(c.addr||'').includes(q));
-
   const el = document.getElementById('list');
   if(!list.length){ el.innerHTML=`<div class="empty"><div class="empty-ic">🏢</div><div class="empty-t">거래처가 없습니다</div></div>`; return; }
-  el.innerHTML = list.map(c=>`
-    <div class="li" onclick="location.href='co.html?id=${c.id}'">
+  el.innerHTML=list.map(c=>`
+    <div class="li" onclick="openCoOverlay('${c.id}')">
       <div class="av" style="background:var(--blue-lt);color:var(--blue);font-size:22px;">🏢</div>
       <div class="li-info">
         <div class="li-name">${c.nm}</div>
@@ -72,21 +94,19 @@ function render(){
     </div>`).join('');
 }
 
-function openAddModal(){ document.getElementById('modal-co').classList.add('show'); }
-function closeAddModal(){ document.getElementById('modal-co').classList.remove('show'); }
+function openAddModal() { document.getElementById('modal-add-co').classList.add('show'); }
+function closeAddModal() { document.getElementById('modal-add-co').classList.remove('show'); }
 
-function saveCo(){
-  const nm = document.getElementById('co-nm').value.trim();
+function saveCo() {
+  const nm=document.getElementById('co-nm').value.trim();
   if(!nm){ toast('회사명을 입력해주세요'); return; }
-  const cos = DB.getCos();
+  const cos=DB.getCos();
   cos.unshift({id:'co'+Date.now(),nm,addr:document.getElementById('co-addr').value.trim(),ind:document.getElementById('co-ind').value.trim(),st:'active',cnt:0,last:'-'});
   DB.setCos(cos);
+  ['co-nm','co-addr','co-ind'].forEach(id=>document.getElementById(id).value='');
   closeAddModal();
   render();
   toast('거래처가 등록됐습니다 ✓');
-  document.getElementById('co-nm').value='';
-  document.getElementById('co-addr').value='';
-  document.getElementById('co-ind').value='';
 }
 
 renderTabBar('cos');
