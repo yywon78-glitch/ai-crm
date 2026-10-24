@@ -6,14 +6,14 @@
 <title>명함 CRM</title>
 <style>
 :root {
-  --bg:   #0d1117; --bg2: #161b22; --card: #1c2128; --card2: #21262d;
-  --bdr:  #30363d; --bdr2:#21262d;
-  --blue: #58a6ff; --blue-dk:#1f6feb; --blue-lt:rgba(88,166,255,.12);
-  --grn:  #3fb950; --grn-lt:rgba(63,185,80,.12);
-  --amb:  #d29922; --amb-lt:rgba(210,153,34,.12);
-  --red:  #f85149; --red-lt:rgba(248,81,73,.12);
-  --pur:  #bc8cff; --pur-lt:rgba(188,140,255,.12);
-  --t1:   #e6edf3; --t2:#8b949e; --t3:#484f58;
+  --bg:   #f0f4f8; --bg2: #ffffff; --card: #ffffff; --card2: #f4f7fb;
+  --bdr:  #dde3ec; --bdr2:#eef1f6;
+  --blue: #2563eb; --blue-dk:#1d4ed8; --blue-lt:rgba(37,99,235,.1);
+  --grn:  #059669; --grn-lt:rgba(5,150,105,.1);
+  --amb:  #d97706; --amb-lt:rgba(217,119,6,.1);
+  --red:  #dc2626; --red-lt:rgba(220,38,38,.1);
+  --pur:  #7c3aed; --pur-lt:rgba(124,58,237,.1);
+  --t1:   #0f172a; --t2:#475569; --t3:#94a3b8;
   --tab-h:60px; --hdr-h:52px;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -97,7 +97,8 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-sy
 /* ── BOTTOM TAB ── */
 .tabbar{height:var(--tab-h);background:var(--bg2);border-top:1px solid var(--bdr);
   display:flex;align-items:flex-start;padding-top:4px;
-  position:fixed;bottom:0;left:0;right:0;z-index:8;}
+  position:fixed;bottom:0;left:0;right:0;z-index:8;
+  box-shadow:0 -1px 8px rgba(0,0,0,.06);}
 /* 탭바 높이만큼 콘텐츠 하단 여백 */
 .body{padding-bottom:calc(var(--tab-h) + 8px);}
 .tbi{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px 0;
@@ -343,7 +344,7 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-sy
       <span id="stat-vip"   style="font-size:12px;color:var(--amb);"></span>
       <span id="stat-fav"   style="font-size:12px;color:var(--t2);"></span>
     </div>
-    <div class="body"><div class="cards-grid" id="cards-list"></div></div>
+    <div class="body"><div class="bp" id="cards-list"></div></div>
   </div>
 
   <!-- 거래처 탭 -->
@@ -443,7 +444,7 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-sy
       <span id="stat-vis"  style="font-size:12px;color:var(--t2);"></span>
       <span id="stat-next" style="font-size:12px;color:var(--amb);"></span>
     </div>
-    <div class="body"><div class="vg" id="visits-tl"></div></div>
+    <div class="body"><div class="bp" id="visits-tl"></div></div>
   </div>
 
   <!-- 설정 탭 -->
@@ -874,20 +875,14 @@ function renderCards(q='',mode='name'){
   let list=CARDS.filter(c=>!q||c.nm.includes(q)||c.co.includes(q)||c.mob.includes(q));
   if(mode==='fav') list=list.filter(c=>c.fav);
   if(!list.length){
-    el.style.display='block';
     el.innerHTML=`<div class="empty"><div class="empty-ic">🪪</div><div class="empty-t">명함이 없습니다</div><div class="empty-s">카메라로 명함을 스캔해보세요</div></div>`;
     return;
   }
-  el.style.display='';
   if(mode==='co'){
-    // 거래처순: 회사별 그룹 헤더 + 2열 그리드
     const g={};
     list.forEach(c=>(g[c.co||'미분류']=g[c.co||'미분류']||[]).push(c));
     el.innerHTML=Object.entries(g).map(([co,cs])=>
-      `<div style="grid-column:1/-1;font-size:12px;font-weight:700;color:var(--t3);
-        padding:10px 2px 4px;border-top:1px solid var(--bdr2);margin-top:4px;">
-        🏢 ${co} <span style="font-weight:400;color:var(--t3);">(${cs.length})</span>
-       </div>`+
+      `<div style="font-size:11px;font-weight:700;color:var(--t3);padding:12px 2px 5px;border-top:1px solid var(--bdr2);margin-top:4px;">🏢 ${co} <span style="font-weight:400;">(${cs.length})</span></div>`+
       cs.map(c=>cardHTML(c)).join('')
     ).join('');
   } else {
@@ -896,13 +891,14 @@ function renderCards(q='',mode='name'){
 }
 
 function cardHTML(c){
-  return `<div class="cg-card" onclick="openCard('${c.id}')">
-    ${c.fav?'<span class="cg-fav">⭐</span>':''}
-    <div class="cg-av" style="background:${c.cl}22;color:${c.cl}">${c.nm[0]}</div>
-    <div class="cg-name">${c.nm}</div>
-    <div class="cg-tl">${c.tl||'직책 미입력'}</div>
-    <div class="cg-co">${c.co||'회사 미입력'}</div>
-    <div class="cg-badge"><span class="bx ${tagCls[c.tag]||'b-bl'}">${c.tag}</span></div>
+  return `<div class="li" onclick="openCard('${c.id}')">
+    <div class="av" style="background:${c.cl}18;color:${c.cl}">${c.nm[0]}</div>
+    <div class="li-info">
+      <div class="li-name">${c.nm}${c.fav?' ⭐':''} <span style="font-size:11px;font-weight:400;color:var(--t2);">${c.tl||''}</span></div>
+      <div class="li-sub">${c.co||'회사 미입력'} · ${c.mob||''}</div>
+    </div>
+    <div class="li-r"><span class="bx ${tagCls[c.tag]||'b-bl'}">${c.tag}</span></div>
+    <span class="chev">›</span>
   </div>`;
 }
 let curCardMode='name';
@@ -1004,14 +1000,16 @@ function vtCls(tp){
 }
 /* 메인 방문탭 — 그리드 카드 */
 function visitHTML(v){
-  return `<div class="vg-card">
-    <div class="vg-top">
-      <span class="vg-type ${vtCls(v.tp)}">${v.tp}</span>
-      <span class="vg-date">${v.dt.slice(5)}</span>
+  const tc=vtCls(v.tp);
+  const bg={'vt-bl':'rgba(37,99,235,.12)','vt-pu':'rgba(124,58,237,.12)','vt-am':'rgba(217,119,6,.12)','vt-rd':'rgba(220,38,38,.12)','vt-gn':'rgba(5,150,105,.12)','vt-gr':'rgba(148,163,184,.12)'};
+  return `<div class="li" style="align-items:flex-start;padding:13px;">
+    <div class="av" style="background:${bg[tc]||bg['vt-gr']};font-size:18px;margin-top:1px;">${v.tp.slice(0,2)}</div>
+    <div class="li-info">
+      <div class="li-name" style="font-size:14px;">${v.co} <span class="vg-type ${tc}" style="margin-left:4px;vertical-align:middle;">${v.tp}</span></div>
+      <div class="li-sub">${v.dt} · ${v.memo.length>40?v.memo.slice(0,40)+'…':v.memo}</div>
+      ${v.next?`<div style="font-size:11px;color:var(--amb);margin-top:3px;font-weight:600;">📅 다음 예정: ${v.next}</div>`:''}
     </div>
-    <div class="vg-co">${v.co}</div>
-    <div class="vg-memo">${v.memo}</div>
-    ${v.next?`<div class="vg-next">📅 ${v.next.slice(5)}</div>`:''}
+    <span class="chev">›</span>
   </div>`;
 }
 /* 거래처 상세 — 타임라인 미니 */
