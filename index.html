@@ -6,28 +6,28 @@
 <title>명함 CRM</title>
 <style>
 :root {
-  --bg:   #ffffff; --bg2: #ffffff; --card: #ffffff; --card2: #f8fafc;
-  --bdr:  #e2e8f0; --bdr2:#f1f5f9;
-  --blue: #2563eb; --blue-dk:#1d4ed8; --blue-lt:rgba(37,99,235,.1);
-  --grn:  #059669; --grn-lt:rgba(5,150,105,.1);
-  --amb:  #d97706; --amb-lt:rgba(217,119,6,.1);
-  --red:  #dc2626; --red-lt:rgba(220,38,38,.1);
-  --pur:  #7c3aed; --pur-lt:rgba(124,58,237,.1);
-  --t1:   #0f172a; --t2:#475569; --t3:#94a3b8;
+  --bg:   #0d1117; --bg2: #161b22; --card: #1c2128; --card2: #21262d;
+  --bdr:  #30363d; --bdr2:#21262d;
+  --blue: #58a6ff; --blue-dk:#1f6feb; --blue-lt:rgba(88,166,255,.12);
+  --grn:  #3fb950; --grn-lt:rgba(63,185,80,.12);
+  --amb:  #d29922; --amb-lt:rgba(210,153,34,.12);
+  --red:  #f85149; --red-lt:rgba(248,81,73,.12);
+  --pur:  #bc8cff; --pur-lt:rgba(188,140,255,.12);
+  --t1:   #e6edf3; --t2:#8b949e; --t3:#484f58;
   --tab-h:60px; --hdr-h:52px;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{height:100%;background:#fff;color:var(--t1);font-family:-apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;overflow:hidden;}
+html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;overflow:hidden;}
 
 /* ── SCREENS ── */
-.scr{position:fixed;inset:0;display:flex;flex-direction:column;background:#fff;
+.scr{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--bg);
   transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);will-change:transform;}
 .scr.active{transform:translateX(0);}
 .scr.behind{transform:translateX(-28%);}
 .scr.base{transform:translateX(0);transition:none;}
 
 /* ── HDR ── */
-.hdr{height:var(--hdr-h);flex-shrink:0;background:#fff;border-bottom:1px solid var(--bdr);
+.hdr{height:var(--hdr-h);flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--bdr);
   display:flex;align-items:center;padding:0 14px;gap:10px;}
 .hdr-t{font-size:17px;font-weight:700;flex:1;}
 .hdr-back{width:34px;height:34px;border-radius:50%;background:var(--card);border:1px solid var(--bdr);
@@ -38,49 +38,32 @@ html,body{height:100%;background:#fff;color:var(--t1);font-family:-apple-system,
   display:flex;align-items:center;justify-content:center;font-size:17px;cursor:pointer;}
 
 /* ── BODY ── */
-.body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#fff;}
-.bp{padding:14px;display:flex;flex-direction:column;gap:9px;background:#fff;}
+.body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.bp{padding:14px;display:flex;flex-direction:column;gap:9px;}
 
 /* ── SEARCH ── */
-.srch-wrap{padding:10px 14px;background:#fff;border-bottom:1px solid var(--bdr);}
-.srch{width:100%;background:#f8fafc;border:1px solid var(--bdr);border-radius:10px;
+.srch-wrap{padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--bdr);}
+.srch{width:100%;background:var(--card);border:1px solid var(--bdr);border-radius:10px;
   padding:9px 13px;font-size:14px;color:var(--t1);outline:none;}
-.srch:focus{background:#fff;border-color:var(--blue);}
 .srch::placeholder{color:var(--t3);}
 
 /* ── SEG TABS ── */
-.segtabs{display:flex;background:#fff;border-bottom:1px solid var(--bdr);}
+.segtabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--bdr);}
 .segtab{flex:1;padding:10px 0;text-align:center;font-size:13px;font-weight:600;color:var(--t2);
   cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;}
 .segtab.on{color:var(--blue);border-bottom-color:var(--blue);}
 
 /* ── PILLS ── */
-.pills{display:flex;gap:7px;padding:9px 14px;overflow-x:auto;scrollbar-width:none;flex-shrink:0;background:#fff;border-bottom:1px solid var(--bdr);}
+.pills{display:flex;gap:7px;padding:9px 14px;overflow-x:auto;scrollbar-width:none;flex-shrink:0;}
 .pills::-webkit-scrollbar{display:none;}
 .pill{flex-shrink:0;padding:5px 13px;border-radius:20px;font-size:12px;font-weight:600;
   background:var(--card);border:1px solid var(--bdr);color:var(--t2);cursor:pointer;transition:all .15s;}
 .pill.on{background:var(--blue-dk);border-color:var(--blue-dk);color:#fff;}
 
-/* ── CARD GRID (명함탭) ── */
-.cards-grid{padding:12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.cg-card{background:var(--card);border:1px solid var(--bdr);border-radius:14px;
-  padding:16px 12px 14px;display:flex;flex-direction:column;align-items:center;
-  text-align:center;gap:5px;cursor:pointer;transition:background .12s;position:relative;}
-.cg-card:active{background:var(--card2);}
-.cg-fav{position:absolute;top:10px;right:10px;font-size:13px;}
-.cg-av{width:54px;height:54px;border-radius:15px;display:flex;align-items:center;
-  justify-content:center;font-size:22px;font-weight:800;margin-bottom:6px;}
-.cg-name{font-size:15px;font-weight:800;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.cg-tl{font-size:11px;color:var(--t2);width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.cg-co{font-size:12px;color:var(--t2);width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px;}
-.cg-badge{margin-top:6px;}
-
-/* ── LIST ITEM (거래처·공통용) ── */
-.li{background:#fff;border:1px solid #e8edf4;border-radius:12px;
-  padding:13px;display:flex;align-items:center;gap:11px;cursor:pointer;
-  transition:all .12s;box-shadow:0 1px 3px rgba(0,0,0,.04);}
-.li:hover{box-shadow:0 2px 8px rgba(0,0,0,.08);border-color:#c8d4e0;}
-.li:active{background:#f8fafc;}
+/* ── LIST ITEM ── */
+.li{background:var(--card);border:1px solid var(--bdr);border-radius:12px;
+  padding:13px;display:flex;align-items:center;gap:11px;cursor:pointer;transition:background .12s;}
+.li:active{background:var(--card2);}
 .av{width:42px;height:42px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;
   justify-content:center;font-size:18px;font-weight:700;}
 .li-info{flex:1;min-width:0;}
@@ -98,12 +81,8 @@ html,body{height:100%;background:#fff;color:var(--t1);font-family:-apple-system,
 .b-pu{background:var(--pur-lt);color:var(--pur);}
 
 /* ── BOTTOM TAB ── */
-.tabbar{height:var(--tab-h);background:#fff;border-top:1px solid var(--bdr);
-  display:flex;align-items:flex-start;padding-top:4px;
-  position:fixed;bottom:0;left:0;right:0;z-index:8;
-  box-shadow:0 -1px 8px rgba(0,0,0,.06);}
-/* 탭바 높이만큼 콘텐츠 하단 여백 */
-.body{padding-bottom:calc(var(--tab-h) + 8px);}
+.tabbar{height:var(--tab-h);flex-shrink:0;background:var(--bg2);border-top:1px solid var(--bdr);
+  display:flex;align-items:flex-start;padding-top:4px;}
 .tbi{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px 0;
   cursor:pointer;color:var(--t3);transition:color .12s;}
 .tbi.on{color:var(--blue);}
@@ -134,20 +113,11 @@ html,body{height:100%;background:#fff;color:var(--t1);font-family:-apple-system,
   background:linear-gradient(to bottom,rgba(0,0,0,.7),transparent);}
 .cam-top-t{font-size:15px;font-weight:600;color:#fff;}
 .cam-guide{flex:1;display:flex;align-items:center;justify-content:center;}
-.cam-frame-wrap{display:flex;flex-direction:column;align-items:center;gap:14px;}
-.cam-frame{
-  width:72%;aspect-ratio:1.75/1;border-radius:10px;position:relative;
-  /* 프레임 바깥 어둡게 */
-  box-shadow:0 0 0 9999px rgba(0,0,0,.55);
-}
-/* 모서리 브래킷 4개 */
-.cam-frame::before,.cam-frame::after{content:'';position:absolute;width:22px;height:22px;border-color:#58a6ff;border-style:solid;}
-.cam-frame::before{top:-2px;left:-2px;border-width:3px 0 0 3px;border-radius:6px 0 0 0;}
-.cam-frame::after {bottom:-2px;right:-2px;border-width:0 3px 3px 0;border-radius:0 0 6px 0;}
-.cam-frame .cf-tr{position:absolute;top:-2px;right:-2px;width:22px;height:22px;border:3px solid #58a6ff;border-left:none;border-bottom:none;border-radius:0 6px 0 0;}
-.cam-frame .cf-bl{position:absolute;bottom:-2px;left:-2px;width:22px;height:22px;border:3px solid #58a6ff;border-right:none;border-top:none;border-radius:0 0 0 6px;}
-.cam-hint{text-align:center;color:rgba(255,255,255,.75);font-size:13px;font-weight:500;
-  background:rgba(0,0,0,.45);padding:6px 16px;border-radius:20px;backdrop-filter:blur(4px);}
+.cam-frame{width:82%;aspect-ratio:1.75/1;border:2px solid rgba(255,255,255,.5);border-radius:10px;position:relative;}
+.cam-frame::before,.cam-frame::after{content:'';position:absolute;width:18px;height:18px;border-color:var(--blue);border-style:solid;}
+.cam-frame::before{top:-2px;left:-2px;border-width:3px 0 0 3px;border-radius:5px 0 0 0;}
+.cam-frame::after{bottom:-2px;right:-2px;border-width:0 3px 3px 0;border-radius:0 0 5px 0;}
+.cam-hint{text-align:center;color:rgba(255,255,255,.65);font-size:13px;margin-top:10px;}
 .cam-bot{padding:0 0 44px;display:flex;align-items:center;justify-content:space-around;
   background:linear-gradient(to top,rgba(0,0,0,.7),transparent);}
 .cam-gal{width:48px;height:48px;border-radius:11px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);
@@ -195,38 +165,18 @@ html,body{height:100%;background:#fff;color:var(--t1);font-family:-apple-system,
 .sec-hdr h3{font-size:13px;font-weight:700;color:var(--t2);}
 .sec-hdr a{font-size:13px;color:var(--blue);cursor:pointer;}
 
-/* ══ VISIT GRID (메인 탭) ══ */
-.vg{padding:12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.vg-card{background:var(--card);border:1px solid var(--bdr);border-radius:13px;
-  padding:13px;display:flex;flex-direction:column;gap:7px;cursor:pointer;transition:background .12s;}
-.vg-card:active{background:var(--card2);}
-.vg-top{display:flex;align-items:center;justify-content:space-between;gap:4px;}
-.vg-type{font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;white-space:nowrap;}
-.vt-bl{background:var(--blue-lt);color:var(--blue);}
-.vt-pu{background:var(--pur-lt);color:var(--pur);}
-.vt-am{background:var(--amb-lt);color:var(--amb);}
-.vt-rd{background:var(--red-lt);color:var(--red);}
-.vt-gn{background:var(--grn-lt);color:var(--grn);}
-.vt-gr{background:rgba(72,79,88,.2);color:var(--t2);}
-.vg-date{font-size:10px;color:var(--t3);flex-shrink:0;}
-.vg-co{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.vg-memo{font-size:11px;color:var(--t2);line-height:1.55;
-  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;flex:1;}
-.vg-next{font-size:10px;color:var(--amb);font-weight:600;
-  background:var(--amb-lt);padding:3px 7px;border-radius:5px;align-self:flex-start;}
-
-/* ══ VISIT MINI (거래처 상세용) ══ */
+/* ══ VISIT TIMELINE ══ */
 .tl{padding:0 14px;}
-.tl-item{display:flex;gap:11px;margin-bottom:12px;}
-.tl-lw{display:flex;flex-direction:column;align-items:center;width:28px;flex-shrink:0;}
-.tl-dot{width:10px;height:10px;border-radius:50%;background:var(--blue);flex-shrink:0;margin-top:3px;}
-.tl-ln{width:2px;flex:1;background:var(--bdr);margin-top:4px;min-height:24px;}
+.tl-item{display:flex;gap:11px;margin-bottom:14px;}
+.tl-lw{display:flex;flex-direction:column;align-items:center;width:30px;flex-shrink:0;}
+.tl-dot{width:11px;height:11px;border-radius:50%;background:var(--blue);flex-shrink:0;margin-top:3px;}
+.tl-ln{width:2px;flex:1;background:var(--bdr);margin-top:4px;min-height:28px;}
 .tl-item:last-child .tl-ln{display:none;}
-.tl-card{flex:1;background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:10px 12px;}
-.tl-date{font-size:11px;color:var(--t2);margin-bottom:2px;}
-.tl-type{font-size:12px;font-weight:700;margin-bottom:2px;}
+.tl-card{flex:1;background:var(--card);border:1px solid var(--bdr);border-radius:11px;padding:11px 13px;}
+.tl-date{font-size:11px;color:var(--t2);margin-bottom:3px;}
+.tl-type{font-size:13px;font-weight:700;margin-bottom:3px;}
 .tl-memo{font-size:12px;color:var(--t2);line-height:1.5;}
-.tl-next{font-size:11px;color:var(--amb);margin-top:4px;font-weight:600;}
+.tl-next{font-size:11px;color:var(--amb);margin-top:5px;font-weight:600;}
 
 /* ══ MAP ══ */
 .map-container{flex:1;background:#0d1f2d;position:relative;overflow:hidden;}
@@ -340,12 +290,7 @@ html,body{height:100%;background:#fff;color:var(--t1);font-family:-apple-system,
     <div class="segtabs">
       <div class="segtab on" id="seg-name"    onclick="cardTab('name',this)">이름순</div>
       <div class="segtab"    id="seg-co"      onclick="cardTab('co',this)">거래처순</div>
-      <div class="segtab"    id="seg-fav"     onclick="cardTab('fav',this)">즐겨찾기 ⭐</div>
-    </div>
-    <div style="background:#fff;border-bottom:1px solid var(--bdr);padding:8px 14px;display:flex;gap:16px;flex-shrink:0;">
-      <span id="stat-cards" style="font-size:12px;color:var(--t2);"></span>
-      <span id="stat-vip"   style="font-size:12px;color:var(--amb);"></span>
-      <span id="stat-fav"   style="font-size:12px;color:var(--t2);"></span>
+      <div class="segtab"    id="seg-fav"     onclick="cardTab('fav',this)">즐겨찾기</div>
     </div>
     <div class="body"><div class="bp" id="cards-list"></div></div>
   </div>
@@ -356,17 +301,12 @@ html,body{height:100%;background:#fff;color:var(--t1);font-family:-apple-system,
       <div class="hdr-t">거래처</div>
       <button class="hdr-btn" onclick="openModal('modal-co')">+ 등록</button>
     </div>
-    <div class="srch-wrap"><input class="srch" placeholder="🔍  거래처명 검색" oninput="filterCos(this.value)"></div>
+    <div class="srch-wrap"><input class="srch" placeholder="🔍  거래처명 검색"></div>
     <div class="pills">
-      <div class="pill on" onclick="filterCoSt('all',this)">전체</div>
-      <div class="pill"    onclick="filterCoSt('active',this)">활성</div>
-      <div class="pill"    onclick="filterCoSt('potential',this)">잠재</div>
-      <div class="pill"    onclick="filterCoSt('dormant',this)">휴면</div>
-    </div>
-    <div style="background:#fff;border-bottom:1px solid var(--bdr);padding:8px 14px;display:flex;gap:16px;flex-shrink:0;">
-      <span id="stat-cos"  style="font-size:12px;color:var(--t2);"></span>
-      <span id="stat-act"  style="font-size:12px;color:var(--grn);"></span>
-      <span id="stat-dorm" style="font-size:12px;color:var(--t3);"></span>
+      <div class="pill on" onclick="pillOn(this,'cos')">전체</div>
+      <div class="pill"    onclick="pillOn(this,'cos')">활성</div>
+      <div class="pill"    onclick="pillOn(this,'cos')">잠재</div>
+      <div class="pill"    onclick="pillOn(this,'cos')">휴면</div>
     </div>
     <div class="body"><div class="bp" id="cos-list"></div></div>
   </div>
@@ -386,24 +326,14 @@ html,body{height:100%;background:#fff;color:var(--t1);font-family:-apple-system,
       <div class="map-road v" style="left:20%"></div>
       <div class="map-road v" style="left:53%"></div>
       <div class="map-road v" style="left:84%"></div>
-      <!-- 핀 (활성:blue / 잠재:amber / 휴면:gray) -->
-      <div class="mp" style="left:46%;top:54%" onclick="mapPop('삼성전자(주)','서울 서초구 서초동 1321','co01')"><div class="mp-pin bl"><span>🏢</span></div></div>
-      <div class="mp" style="left:21%;top:41%" onclick="mapPop('LG화학(주)','서울 영등포구 여의도동 20','co02')"><div class="mp-pin bl"><span>🏢</span></div></div>
-      <div class="mp" style="left:66%;top:73%" onclick="mapPop('현대모비스(주)','경기 성남시 분당구 수내동','co03')"><div class="mp-pin am"><span>🏢</span></div></div>
-      <div class="mp" style="left:37%;top:35%" onclick="mapPop('SK텔레콤(주)','서울 중구 을지로 65','co04')"><div class="mp-pin bl"><span>🏢</span></div></div>
-      <div class="mp" style="left:33%;top:22%" onclick="mapPop('KT(주)','서울 종로구 광화문','co05')"><div class="mp-pin am"><span>🏢</span></div></div>
-      <div class="mp" style="left:63%;top:67%" onclick="mapPop('네이버(주)','경기 성남시 분당구 정자동','co06')"><div class="mp-pin bl"><span>🏢</span></div></div>
-      <div class="mp" style="left:68%;top:74%" onclick="mapPop('카카오(주)','경기 성남시 분당구 판교로','co07')"><div class="mp-pin bl"><span>🏢</span></div></div>
-      <div class="mp" style="left:54%;top:57%" onclick="mapPop('POSCO홀딩스','서울 강남구 테헤란로 440','co08')"><div class="mp-pin" style="background:#484f58;"><span>🏢</span></div></div>
-      <div class="mp" style="left:73%;top:44%" onclick="mapPop('롯데케미칼(주)','서울 강동구 천호대로 1000','co09')"><div class="mp-pin am"><span>🏢</span></div></div>
-      <div class="mp" style="left:52%;top:59%" onclick="mapPop('GS칼텍스(주)','서울 강남구 역삼동 679','co10')"><div class="mp-pin bl"><span>🏢</span></div></div>
-      <div class="mp" style="left:40%;top:33%" onclick="mapPop('CJ제일제당(주)','서울 중구 쌍림동 150','co11')"><div class="mp-pin bl"><span>🏢</span></div></div>
-      <div class="mp" style="left:31%;top:24%" onclick="mapPop('한화솔루션(주)','서울 종로구 장교동 1','co12')"><div class="mp-pin am"><span>🏢</span></div></div>
-      <div class="mp" style="left:38%;top:37%" onclick="mapPop('두산인프라코어','서울 중구 을지로 30','co13')"><div class="mp-pin" style="background:#484f58;"><span>🏢</span></div></div>
-      <div class="mp" style="left:36%;top:39%" onclick="mapPop('(주)신세계','서울 중구 소공로 63','co14')"><div class="mp-pin am"><span>🏢</span></div></div>
-      <div class="mp" style="left:57%;top:54%" onclick="mapPop('한국전력공사','서울 강남구 삼성동 167','co15')"><div class="mp-pin bl"><span>🏢</span></div></div>
+      <!-- 핀 -->
+      <div class="mp" style="left:37%;top:32%" onclick="mapPop('삼성전자','서울 서초구 서초동','co1')"><div class="mp-pin bl"><span>🏢</span></div></div>
+      <div class="mp" style="left:66%;top:24%" onclick="mapPop('LG화학','서울 영등포구 여의도동','co2')"><div class="mp-pin gn"><span>🏢</span></div></div>
+      <div class="mp" style="left:54%;top:55%" onclick="mapPop('현대모비스','경기 성남시 분당구','co3')"><div class="mp-pin am"><span>🏢</span></div></div>
+      <div class="mp" style="left:24%;top:58%" onclick="mapPop('SK텔레콤','서울 중구 을지로','co4')"><div class="mp-pin bl"><span>🏢</span></div></div>
+      <div class="mp" style="left:71%;top:66%" onclick="mapPop('KT','서울 종로구 광화문','co5')"><div class="mp-pin am"><span>🏢</span></div></div>
       <!-- 내 위치 -->
-      <div class="mp-me" style="left:43%;top:46%"><div class="mp-me-d"></div></div>
+      <div class="mp-me" style="left:46%;top:44%"><div class="mp-me-d"></div></div>
       <!-- 컨트롤 -->
       <div class="map-ctrls">
         <div class="map-ctrl on" onclick="this.classList.toggle('on')">📍 내 주변</div>
@@ -437,17 +367,13 @@ html,body{height:100%;background:#fff;color:var(--t1);font-family:-apple-system,
       <button class="hdr-btn" onclick="openModal('modal-visit')">+ 기록</button>
     </div>
     <div class="pills">
-      <div class="pill on" onclick="filterVisits('all',this)">전체</div>
-      <div class="pill"    onclick="filterVisits('month',this)">이번달</div>
-      <div class="pill"    onclick="filterVisits('상담',this)">💬 상담</div>
-      <div class="pill"    onclick="filterVisits('인사',this)">🤝 인사</div>
-      <div class="pill"    onclick="filterVisits('견적',this)">📄 견적</div>
+      <div class="pill on" onclick="pillOn(this,'visits')">전체</div>
+      <div class="pill"    onclick="pillOn(this,'visits')">이번달</div>
+      <div class="pill"    onclick="pillOn(this,'visits')">상담</div>
+      <div class="pill"    onclick="pillOn(this,'visits')">인사</div>
+      <div class="pill"    onclick="pillOn(this,'visits')">견적</div>
     </div>
-    <div style="background:#fff;border-bottom:1px solid var(--bdr);padding:8px 14px;display:flex;gap:16px;flex-shrink:0;">
-      <span id="stat-vis"  style="font-size:12px;color:var(--t2);"></span>
-      <span id="stat-next" style="font-size:12px;color:var(--amb);"></span>
-    </div>
-    <div class="body"><div class="bp" id="visits-tl"></div></div>
+    <div class="body"><div class="tl" id="visits-tl" style="padding-top:14px;"></div></div>
   </div>
 
   <!-- 설정 탭 -->
@@ -494,13 +420,7 @@ html,body{height:100%;background:#fff;color:var(--t1);font-family:-apple-system,
       <div class="cam-top-t">명함 촬영</div>
     </div>
     <div class="cam-guide">
-      <div class="cam-frame-wrap">
-        <div class="cam-frame">
-          <div class="cf-tr"></div>
-          <div class="cf-bl"></div>
-        </div>
-        <div class="cam-hint">명함을 프레임 안에 맞춰주세요</div>
-      </div>
+      <div><div class="cam-frame"></div><div class="cam-hint">명함을 프레임 안에 맞춰주세요</div></div>
     </div>
     <div class="cam-bot">
       <div class="cam-gal" onclick="document.getElementById('file-inp').click()">🖼️</div>
@@ -634,85 +554,27 @@ html,body{height:100%;background:#fff;color:var(--t1);font-family:-apple-system,
 <script>
 /* ═══════════════════════ DATA ═══════════════════════ */
 const CARDS = [
-  // 삼성전자 (3)
-  {id:'c01',nm:'김철수',co:'삼성전자(주)',tl:'B2B영업팀 부장',   mob:'010-1234-5678',ph:'02-2255-1100',em:'cskim@samsung.com',   addr:'서울 서초구 서초동 1321',  tag:'VIP',  cl:'#58a6ff',fav:true},
-  {id:'c02',nm:'이민아',co:'삼성전자(주)',tl:'구매전략팀 차장',  mob:'010-2341-8800',ph:'02-2255-2200',em:'malee@samsung.com',    addr:'서울 서초구 서초동 1321',  tag:'고객', cl:'#58a6ff',fav:false},
-  {id:'c03',nm:'박상현',co:'삼성전자(주)',tl:'파트너십 대리',    mob:'010-9988-1234',ph:'02-2255-3300',em:'shpark@samsung.com',   addr:'서울 서초구 서초동 1321',  tag:'고객', cl:'#58a6ff',fav:false},
-  // LG화학 (2)
-  {id:'c04',nm:'이영희',co:'LG화학(주)',   tl:'구매팀 대리',     mob:'010-9876-5432',ph:'02-3777-1000',em:'ylee@lgchem.com',      addr:'서울 영등포구 여의도동 20', tag:'VIP',  cl:'#3fb950',fav:true},
-  {id:'c05',nm:'최진석',co:'LG화학(주)',   tl:'기술영업 과장',   mob:'010-3344-7788',ph:'02-3777-2000',em:'jschoi@lgchem.com',    addr:'서울 영등포구 여의도동 20', tag:'고객', cl:'#3fb950',fav:false},
-  // 현대모비스 (2)
-  {id:'c06',nm:'박민준',co:'현대모비스(주)',tl:'개발팀 과장',    mob:'010-5555-1234',ph:'031-485-1000',em:'mjpark@mobis.com',     addr:'경기 성남시 분당구 수내동', tag:'잠재', cl:'#d29922',fav:false},
-  {id:'c07',nm:'김도영',co:'현대모비스(주)',tl:'구매팀 사원',    mob:'010-7722-3366',ph:'031-485-2000',em:'dykim@mobis.com',      addr:'경기 성남시 분당구 수내동', tag:'잠재', cl:'#d29922',fav:false},
-  // SK텔레콤 (2)
-  {id:'c08',nm:'최지연',co:'SK텔레콤(주)', tl:'기업영업 팀장',  mob:'010-7777-8888',ph:'02-6100-0000',em:'jychoi@skt.com',       addr:'서울 중구 을지로 65',      tag:'고객', cl:'#bc8cff',fav:true},
-  {id:'c09',nm:'강지훈',co:'SK텔레콤(주)', tl:'B2B 솔루션 대리',mob:'010-8833-4411',ph:'02-6100-1111',em:'jhkang@skt.com',       addr:'서울 중구 을지로 65',      tag:'고객', cl:'#bc8cff',fav:false},
-  // KT (1)
-  {id:'c10',nm:'정현우',co:'KT(주)',        tl:'기업사업부 사원', mob:'010-2222-3333',ph:'02-981-0000', em:'hwjung@kt.com',        addr:'서울 종로구 광화문 KT빌딩', tag:'잠재', cl:'#f85149',fav:false},
-  // 네이버 (2)
-  {id:'c11',nm:'송미래',co:'네이버(주)',    tl:'파트너십 PM',     mob:'010-4444-5555',ph:'031-888-6600',em:'mrsong@navercorp.com', addr:'경기 성남시 분당구 정자동', tag:'고객', cl:'#3fb950',fav:false},
-  {id:'c12',nm:'한수진',co:'네이버(주)',    tl:'기술협력 리드',   mob:'010-6655-2211',ph:'031-888-6700',em:'sjhan@navercorp.com',  addr:'경기 성남시 분당구 정자동', tag:'고객', cl:'#3fb950',fav:true},
-  // 카카오 (2)
-  {id:'c13',nm:'오준혁',co:'카카오(주)',    tl:'사업개발 매니저', mob:'010-1122-9988',ph:'031-8000-1000',em:'jhooh@kakao.com',     addr:'경기 성남시 분당구 판교로', tag:'고객', cl:'#fbbf24',fav:false},
-  {id:'c14',nm:'이채린',co:'카카오(주)',    tl:'디자인 시니어',   mob:'010-3399-8877',ph:'031-8000-2000',em:'crlee@kakao.com',     addr:'경기 성남시 분당구 판교로', tag:'잠재', cl:'#fbbf24',fav:false},
-  // POSCO (1)
-  {id:'c15',nm:'황민철',co:'POSCO홀딩스',  tl:'구매전략 상무',   mob:'010-9900-1122',ph:'02-3457-0000',em:'mchwang@posco.com',    addr:'서울 강남구 테헤란로 440',  tag:'휴면', cl:'#8b949e',fav:false},
-  // 롯데케미칼 (1)
-  {id:'c16',nm:'류성민',co:'롯데케미칼(주)',tl:'원료구매 팀장',  mob:'010-5511-7733',ph:'02-829-4000', em:'smryu@lottechem.com',   addr:'서울 강동구 천호대로 1000', tag:'잠재', cl:'#fb923c',fav:false},
-  // GS칼텍스 (2)
-  {id:'c17',nm:'윤서영',co:'GS칼텍스(주)', tl:'B2B영업 차장',   mob:'010-2244-6688',ph:'02-2005-1000',em:'syyoon@gscaltex.com',  addr:'서울 강남구 역삼동 679',   tag:'고객', cl:'#a78bfa',fav:false},
-  {id:'c18',nm:'임대현',co:'GS칼텍스(주)', tl:'기술지원 과장',   mob:'010-7766-3322',ph:'02-2005-2000',em:'dhlim@gscaltex.com',   addr:'서울 강남구 역삼동 679',   tag:'고객', cl:'#a78bfa',fav:true},
-  // CJ제일제당 (2)
-  {id:'c19',nm:'신동혁',co:'CJ제일제당(주)',tl:'소재구매 부장',  mob:'010-4422-8899',ph:'02-6740-1000',em:'dhshin@cj.net',         addr:'서울 중구 쌍림동 150',     tag:'고객', cl:'#34d399',fav:false},
-  {id:'c20',nm:'조민지',co:'CJ제일제당(주)',tl:'파트너십 과장',  mob:'010-6688-1144',ph:'02-6740-2000',em:'mjcho@cj.net',          addr:'서울 중구 쌍림동 150',     tag:'고객', cl:'#34d399',fav:false},
-  // 한화솔루션 (1)
-  {id:'c21',nm:'류성호',co:'한화솔루션(주)',tl:'신사업 팀장',    mob:'010-3355-9900',ph:'02-729-3000', em:'shryu@hanwha.com',      addr:'서울 종로구 장교동 1',     tag:'잠재', cl:'#f472b6',fav:false},
-  // 두산인프라코어 (1)
-  {id:'c22',nm:'서병찬',co:'두산인프라코어',tl:'기술영업 과장',  mob:'010-9911-4455',ph:'02-3398-8000',em:'bcseo@doosan.com',      addr:'서울 중구 을지로 30',      tag:'휴면', cl:'#8b949e',fav:false},
-  // 신세계 (1)
-  {id:'c23',nm:'권미나',co:'(주)신세계',   tl:'MD 선임',        mob:'010-1177-5566',ph:'02-310-1000', em:'mnkwon@shinsegae.com',  addr:'서울 중구 소공로 63',      tag:'잠재', cl:'#60a5fa',fav:false},
-  // 한국전력 (2)
-  {id:'c24',nm:'김태준',co:'한국전력공사',  tl:'스마트그리드 차장',mob:'010-8800-2233',ph:'02-3456-3000',em:'tjkim@kepco.co.kr',   addr:'서울 강남구 삼성동 167',   tag:'고객', cl:'#22d3ee',fav:false},
-  {id:'c25',nm:'박유진',co:'한국전력공사',  tl:'B2B 솔루션 대리',mob:'010-4477-6655',ph:'02-3456-4000',em:'yjpark@kepco.co.kr',   addr:'서울 강남구 삼성동 167',   tag:'고객', cl:'#22d3ee',fav:false},
+  {id:'c1',nm:'김철수',co:'삼성전자',tl:'영업팀 부장',  mob:'010-1234-5678',ph:'02-2255-0000',em:'cskim@samsung.com',  addr:'서울 서초구', tag:'고객', cl:'#58a6ff',fav:true},
+  {id:'c2',nm:'이영희',co:'LG화학',  tl:'구매팀 대리',  mob:'010-9876-5432',ph:'02-3777-1000',em:'ylee@lgchem.com',    addr:'서울 영등포구',tag:'VIP',  cl:'#3fb950',fav:false},
+  {id:'c3',nm:'박민준',co:'현대모비스',tl:'개발팀 과장', mob:'010-5555-1234',ph:'031-485-0000',em:'mjpark@mobis.com',  addr:'경기 성남시', tag:'잠재', cl:'#d29922',fav:false},
+  {id:'c4',nm:'최지연',co:'SK텔레콤',tl:'기업영업 팀장',mob:'010-7777-8888',ph:'02-6100-0000',em:'jychoi@skt.com',    addr:'서울 중구',   tag:'고객', cl:'#bc8cff',fav:true},
+  {id:'c5',nm:'정현우',co:'KT',      tl:'B2B 사업부',   mob:'010-2222-3333',ph:'02-981-0000', em:'hwjung@kt.com',     addr:'서울 종로구', tag:'잠재', cl:'#f85149',fav:false},
+  {id:'c6',nm:'송미래',co:'네이버',  tl:'파트너십 PM',  mob:'010-4444-5555',ph:'031-888-0000',em:'mrsong@naver.com',  addr:'경기 성남시', tag:'고객', cl:'#3fb950',fav:false},
 ];
 const COS = [
-  {id:'co01',nm:'삼성전자(주)',  addr:'서울 서초구 서초동 1321',    ind:'전자/IT',    st:'active',   cnt:3,last:'2026-10-20'},
-  {id:'co02',nm:'LG화학(주)',    addr:'서울 영등포구 여의도동 20',   ind:'화학/소재',  st:'active',   cnt:2,last:'2026-10-15'},
-  {id:'co03',nm:'현대모비스(주)',addr:'경기 성남시 분당구 수내동',   ind:'자동차부품', st:'potential',cnt:2,last:'2026-09-28'},
-  {id:'co04',nm:'SK텔레콤(주)', addr:'서울 중구 을지로 65',         ind:'통신/ICT',   st:'active',   cnt:2,last:'2026-10-22'},
-  {id:'co05',nm:'KT(주)',        addr:'서울 종로구 광화문 KT빌딩',   ind:'통신',       st:'potential',cnt:1,last:'2026-09-10'},
-  {id:'co06',nm:'네이버(주)',    addr:'경기 성남시 분당구 정자동',   ind:'IT/플랫폼',  st:'active',   cnt:2,last:'2026-10-12'},
-  {id:'co07',nm:'카카오(주)',    addr:'경기 성남시 분당구 판교로',   ind:'IT/플랫폼',  st:'active',   cnt:2,last:'2026-10-08'},
-  {id:'co08',nm:'POSCO홀딩스',  addr:'서울 강남구 테헤란로 440',    ind:'철강/소재',  st:'dormant',  cnt:1,last:'2026-07-14'},
-  {id:'co09',nm:'롯데케미칼(주)',addr:'서울 강동구 천호대로 1000',   ind:'화학',       st:'potential',cnt:1,last:'2026-09-05'},
-  {id:'co10',nm:'GS칼텍스(주)', addr:'서울 강남구 역삼동 679',      ind:'에너지',     st:'active',   cnt:2,last:'2026-10-17'},
-  {id:'co11',nm:'CJ제일제당(주)',addr:'서울 중구 쌍림동 150',        ind:'식품/소재',  st:'active',   cnt:2,last:'2026-10-14'},
-  {id:'co12',nm:'한화솔루션(주)',addr:'서울 종로구 장교동 1',        ind:'화학/에너지',st:'potential',cnt:1,last:'2026-08-22'},
-  {id:'co13',nm:'두산인프라코어',addr:'서울 중구 을지로 30',         ind:'기계/제조',  st:'dormant',  cnt:1,last:'2026-06-30'},
-  {id:'co14',nm:'(주)신세계',   addr:'서울 중구 소공로 63',         ind:'유통/리테일',st:'potential',cnt:1,last:'2026-09-18'},
-  {id:'co15',nm:'한국전력공사', addr:'서울 강남구 삼성동 167',       ind:'에너지/인프라',st:'active',  cnt:2,last:'2026-10-20'},
+  {id:'co1',nm:'삼성전자',  addr:'서울 서초구 서초동 1321', ind:'전자/IT',   st:'active',   cnt:3,last:'2026-10-20'},
+  {id:'co2',nm:'LG화학',    addr:'서울 영등포구 여의도동',  ind:'화학/소재', st:'active',   cnt:2,last:'2026-10-15'},
+  {id:'co3',nm:'현대모비스',addr:'경기 성남시 분당구',      ind:'자동차부품',st:'potential',cnt:1,last:'2026-09-28'},
+  {id:'co4',nm:'SK텔레콤',  addr:'서울 중구 을지로',        ind:'통신',       st:'active',   cnt:4,last:'2026-10-18'},
+  {id:'co5',nm:'KT',        addr:'서울 종로구 광화문',      ind:'통신',       st:'potential',cnt:1,last:'2026-09-10'},
+  {id:'co6',nm:'네이버',    addr:'경기 성남시 분당구',      ind:'IT/플랫폼', st:'active',   cnt:1,last:'2026-10-05'},
 ];
 const VISITS = [
-  {id:'v01',co:'삼성전자(주)',  coId:'co01',tp:'💬 상담',dt:'2026-10-22',memo:'Q4 공급 물량 최종 협의. 단가 5% 인하 요청 접수. 11월 중 공식 답변 예정.', next:'2026-11-15'},
-  {id:'v02',co:'SK텔레콤(주)', coId:'co04',tp:'🤝 인사',dt:'2026-10-21',memo:'신규 담당자 강지훈 대리 소개 미팅. 내년 ICT 솔루션 도입 계획 청취.', next:null},
-  {id:'v03',co:'한국전력공사', coId:'co15',tp:'📄 견적',dt:'2026-10-20',memo:'스마트그리드 장비 견적서 제출. 납기 3개월, 총 2.4억 규모. 검토 요청.', next:'2026-11-10'},
-  {id:'v04',co:'LG화학(주)',   coId:'co02',tp:'💬 상담',dt:'2026-10-17',memo:'2027년 소재 공급 MOU 초안 검토. 법무팀 의견 대기 중.', next:'2026-11-01'},
-  {id:'v05',co:'GS칼텍스(주)', coId:'co10',tp:'🤝 인사',dt:'2026-10-16',memo:'임대현 과장 첫 방문. 윤 차장 소개로 방문. 기술지원 협력 가능성 탐색.', next:null},
-  {id:'v06',co:'CJ제일제당(주)',coId:'co11',tp:'📄 견적',dt:'2026-10-14',memo:'식품 소재 포장 솔루션 견적 전달. 경쟁사 대비 가격 우위 강조.', next:'2026-10-28'},
-  {id:'v07',co:'SK텔레콤(주)', coId:'co04',tp:'💬 상담',dt:'2026-10-12',memo:'AI 기반 고객분석 솔루션 PoC 결과 보고. 다음 단계 상용화 논의.', next:'2026-10-21'},
-  {id:'v08',co:'네이버(주)',   coId:'co06',tp:'🤝 인사',dt:'2026-10-12',memo:'파트너십 계약 갱신 미팅. 한수진 리드와 신규 협력 방향 논의.', next:null},
-  {id:'v09',co:'카카오(주)',   coId:'co07',tp:'💬 상담',dt:'2026-10-08',memo:'카카오T 연동 API 공급 협의. 오준혁 매니저, 2주 내 개발팀 리뷰 예정.', next:'2026-10-25'},
-  {id:'v10',co:'삼성전자(주)', coId:'co01',tp:'🔧 AS',  dt:'2026-10-06',memo:'테스트 장비 오작동 현장 점검. 펌웨어 업데이트로 해결 완료.', next:null},
-  {id:'v11',co:'GS칼텍스(주)', coId:'co10',tp:'📄 견적',dt:'2026-10-04',memo:'에너지 모니터링 시스템 3차 견적서 제출. 최종 의사결정 11월 예정.', next:'2026-11-20'},
-  {id:'v12',co:'CJ제일제당(주)',coId:'co11',tp:'🤝 인사',dt:'2026-09-30',memo:'조민지 과장 신임 인사. 신동혁 부장과 전략 파트너십 의향 확인.', next:null},
-  {id:'v13',co:'현대모비스(주)',coId:'co03',tp:'💬 상담',dt:'2026-09-28',memo:'EV 부품 공급망 재편 관련 미팅. 내년 Q1 신규 RFQ 접수 예정.', next:'2026-10-30'},
-  {id:'v14',co:'네이버(주)',   coId:'co06',tp:'📦 납품',dt:'2026-09-25',memo:'데이터 솔루션 2차 모듈 납품 완료. 검수 통과. 잔금 청구 예정.', next:null},
-  {id:'v15',co:'한화솔루션(주)',coId:'co12',tp:'🤝 인사',dt:'2026-09-22',memo:'류성호 팀장 신사업 미팅. 태양광 소재 공급 파트너십 가능성 탐색.', next:'2026-10-15'},
-  {id:'v16',co:'LG화학(주)',   coId:'co02',tp:'🔧 AS',  dt:'2026-09-18',memo:'설비 이상 긴급 출동. 공정 라인 1개 중단. 당일 복구 완료.', next:null},
-  {id:'v17',co:'롯데케미칼(주)',coId:'co09',tp:'💬 상담',dt:'2026-09-15',memo:'류성민 팀장과 원료 조달 협력 논의. 장기 공급 계약 관심 표명.', next:'2026-10-20'},
-  {id:'v18',co:'한국전력공사', coId:'co15',tp:'🤝 인사',dt:'2026-09-10',memo:'박유진 대리 첫 방문. 스마트그리드 사업 담당자로 연결됨.', next:null},
-  {id:'v19',co:'카카오(주)',   coId:'co07',tp:'📄 견적',dt:'2026-09-05',memo:'모빌리티 데이터 API 공급 초기 견적 제출. 이채린 디자이너팀 레퍼런스 요청.', next:'2026-10-08'},
-  {id:'v20',co:'(주)신세계',  coId:'co14',tp:'🤝 인사',dt:'2026-09-02',memo:'권미나 MD 첫 방문. 리테일 IT 솔루션 도입 계획 청취. 연말 예산 협의 예정.', next:'2026-11-05'},
+  {id:'v1',co:'삼성전자',coId:'co1',tp:'💬 상담',dt:'2026-10-20',memo:'Q4 물량 협의. 단가 조율 필요. 다음달 재미팅 예정.',next:'2026-11-15'},
+  {id:'v2',co:'SK텔레콤',coId:'co4',tp:'🤝 인사',dt:'2026-10-18',memo:'신규 담당자 최지연 팀장 첫 방문. 명함 수령.',next:null},
+  {id:'v3',co:'LG화학',  coId:'co2',tp:'📄 견적',dt:'2026-10-15',memo:'2027년 공급 계획서 전달. 2주내 검토 후 회신.',next:'2026-11-01'},
+  {id:'v4',co:'네이버',  coId:'co6',tp:'💬 상담',dt:'2026-10-05',memo:'파트너십 제안 검토 미팅. 긍정적 반응.',next:null},
+  {id:'v5',co:'현대모비스',coId:'co3',tp:'🔧 AS',dt:'2026-09-28',memo:'설치 장비 점검 및 교체 완료.',next:null},
 ];
 
 /* ═══════════════════════ STATE ═══════════════════════ */
@@ -722,24 +584,12 @@ let captured  = null;
 let stk = [];          // screen stack
 let curCoId = null;
 
-
-function renderStats(){
-  const vip  = CARDS.filter(c=>c.tag==='VIP').length;
-  const favs = CARDS.filter(c=>c.fav).length;
-  const act  = COS.filter(c=>c.st==='active').length;
-  const dorm = COS.filter(c=>c.st==='dormant').length;
-  const thisMonth = VISITS.filter(v=>v.dt.startsWith('2026-10')).length;
-  const hasNext   = VISITS.filter(v=>v.next).length;
-  _t('stat-cards', `🪪 총 ${CARDS.length}장`);
-  _t('stat-vip',   `⭐ VIP ${vip}명`);
-  _t('stat-fav',   `즐겨찾기 ${favs}명`);
-  _t('stat-cos',   `🏢 거래처 ${COS.length}곳`);
-  _t('stat-act',   `활성 ${act}곳`);
-  _t('stat-dorm',  `휴면 ${dorm}곳`);
-  _t('stat-vis',   `📝 총 ${VISITS.length}건`);
-  _t('stat-next',  `📅 다음 예정 ${hasNext}건`);
-}
-function _t(id,v){ const el=document.getElementById(id); if(el) el.textContent=v; }
+/* ═══════════════════════ INIT ═══════════════════════ */
+(function init(){
+  document.getElementById('v-date').value = new Date().toISOString().split('T')[0];
+  if(API_KEY){ showMain(); } else { document.getElementById('scr-key').classList.add('active'); }
+  renderCards(); renderCos(); renderVisits();
+})();
 
 function showMain(){
   document.getElementById('scr-key').classList.remove('active');
@@ -807,7 +657,7 @@ function closeCamera(){
 }
 function capturePhoto(){
   const v=document.getElementById('cam-vid');
-  if(!v.videoWidth){ closeCamera(); processImage(null); return; }
+  if(!v.videoWidth){ fakeOCR(null); closeCamera(); return; }
   const c=document.createElement('canvas');
   c.width=v.videoWidth; c.height=v.videoHeight;
   c.getContext('2d').drawImage(v,0,0);
@@ -821,35 +671,25 @@ document.getElementById('file-inp').onchange=e=>{
 };
 
 /* ═══════════════════════ OCR (더미) ═══════════════════════ */
-// 더미 명함 데이터 풀 - 스캔할 때마다 랜덤 추출
-const DUMMY_OCR = [
-  {nm:'홍길동', co:'삼성전자(주)',   tl:'영업팀 과장',    mob:'010-1111-2222',ph:'02-2255-5500',em:'gdhong@samsung.com',  addr:'서울 서초구 서초동 1321'},
-  {nm:'강민서', co:'LG화학(주)',     tl:'기술지원 대리',  mob:'010-3333-4444',ph:'02-3777-5500',em:'mskang@lgchem.com',   addr:'서울 영등포구 여의도동 20'},
-  {nm:'윤지호', co:'카카오(주)',     tl:'서비스 기획자',  mob:'010-5555-6666',ph:'031-8000-5500',em:'jhyoon@kakao.com',   addr:'경기 성남시 분당구 판교로'},
-  {nm:'장서연', co:'CJ제일제당(주)', tl:'구매팀 차장',    mob:'010-7777-8888',ph:'02-6740-5500',em:'syjang@cj.net',      addr:'서울 중구 쌍림동 150'},
-  {nm:'임준혁', co:'한국전력공사',   tl:'스마트그리드 과장',mob:'010-9999-0000',ph:'02-3456-5500',em:'jhlim@kepco.co.kr', addr:'서울 강남구 삼성동 167'},
-];
-
 async function processImage(dataUrl){
-  captured = dataUrl;
-  const img = document.getElementById('res-img');
-  const ph  = document.getElementById('res-ph');
-  if(dataUrl){ img.src=dataUrl; img.style.display='block'; ph.style.display='none'; }
-  else        { img.style.display='none'; ph.style.display='flex'; }
+  captured=dataUrl;
+  const img=document.getElementById('res-img');
+  const ph=document.getElementById('res-ph');
+  img.src=dataUrl; img.style.display='block'; ph.style.display='none';
 
   document.getElementById('ld').classList.add('show');
-  await new Promise(r=>setTimeout(r,1100));
+  // 더미 딜레이 (실제 API는 Phase2에서)
+  await new Promise(r=>setTimeout(r,1200));
   document.getElementById('ld').classList.remove('show');
 
-  // 더미 OCR — 기존 거래처 데이터 중 랜덤 추출
-  const d = DUMMY_OCR[Math.floor(Math.random()*DUMMY_OCR.length)];
-  document.getElementById('f-name').value  = d.nm;
-  document.getElementById('f-co').value    = d.co;
-  document.getElementById('f-title').value = d.tl;
-  document.getElementById('f-mobile').value= d.mob;
-  document.getElementById('f-phone').value = d.ph;
-  document.getElementById('f-email').value = d.em;
-  document.getElementById('f-addr').value  = d.addr;
+  // 더미 추출 결과
+  document.getElementById('f-name').value  ='홍길동';
+  document.getElementById('f-co').value    ='(주)예시회사';
+  document.getElementById('f-title').value ='영업팀 과장';
+  document.getElementById('f-mobile').value='010-0000-0000';
+  document.getElementById('f-phone').value ='02-000-0000';
+  document.getElementById('f-email').value ='hong@example.com';
+  document.getElementById('f-addr').value  ='서울시 강남구 테헤란로 123';
   push('scr-result');
 }
 
@@ -867,47 +707,37 @@ function saveCard(){
     addr:document.getElementById('f-addr').value.trim(),
     tag:'고객',cl:colors[Math.floor(Math.random()*colors.length)],fav:false
   });
-  renderCards(); renderStats(); toast('명함이 저장되었습니다 ✓'); pop();
+  renderCards(); toast('명함이 저장되었습니다 ✓'); pop();
 }
 
 /* ═══════════════════════ RENDER CARDS ═══════════════════════ */
 const tagCls={고객:'b-bl',VIP:'b-gn',잠재:'b-am',휴면:'b-rd'};
-
 function renderCards(q='',mode='name'){
   const el=document.getElementById('cards-list');
   let list=CARDS.filter(c=>!q||c.nm.includes(q)||c.co.includes(q)||c.mob.includes(q));
   if(mode==='fav') list=list.filter(c=>c.fav);
-  if(!list.length){
-    el.innerHTML=`<div class="empty"><div class="empty-ic">🪪</div><div class="empty-t">명함이 없습니다</div><div class="empty-s">카메라로 명함을 스캔해보세요</div></div>`;
-    return;
-  }
+  if(!list.length){ el.innerHTML=`<div class="empty"><div class="empty-ic">🪪</div><div class="empty-t">명함이 없습니다</div><div class="empty-s">카메라로 명함을 스캔해보세요</div></div>`; return; }
   if(mode==='co'){
     const g={};
     list.forEach(c=>(g[c.co||'미분류']=g[c.co||'미분류']||[]).push(c));
     el.innerHTML=Object.entries(g).map(([co,cs])=>
-      `<div style="font-size:11px;font-weight:700;color:var(--t3);padding:12px 2px 5px;border-top:1px solid var(--bdr2);margin-top:4px;">🏢 ${co} <span style="font-weight:400;">(${cs.length})</span></div>`+
+      `<div style="font-size:11px;font-weight:700;color:var(--t3);padding:3px 1px 5px;">${co}</div>`+
       cs.map(c=>cardHTML(c)).join('')
-    ).join('');
+    ).join('<div style="height:6px;"></div>');
   } else {
     el.innerHTML=list.map(c=>cardHTML(c)).join('');
   }
 }
-
 function cardHTML(c){
   return `<div class="li" onclick="openCard('${c.id}')">
-    <div class="av" style="background:${c.cl}18;color:${c.cl}">${c.nm[0]}</div>
-    <div class="li-info">
-      <div class="li-name">${c.nm}${c.fav?' ⭐':''} <span style="font-size:11px;font-weight:400;color:var(--t2);">${c.tl||''}</span></div>
-      <div class="li-sub">${c.co||'회사 미입력'} · ${c.mob||''}</div>
-    </div>
-    <div class="li-r"><span class="bx ${tagCls[c.tag]||'b-bl'}">${c.tag}</span></div>
+    <div class="av" style="background:${c.cl}22;color:${c.cl}">${c.nm[0]}</div>
+    <div class="li-info"><div class="li-name">${c.nm}</div><div class="li-sub">${c.tl?c.tl+' · ':''}${c.co}</div></div>
+    <div class="li-r"><span class="bx ${tagCls[c.tag]||'b-bl'}">${c.tag}</span>${c.fav?'<span style="font-size:13px;">⭐</span>':''}</div>
     <span class="chev">›</span>
   </div>`;
 }
-let curCardMode='name';
-function filterCards(q){ renderCards(q, curCardMode); }
+function filterCards(q){ renderCards(q); }
 function cardTab(m,el){
-  curCardMode=m;
   document.querySelectorAll('.segtab').forEach(t=>t.classList.remove('on'));
   el.classList.add('on'); renderCards('',m);
 }
@@ -939,16 +769,9 @@ function goCoFromCard(){
 /* ═══════════════════════ RENDER COS ═══════════════════════ */
 const stCls={active:'b-gn',potential:'b-am',dormant:'b-rd'};
 const stLb={active:'활성',potential:'잠재',dormant:'휴면'};
-function filterCos(q){ renderCos(q); }
-function filterCoSt(st,el){
-  document.querySelectorAll('#tab-cos .pill').forEach(p=>p.classList.remove('on'));
-  el.classList.add('on'); renderCos('',st);
-}
-function renderCos(q='',st='all'){
+function renderCos(){
   const el=document.getElementById('cos-list');
-  let list=COS.filter(c=>(!q||c.nm.includes(q))&&(st==='all'||c.st===st));
-  if(!list.length){ el.innerHTML=`<div class="empty"><div class="empty-ic">🏢</div><div class="empty-t">거래처가 없습니다</div></div>`; return; }
-  el.innerHTML=list.map(c=>`
+  el.innerHTML=COS.map(c=>`
     <div class="li" onclick="openCoDetail('${c.id}')">
       <div class="av" style="background:var(--blue-lt);color:var(--blue);font-size:20px;">🏢</div>
       <div class="li-info"><div class="li-name">${c.nm}</div><div class="li-sub">${c.addr} · 명함 ${c.cnt}장</div></div>
@@ -975,53 +798,22 @@ function openCoDetail(id){
     : '<div style="padding:10px 0;font-size:13px;color:var(--t3);">소속 명함 없음</div>';
   const coVisits=VISITS.filter(v=>v.co===co.nm);
   document.getElementById('co-visits').innerHTML=coVisits.length
-    ? coVisits.map(v=>visitMiniHTML(v)).join('')
+    ? coVisits.map(v=>visitHTML(v)).join('')
     : '<div style="padding:10px 0;font-size:13px;color:var(--t3);">방문 이력 없음</div>';
   push('scr-co');
 }
 
 /* ═══════════════════════ VISITS ═══════════════════════ */
-function filterVisits(f,el){
-  document.querySelectorAll('#tab-visits .pill').forEach(p=>p.classList.remove('on'));
-  el.classList.add('on');
-  let list=VISITS;
-  if(f==='month') list=VISITS.filter(v=>v.dt.startsWith('2026-10'));
-  else if(f!=='all') list=VISITS.filter(v=>v.tp.includes(f));
-  document.getElementById('visits-tl').innerHTML=list.map(v=>visitHTML(v)).join('');
-}
 function renderVisits(){
   document.getElementById('visits-tl').innerHTML=VISITS.map(v=>visitHTML(v)).join('');
 }
-/* 방문 유형 → 색상 클래스 */
-function vtCls(tp){
-  if(tp.includes('상담')) return 'vt-bl';
-  if(tp.includes('인사')) return 'vt-pu';
-  if(tp.includes('견적')) return 'vt-am';
-  if(tp.includes('AS'))   return 'vt-rd';
-  if(tp.includes('납품')) return 'vt-gn';
-  return 'vt-gr';
-}
-/* 메인 방문탭 — 그리드 카드 */
 function visitHTML(v){
-  const tc=vtCls(v.tp);
-  const bg={'vt-bl':'rgba(37,99,235,.12)','vt-pu':'rgba(124,58,237,.12)','vt-am':'rgba(217,119,6,.12)','vt-rd':'rgba(220,38,38,.12)','vt-gn':'rgba(5,150,105,.12)','vt-gr':'rgba(148,163,184,.12)'};
-  return `<div class="li" style="align-items:flex-start;padding:13px;">
-    <div class="av" style="background:${bg[tc]||bg['vt-gr']};font-size:18px;margin-top:1px;">${v.tp.slice(0,2)}</div>
-    <div class="li-info">
-      <div class="li-name" style="font-size:14px;">${v.co} <span class="vg-type ${tc}" style="margin-left:4px;vertical-align:middle;">${v.tp}</span></div>
-      <div class="li-sub">${v.dt} · ${v.memo.length>40?v.memo.slice(0,40)+'…':v.memo}</div>
-      ${v.next?`<div style="font-size:11px;color:var(--amb);margin-top:3px;font-weight:600;">📅 다음 예정: ${v.next}</div>`:''}
-    </div>
-    <span class="chev">›</span>
-  </div>`;
-}
-/* 거래처 상세 — 타임라인 미니 */
-function visitMiniHTML(v){
   return `<div class="tl-item">
     <div class="tl-lw"><div class="tl-dot"></div><div class="tl-ln"></div></div>
     <div class="tl-card">
-      <div class="tl-date">${v.dt} <span class="vg-type ${vtCls(v.tp)}" style="padding:1px 6px;font-size:10px;">${v.tp}</span></div>
-      <div class="tl-memo" style="margin-top:4px;">${v.memo}</div>
+      <div class="tl-date">${v.dt} · <strong>${v.co}</strong></div>
+      <div class="tl-type">${v.tp}</div>
+      <div class="tl-memo">${v.memo}</div>
       ${v.next?`<div class="tl-next">📅 다음 예정: ${v.next}</div>`:''}
     </div>
   </div>`;
@@ -1032,17 +824,8 @@ function saveVisit(){
   const dt=document.getElementById('v-date').value;
   const memo=document.getElementById('v-memo').value.trim();
   const next=document.getElementById('v-next').value;
-  // 현재 열려있는 거래처 상세에서 호출됐으면 해당 거래처 연결
-  const activeCo = curCoId ? COS.find(c=>c.id===curCoId) : null;
-  VISITS.unshift({id:'v'+Date.now(),
-    co:   activeCo ? activeCo.nm : '(신규)',
-    coId: curCoId||'',
-    tp, dt, memo:memo||'(메모 없음)', next:next||null
-  });
-  renderVisits(); renderStats();
-  // 거래처 상세가 열려있으면 방문이력 섹션도 갱신
-  if(curCoId) openCoDetail(curCoId);
-  closeModal(null,'modal-visit'); toast('방문 기록이 저장되었습니다 ✓');
+  VISITS.unshift({id:'v'+Date.now(),co:'(신규)',coId:'',tp,dt,memo:memo||'(메모 없음)',next:next||null});
+  renderVisits(); closeModal(null,'modal-visit'); toast('방문 기록이 저장되었습니다 ✓');
 }
 
 /* ═══════════════════════ MAP ═══════════════════════ */
@@ -1066,7 +849,7 @@ function saveCo(){
   const nm=document.getElementById('co-nm-inp').value.trim();
   if(!nm){ toast('회사명을 입력해주세요'); return; }
   COS.unshift({id:'co'+Date.now(),nm,addr:document.getElementById('co-addr-inp').value.trim()||'주소 미등록',ind:document.getElementById('co-ind-inp').value.trim()||'',st:'active',cnt:0,last:'-'});
-  renderCos(); renderStats(); closeModal(null,'modal-co'); toast('거래처가 등록되었습니다 ✓');
+  renderCos(); closeModal(null,'modal-co'); toast('거래처가 등록되었습니다 ✓');
 }
 function typeOn(el){ el.closest('.type-grid').querySelectorAll('.type-btn').forEach(b=>b.classList.remove('on')); el.classList.add('on'); }
 function pillOn(el,g){ el.closest('.pills').querySelectorAll('.pill').forEach(p=>p.classList.remove('on')); el.classList.add('on'); }
@@ -1079,11 +862,6 @@ function toast(msg){
   el.textContent=msg; el.classList.add('show');
   clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('show'),2400);
 }
-
-/* ═══════════════════════ INIT (모든 선언 후 실행) ═══════════════════════ */
-document.getElementById('v-date').value = new Date().toISOString().split('T')[0];
-if(API_KEY){ showMain(); } else { document.getElementById('scr-key').classList.add('active'); }
-renderCards(); renderCos(); renderVisits(); renderStats();
 </script>
 </body>
 </html>
