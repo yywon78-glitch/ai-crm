@@ -82,8 +82,12 @@ function openCoOverlay(coId) {
   el.classList.add('show');
 }
 
+function closeAllOverlays() {
+  document.querySelectorAll('.overlay').forEach(el=>el.classList.remove('show'));
+}
+
 function closeCoOverlay() {
-  document.getElementById('overlay-co').classList.remove('show');
+  closeAllOverlays();
 }
 
 function refreshCoVisits(coId) {
@@ -108,7 +112,7 @@ function openVisitModal(coId, coNm) {
   document.getElementById('v-memo').value = '';
   document.getElementById('v-next').value = '';
   const g = document.getElementById('type-grid');
-  g.innerHTML = VISIT_TYPES.map(t=>`<div class="bx b-bl" style="cursor:pointer;padding:7px 14px;">${t}</div>`).join('');
+  g.innerHTML = VISIT_TYPES.map(t=>`<div class="bx b-bl" style="cursor:pointer;padding:7px 14px;" onclick="_selectType(this)">${t}</div>`).join('');
   _selectType(g.children[0]);
   if(coNm) { const lbl=document.getElementById('v-co-lbl'); if(lbl) lbl.textContent=coNm; }
   document.getElementById('modal-visit').classList.add('show');

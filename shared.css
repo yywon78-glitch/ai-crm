@@ -154,8 +154,8 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-sy
 .set-arrow{color:var(--t3);font-size:15px;}
 
 /* OVERLAY (오른쪽에서 슬라이드) */
-.overlay{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);}
-.overlay.show{transform:translateX(0);}
+.overlay{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);pointer-events:none;}
+.overlay.show{transform:translateX(0);pointer-events:auto;}
 .overlay-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 
 /* LOADING */
