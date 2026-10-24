@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>거래처</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<div class="page">
+  <header class="hdr">
+    <span class="hdr-t">거래처</span>
+    <button class="hdr-btn" onclick="openAddModal()">+ 등록</button>
+  </header>
+  <div class="srch-wrap">
+    <input class="srch" id="srch" placeholder="🔍  거래처명 검색" oninput="render()">
+  </div>
+  <div class="pills">
+    <div class="pill on" id="f-all"  onclick="setFilter('all',this)">전체</div>
+    <div class="pill"    id="f-act"  onclick="setFilter('active',this)">활성</div>
+    <div class="pill"    id="f-pot"  onclick="setFilter('potential',this)">잠재</div>
+    <div class="pill"    id="f-dor"  onclick="setFilter('dormant',this)">휴면</div>
+  </div>
+  <div class="body"><div class="bp" id="list"></div></div>
+  <nav class="tabbar" id="tabbar"></nav>
+</div>
+
+<!-- 거래처 추가 모달 -->
+<div class="moverlay" id="modal-co" onclick="if(event.target===this)closeAddModal()">
+  <div class="msheet">
+    <div class="m-handle"></div>
+    <div class="m-title">거래처 등록</div>
+    <div class="m-body">
+      <div><div class="flb">회사명 *</div><input class="finp" id="co-nm" placeholder="회사명"></div>
+      <div><div class="flb">주소</div><input class="finp" id="co-addr" placeholder="주소"></div>
+      <div><div class="flb">업종</div><input class="finp" id="co-ind" placeholder="업종 (예: IT/소프트웨어)"></div>
+      <button class="m-btn" onclick="saveCo()">등록</button>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="nav.js"></script>
+<script>
+let filter = 'all';
+const stLbl = {active:'활성',potential:'잠재',dormant:'휴면'};
+const stCls  = {active:'b-gn',potential:'b-am',dormant:'b-rd'};
+
+function setFilter(f, el){
+  filter = f;
+  document.querySelectorAll('.pills .pill').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  render();
+}
+
+function render(){
+  const q = document.getElementById('srch').value;
+  let list = DB.getCos();
+  if(filter!=='all') list=list.filter(c=>c.st===filter);
+  if(q) list=list.filter(c=>c.nm.includes(q)||(c.addr||'').includes(q));
+
+  const el = document.getElementById('list');
+  if(!list.length){ el.innerHTML=`<div class="empty"><div class="empty-ic">🏢</div><div class="empty-t">거래처가 없습니다</div></div>`; return; }
+  el.innerHTML = list.map(c=>`
+    <div class="li" onclick="location.href='co.html?id=${c.id}'">
+      <div class="av" style="background:var(--blue-lt);color:var(--blue);font-size:22px;">🏢</div>
+      <div class="li-info">
+        <div class="li-name">${c.nm}</div>
+        <div class="li-sub">${c.ind||''} · 명함 ${c.cnt}장 · ${c.last}</div>
+      </div>
+      <div class="li-r"><span class="bx ${stCls[c.st]||'b-bl'}">${stLbl[c.st]||c.st}</span><span class="chev">›</span></div>
+    </div>`).join('');
+}
+
+function openAddModal(){ document.getElementById('modal-co').classList.add('show'); }
+function closeAddModal(){ document.getElementById('modal-co').classList.remove('show'); }
+
+function saveCo(){
+  const nm = document.getElementById('co-nm').value.trim();
+  if(!nm){ toast('회사명을 입력해주세요'); return; }
+  const cos = DB.getCos();
+  cos.unshift({id:'co'+Date.now(),nm,addr:document.getElementById('co-addr').value.trim(),ind:document.getElementById('co-ind').value.trim(),st:'active',cnt:0,last:'-'});
+  DB.setCos(cos);
+  closeAddModal();
+  render();
+  toast('거래처가 등록됐습니다 ✓');
+  document.getElementById('co-nm').value='';
+  document.getElementById('co-addr').value='';
+  document.getElementById('co-ind').value='';
+}
+
+renderTabBar('cos');
+render();
+</script>
+</body>
+</html>

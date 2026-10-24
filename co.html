@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>거래처 상세</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<div class="page">
+  <header class="hdr">
+    <div class="hdr-back" onclick="history.back()">←</div>
+    <span class="hdr-t" id="hdr-t">거래처 상세</span>
+    <div class="hdr-icon" onclick="toast('편집 기능 준비 중')">✏️</div>
+  </header>
+  <div class="body">
+    <div class="det-hero">
+      <div class="det-av" style="background:var(--blue-lt);color:var(--blue);font-size:26px;">🏢</div>
+      <div>
+        <div class="det-nm" id="co-nm"></div>
+        <div class="det-tl" id="co-addr"></div>
+        <div id="co-badge" style="margin-top:6px;"></div>
+      </div>
+    </div>
+    <div class="sec-hdr"><h3>소속 명함</h3><a onclick="location.href='scan.html'">+ 명함 추가</a></div>
+    <div class="bp" id="co-cards" style="padding:0 14px 0;"></div>
+    <div class="sec-hdr"><h3>방문 이력</h3><a onclick="openVisitModal()">+ 기록</a></div>
+    <div class="tl" id="co-visits"></div>
+    <button class="action-btn" onclick="openVisitModal()">📝 방문 기록 추가</button>
+    <div style="height:20px;"></div>
+  </div>
+</div>
+
+<!-- 방문 기록 모달 -->
+<div class="moverlay" id="modal-visit" onclick="if(event.target===this)closeVisitModal()">
+  <div class="msheet">
+    <div class="m-handle"></div>
+    <div class="m-title">방문 기록 추가</div>
+    <div class="m-body">
+      <div>
+        <div class="flb">방문 유형</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;" id="type-grid"></div>
+      </div>
+      <div><div class="flb">방문 날짜</div><input class="finp" type="date" id="v-dt"></div>
+      <div><div class="flb">메모</div><textarea class="finp" id="v-memo" rows="3" style="resize:none;" placeholder="미팅 내용 입력..."></textarea></div>
+      <div><div class="flb">다음 일정</div><input class="finp" type="date" id="v-next"></div>
+      <button class="m-btn" onclick="saveVisit()">저장</button>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="nav.js"></script>
+<script>
+const TYPES = ['🤝 인사','💬 상담','📄 견적','🔧 AS','🍽 식사','📞 전화'];
+const id = qp('id');
+const tagCls = {고객:'b-bl',VIP:'b-gn',잠재:'b-am',휴면:'b-rd'};
+const stLbl = {active:'활성',potential:'잠재',dormant:'휴면'};
+const stCls  = {active:'b-gn',potential:'b-am',dormant:'b-rd'};
+let co = null;
+
+function load(){
+  const cos = DB.getCos();
+  co = cos.find(c=>c.id===id);
+  if(!co){ history.back(); return; }
+  document.getElementById('hdr-t').textContent = co.nm;
+  document.getElementById('co-nm').textContent = co.nm;
+  document.getElementById('co-addr').textContent = co.addr||'';
+  document.getElementById('co-badge').innerHTML = `<span class="bx ${stCls[co.st]||'b-bl'}">${stLbl[co.st]||co.st}</span>`;
+
+  const cards = DB.getCards().filter(c=>c.co===co.nm);
+  document.getElementById('co-cards').innerHTML = cards.length
+    ? cards.map(c=>`<div class="li" style="margin-bottom:9px;" onclick="location.href='card.html?id=${c.id}'">
+        <div class="av" style="background:${c.cl}18;color:${c.cl}">${c.nm[0]}</div>
+        <div class="li-info"><div class="li-name">${c.nm}</div><div class="li-sub">${c.tl||''}</div></div>
+        <div class="li-r"><span class="bx ${tagCls[c.tag]||'b-bl'}">${c.tag}</span><span class="chev">›</span></div>
+      </div>`).join('')
+    : '<div style="padding:16px;font-size:13px;color:var(--t3);text-align:center;">소속 명함이 없습니다</div>';
+
+  renderVisits();
+}
+
+function renderVisits(){
+  const visits = DB.getVisits().filter(v=>v.coId===id);
+  const el = document.getElementById('co-visits');
+  if(!visits.length){ el.innerHTML='<div style="padding:16px;font-size:13px;color:var(--t3);text-align:center;">방문 기록이 없습니다</div>'; return; }
+  el.innerHTML = visits.map(v=>`
+    <div class="tl-item">
+      <div class="tl-dot">${v.tp.split(' ')[0]}</div>
+      <div class="tl-body">
+        <div class="tl-tp">${v.tp}</div>
+        <div class="tl-dt">${v.dt}</div>
+        <div class="tl-memo">${v.memo||''}</div>
+        ${v.next?`<div class="tl-next">📅 다음 일정: ${v.next}</div>`:''}
+      </div>
+    </div>`).join('');
+}
+
+function openVisitModal(){
+  document.getElementById('v-dt').value = new Date().toISOString().split('T')[0];
+  document.getElementById('v-memo').value='';
+  document.getElementById('v-next').value='';
+  const g=document.getElementById('type-grid');
+  g.innerHTML=TYPES.map(t=>`<div class="bx b-bl" style="cursor:pointer;padding:7px 14px;">${t}</div>`).join('');
+  selectType(g.children[0]);
+  document.getElementById('modal-visit').classList.add('show');
+}
+
+function closeVisitModal(){ document.getElementById('modal-visit').classList.remove('show'); }
+
+function selectType(el){
+  document.querySelectorAll('#type-grid .bx').forEach(b=>{ b.style.background=''; b.style.border=''; b.style.color=''; });
+  el.style.background='var(--blue-lt)'; el.style.border='1.5px solid var(--blue)'; el.style.color='var(--blue)';
+  el.dataset.on='1';
+}
+
+function saveVisit(){
+  const selEl=[...document.querySelectorAll('#type-grid .bx')].find(b=>b.dataset.on);
+  const tp=selEl?selEl.textContent:TYPES[0];
+  const dt=document.getElementById('v-dt').value;
+  if(!dt){ toast('날짜를 입력해주세요'); return; }
+  const visits=DB.getVisits();
+  visits.unshift({id:'v'+Date.now(),co:co.nm,coId:id,tp,dt,memo:document.getElementById('v-memo').value.trim(),next:document.getElementById('v-next').value||null});
+  DB.setVisits(visits);
+  closeVisitModal();
+  renderVisits();
+  toast('방문 기록이 저장됐습니다 ✓');
+}
+
+load();
+</script>
+</body>
+</html>

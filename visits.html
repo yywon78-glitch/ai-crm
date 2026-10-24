@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>방문 기록</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<div class="page">
+  <header class="hdr">
+    <span class="hdr-t">방문 기록</span>
+    <button class="hdr-btn" onclick="openAddModal()">+ 기록</button>
+  </header>
+  <div class="pills">
+    <div class="pill on" id="f-all"  onclick="setFilter('all',this)">전체</div>
+    <div class="pill"    id="f-mon"  onclick="setFilter('month',this)">이번달</div>
+    <div class="pill"    id="f-con"  onclick="setFilter('상담',this)">💬 상담</div>
+    <div class="pill"    id="f-est"  onclick="setFilter('견적',this)">📄 견적</div>
+    <div class="pill"    id="f-hel"  onclick="setFilter('인사',this)">🤝 인사</div>
+  </div>
+  <div class="body"><div class="tl" id="list" style="padding:14px;"></div></div>
+  <nav class="tabbar" id="tabbar"></nav>
+</div>
+
+<!-- 방문 기록 추가 모달 -->
+<div class="moverlay" id="modal-visit" onclick="if(event.target===this)closeAddModal()">
+  <div class="msheet">
+    <div class="m-handle"></div>
+    <div class="m-title">방문 기록 추가</div>
+    <div class="m-body">
+      <div>
+        <div class="flb">방문 유형</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;" id="type-grid"></div>
+      </div>
+      <div><div class="flb">거래처</div>
+        <select class="finp" id="v-co" style="appearance:none;"></select>
+      </div>
+      <div><div class="flb">방문 날짜</div><input class="finp" type="date" id="v-dt"></div>
+      <div><div class="flb">메모</div><textarea class="finp" id="v-memo" rows="3" style="resize:none;" placeholder="미팅 내용 입력..."></textarea></div>
+      <div><div class="flb">다음 일정</div><input class="finp" type="date" id="v-next"></div>
+      <button class="m-btn" onclick="saveVisit()">저장</button>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="nav.js"></script>
+<script>
+const TYPES = ['🤝 인사','💬 상담','📄 견적','🔧 AS','🍽 식사','📞 전화'];
+let filter = 'all';
+
+function setFilter(f, el){
+  filter=f;
+  document.querySelectorAll('.pills .pill').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  render();
+}
+
+function render(){
+  const now = new Date();
+  const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  let list = DB.getVisits();
+  if(filter==='month') list=list.filter(v=>v.dt.startsWith(ym));
+  else if(filter!=='all') list=list.filter(v=>v.tp.includes(filter));
+
+  const el=document.getElementById('list');
+  if(!list.length){ el.innerHTML=`<div class="empty"><div class="empty-ic">📝</div><div class="empty-t">방문 기록이 없습니다</div></div>`; return; }
+  el.innerHTML=list.map(v=>`
+    <div class="tl-item" onclick="location.href='co.html?id=${v.coId}'">
+      <div class="tl-dot">${v.tp.split(' ')[0]}</div>
+      <div class="tl-body">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div class="tl-tp">${v.tp}</div>
+          <div class="tl-dt">${v.dt}</div>
+        </div>
+        <div style="font-size:12px;font-weight:600;color:var(--blue);margin:2px 0;">${v.co}</div>
+        <div class="tl-memo">${v.memo||''}</div>
+        ${v.next?`<div class="tl-next">📅 다음 일정: ${v.next}</div>`:''}
+      </div>
+    </div>`).join('');
+}
+
+function openAddModal(){
+  const cos=DB.getCos();
+  document.getElementById('v-co').innerHTML=cos.map(c=>`<option value="${c.id}">${c.nm}</option>`).join('');
+  document.getElementById('v-dt').value=new Date().toISOString().split('T')[0];
+  document.getElementById('v-memo').value='';
+  document.getElementById('v-next').value='';
+  const g=document.getElementById('type-grid');
+  g.innerHTML=TYPES.map(t=>`<div class="bx b-bl" style="cursor:pointer;padding:7px 14px;">${t}</div>`).join('');
+  selectType(g.children[0]);
+  document.getElementById('modal-visit').classList.add('show');
+}
+
+function closeAddModal(){ document.getElementById('modal-visit').classList.remove('show'); }
+
+function selectType(el){
+  document.querySelectorAll('#type-grid .bx').forEach(b=>{ b.style.background=''; b.style.border=''; b.style.color=''; });
+  el.style.background='var(--blue-lt)'; el.style.border='1.5px solid var(--blue)'; el.style.color='var(--blue)';
+  el.dataset.on='1';
+}
+
+function saveVisit(){
+  const selEl=[...document.querySelectorAll('#type-grid .bx')].find(b=>b.dataset.on);
+  const tp=selEl?selEl.textContent:TYPES[0];
+  const coId=document.getElementById('v-co').value;
+  const cos=DB.getCos();
+  const co=cos.find(c=>c.id===coId);
+  const dt=document.getElementById('v-dt').value;
+  if(!dt){ toast('날짜를 입력해주세요'); return; }
+  const visits=DB.getVisits();
+  visits.unshift({id:'v'+Date.now(),co:co?co.nm:'',coId,tp,dt,memo:document.getElementById('v-memo').value.trim(),next:document.getElementById('v-next').value||null});
+  DB.setVisits(visits);
+  closeAddModal();
+  render();
+  toast('방문 기록이 저장됐습니다 ✓');
+}
+
+renderTabBar('visits');
+render();
+</script>
+</body>
+</html>

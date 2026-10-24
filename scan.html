@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>명함 스캔</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+#cam-view{position:fixed;inset:0;background:#000;display:flex;flex-direction:column;}
+#cam-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.cam-ui{position:relative;z-index:10;display:flex;flex-direction:column;height:100%;}
+.cam-top{padding:16px 20px;display:flex;align-items:center;gap:12px;background:linear-gradient(to bottom,rgba(0,0,0,.6) 0%,transparent 100%);}
+.cam-frame{width:85%;max-width:360px;aspect-ratio:1.7;border:2px solid rgba(255,255,255,.7);border-radius:10px;box-shadow:0 0 0 9999px rgba(0,0,0,.45);}
+.cam-center{flex:1;display:flex;align-items:center;justify-content:center;}
+.cam-hint{color:rgba(255,255,255,.8);font-size:13px;margin-top:12px;text-align:center;}
+.cam-bot{padding:40px 20px 56px;display:flex;align-items:center;justify-content:center;gap:40px;background:linear-gradient(to top,rgba(0,0,0,.6) 0%,transparent 100%);}
+.cam-shut{width:72px;height:72px;border-radius:50%;background:#fff;border:5px solid rgba(255,255,255,.4);cursor:pointer;flex-shrink:0;}
+.cam-gal{width:52px;height:52px;border-radius:12px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.cam-close{width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.4);border:none;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+
+#result-view{display:none;flex-direction:column;}
+.res-img-wrap{background:#000;min-height:120px;display:flex;align-items:center;justify-content:center;}
+.res-img{width:100%;max-height:180px;object-fit:cover;display:block;}
+.res-ph{color:rgba(255,255,255,.5);font-size:13px;padding:40px 20px;text-align:center;}
+.fgrp{padding:0 14px;margin-bottom:12px;}
+</style>
+</head>
+<body>
+
+<!-- 카메라 화면 -->
+<div id="cam-view">
+  <video id="cam-vid" autoplay playsinline muted></video>
+  <div class="cam-ui">
+    <div class="cam-top">
+      <button class="cam-close" onclick="closeCam()">←</button>
+      <span style="color:#fff;font-size:16px;font-weight:600;">명함 촬영</span>
+    </div>
+    <div class="cam-center">
+      <div>
+        <div class="cam-frame"></div>
+        <div class="cam-hint">명함을 프레임 안에 맞춰주세요</div>
+      </div>
+    </div>
+    <div class="cam-bot">
+      <div class="cam-gal" onclick="document.getElementById('file-inp').click()">🖼️</div>
+      <div class="cam-shut" onclick="capture()"></div>
+      <div style="width:52px;"></div>
+    </div>
+  </div>
+  <input type="file" id="file-inp" accept="image/*" style="display:none">
+</div>
+
+<!-- OCR 결과 화면 -->
+<div id="result-view" class="page">
+  <header class="hdr">
+    <div class="hdr-back" onclick="backToCam()">←</div>
+    <span class="hdr-t">스캔 결과</span>
+    <button class="hdr-btn" onclick="saveCard()">저장</button>
+  </header>
+  <div class="body">
+    <div class="res-img-wrap">
+      <img id="res-img" class="res-img" style="display:none;">
+      <div class="res-ph" id="res-ph">📷 명함 원본 이미지</div>
+    </div>
+    <div style="height:14px;"></div>
+    <div class="fgrp"><div class="flb">이름 *</div><input class="finp" id="f-nm" placeholder="이름"></div>
+    <div class="fgrp"><div class="flb">회사</div><input class="finp" id="f-co" placeholder="회사명"></div>
+    <div class="fgrp"><div class="flb">직책</div><input class="finp" id="f-tl" placeholder="직책 / 부서"></div>
+    <div class="fgrp"><div class="flb">휴대전화</div><input class="finp" id="f-mob" placeholder="010-0000-0000" type="tel"></div>
+    <div class="fgrp"><div class="flb">유선전화</div><input class="finp" id="f-ph" placeholder="02-0000-0000" type="tel"></div>
+    <div class="fgrp"><div class="flb">이메일</div><input class="finp" id="f-em" placeholder="email@company.com" type="email"></div>
+    <div class="fgrp"><div class="flb">주소</div><input class="finp" id="f-addr" placeholder="주소"></div>
+    <div style="height:24px;"></div>
+  </div>
+</div>
+
+<!-- 로딩 -->
+<div class="ld" id="ld"><div class="spinner"></div><p>명함 인식 중...</p></div>
+
+<script src="data.js"></script>
+<script src="nav.js"></script>
+<script>
+let camStream = null;
+let captured = null;
+
+/* 카메라 시작 */
+navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}})
+  .then(s=>{ camStream=s; document.getElementById('cam-vid').srcObject=s; })
+  .catch(()=>{ toast('카메라를 사용할 수 없습니다'); });
+
+function closeCam(){
+  stopCam();
+  history.back();
+}
+
+function stopCam(){
+  if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
+}
+
+function capture(){
+  const v=document.getElementById('cam-vid');
+  if(!v.videoWidth){ processImage(null); return; }
+  const c=document.createElement('canvas');
+  c.width=v.videoWidth; c.height=v.videoHeight;
+  c.getContext('2d').drawImage(v,0,0);
+  processImage(c.toDataURL('image/jpeg',.85));
+}
+
+document.getElementById('file-inp').onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=ev=>processImage(ev.target.result);
+  r.readAsDataURL(f);
+  e.target.value='';
+};
+
+async function processImage(dataUrl){
+  captured=dataUrl;
+  const img=document.getElementById('res-img');
+  const ph=document.getElementById('res-ph');
+  if(dataUrl){ img.src=dataUrl; img.style.display='block'; ph.style.display='none'; }
+  else { img.style.display='none'; ph.style.display='block'; }
+
+  document.getElementById('ld').classList.add('show');
+  await new Promise(r=>setTimeout(r,1000));
+  document.getElementById('ld').classList.remove('show');
+
+  /* 더미 OCR — Phase2에서 실제 API 연동 */
+  const sample = DB.getCos()[Math.floor(Math.random()*DB.getCos().length)];
+  document.getElementById('f-nm').value='홍길동';
+  document.getElementById('f-co').value=sample?sample.nm:'(주)예시회사';
+  document.getElementById('f-tl').value='영업팀 과장';
+  document.getElementById('f-mob').value='010-0000-0000';
+  document.getElementById('f-ph').value='02-000-0000';
+  document.getElementById('f-em').value='hong@example.com';
+  document.getElementById('f-addr').value='서울시 강남구 테헤란로 123';
+
+  document.getElementById('cam-view').style.display='none';
+  document.getElementById('result-view').style.display='flex';
+}
+
+function backToCam(){
+  document.getElementById('result-view').style.display='none';
+  document.getElementById('cam-view').style.display='flex';
+}
+
+const COLORS=['#2563eb','#16a34a','#d97706','#7c3aed','#dc2626','#0891b2'];
+
+function saveCard(){
+  const nm=document.getElementById('f-nm').value.trim();
+  if(!nm){ toast('이름을 입력해주세요'); return; }
+  const cards=DB.getCards();
+  cards.unshift({
+    id:'c'+Date.now(),nm,
+    co:document.getElementById('f-co').value.trim(),
+    tl:document.getElementById('f-tl').value.trim(),
+    mob:document.getElementById('f-mob').value.trim(),
+    ph:document.getElementById('f-ph').value.trim(),
+    em:document.getElementById('f-em').value.trim(),
+    addr:document.getElementById('f-addr').value.trim(),
+    tag:'고객',cl:COLORS[Math.floor(Math.random()*COLORS.length)],fav:false,
+    img:captured||null
+  });
+  DB.setCards(cards);
+  stopCam();
+  toast('명함이 저장됐습니다 ✓');
+  location.href='index.html';
+}
+</script>
+</body>
+</html>
