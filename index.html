@@ -6,8 +6,8 @@
 <title>명함 CRM</title>
 <style>
 :root {
-  --bg:   #f0f4f8; --bg2: #ffffff; --card: #ffffff; --card2: #f4f7fb;
-  --bdr:  #dde3ec; --bdr2:#eef1f6;
+  --bg:   #ffffff; --bg2: #ffffff; --card: #ffffff; --card2: #f8fafc;
+  --bdr:  #e2e8f0; --bdr2:#f1f5f9;
   --blue: #2563eb; --blue-dk:#1d4ed8; --blue-lt:rgba(37,99,235,.1);
   --grn:  #059669; --grn-lt:rgba(5,150,105,.1);
   --amb:  #d97706; --amb-lt:rgba(217,119,6,.1);
@@ -43,8 +43,9 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-sy
 
 /* ── SEARCH ── */
 .srch-wrap{padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--bdr);}
-.srch{width:100%;background:var(--card);border:1px solid var(--bdr);border-radius:10px;
+.srch{width:100%;background:#f8fafc;border:1px solid var(--bdr);border-radius:10px;
   padding:9px 13px;font-size:14px;color:var(--t1);outline:none;}
+.srch:focus{background:#fff;border-color:var(--blue);}
 .srch::placeholder{color:var(--t3);}
 
 /* ── SEG TABS ── */
@@ -75,9 +76,11 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-sy
 .cg-badge{margin-top:6px;}
 
 /* ── LIST ITEM (거래처·공통용) ── */
-.li{background:var(--card);border:1px solid var(--bdr);border-radius:12px;
-  padding:13px;display:flex;align-items:center;gap:11px;cursor:pointer;transition:background .12s;}
-.li:active{background:var(--card2);}
+.li{background:#fff;border:1px solid #e8edf4;border-radius:12px;
+  padding:13px;display:flex;align-items:center;gap:11px;cursor:pointer;
+  transition:all .12s;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+.li:hover{box-shadow:0 2px 8px rgba(0,0,0,.08);border-color:#c8d4e0;}
+.li:active{background:#f8fafc;}
 .av{width:42px;height:42px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;
   justify-content:center;font-size:18px;font-weight:700;}
 .li-info{flex:1;min-width:0;}
