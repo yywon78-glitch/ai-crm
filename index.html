@@ -55,32 +55,32 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-sy
   cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;}
 .segtab.on{color:var(--blue);border-bottom-color:var(--blue);}
 
-/* ── AG-GRID DARK THEME OVERRIDE ── */
+/* ── AG-GRID 커스텀 테마 ── */
 .ag-theme-quartz-dark {
-  --ag-background-color: #161b22;
-  --ag-foreground-color: #e6edf3;
-  --ag-secondary-foreground-color: #8b949e;
-  --ag-border-color: #30363d;
-  --ag-header-background-color: #0d1117;
-  --ag-header-foreground-color: #8b949e;
-  --ag-row-background-color: #1c2128;
-  --ag-odd-row-background-color: #1c2128;
-  --ag-row-hover-color: #21262d;
-  --ag-selected-row-background-color: rgba(88,166,255,.12);
-  --ag-cell-horizontal-padding: 14px;
-  --ag-font-size: 13px;
+  --ag-background-color:           #1e2d45;
+  --ag-foreground-color:           #f0f4f8;
+  --ag-secondary-foreground-color: #a8b8cc;
+  --ag-border-color:               #2d4060;
+  --ag-header-background-color:    #16243a;
+  --ag-header-foreground-color:    #b8ccde;
+  --ag-row-background-color:       #1e2d45;
+  --ag-odd-row-background-color:   #243352;
+  --ag-row-hover-color:            #2e4468;
+  --ag-selected-row-background-color: rgba(88,166,255,.22);
+  --ag-cell-horizontal-padding:    14px;
+  --ag-font-size:                  13px;
   --ag-font-family: -apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
-  --ag-borders: none;
+  --ag-borders:          none;
   --ag-row-border-style: solid;
-  --ag-row-border-color: #21262d;
+  --ag-row-border-color: #2a3d58;
   --ag-row-border-width: 1px;
   --ag-header-column-separator-display: none;
-  --ag-active-color: #58a6ff;
+  --ag-active-color:     #58a6ff;
 }
-.ag-theme-quartz-dark .ag-root-wrapper { border: none; }
-.ag-theme-quartz-dark .ag-row { cursor: pointer; transition: background .1s; }
-.ag-theme-quartz-dark .ag-cell { display: flex; align-items: center; }
-.ag-theme-quartz-dark .ag-header-cell-text { font-weight: 700; font-size: 12px; }
+.ag-theme-quartz-dark .ag-root-wrapper { border:none; }
+.ag-theme-quartz-dark .ag-row          { cursor:pointer; transition:background .12s; }
+.ag-theme-quartz-dark .ag-cell         { display:flex; align-items:center; }
+.ag-theme-quartz-dark .ag-header-cell-text { font-weight:700; font-size:12px; }
 
 /* ── PILLS ── */
 .pills{display:flex;gap:7px;padding:9px 14px;overflow-x:auto;scrollbar-width:none;flex-shrink:0;}
