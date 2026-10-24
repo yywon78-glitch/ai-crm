@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>명함 CRM</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-quartz.css">
 <style>
 :root {
   --bg:   #0d1117; --bg2: #161b22; --card: #1c2128; --card2: #21262d;
@@ -52,6 +54,33 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-sy
 .segtab{flex:1;padding:10px 0;text-align:center;font-size:13px;font-weight:600;color:var(--t2);
   cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;}
 .segtab.on{color:var(--blue);border-bottom-color:var(--blue);}
+
+/* ── AG-GRID DARK THEME OVERRIDE ── */
+.ag-theme-quartz-dark {
+  --ag-background-color: #161b22;
+  --ag-foreground-color: #e6edf3;
+  --ag-secondary-foreground-color: #8b949e;
+  --ag-border-color: #30363d;
+  --ag-header-background-color: #0d1117;
+  --ag-header-foreground-color: #8b949e;
+  --ag-row-background-color: #1c2128;
+  --ag-odd-row-background-color: #1c2128;
+  --ag-row-hover-color: #21262d;
+  --ag-selected-row-background-color: rgba(88,166,255,.12);
+  --ag-cell-horizontal-padding: 14px;
+  --ag-font-size: 13px;
+  --ag-font-family: -apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  --ag-borders: none;
+  --ag-row-border-style: solid;
+  --ag-row-border-color: #21262d;
+  --ag-row-border-width: 1px;
+  --ag-header-column-separator-display: none;
+  --ag-active-color: #58a6ff;
+}
+.ag-theme-quartz-dark .ag-root-wrapper { border: none; }
+.ag-theme-quartz-dark .ag-row { cursor: pointer; transition: background .1s; }
+.ag-theme-quartz-dark .ag-cell { display: flex; align-items: center; }
+.ag-theme-quartz-dark .ag-header-cell-text { font-weight: 700; font-size: 12px; }
 
 /* ── PILLS ── */
 .pills{display:flex;gap:7px;padding:9px 14px;overflow-x:auto;scrollbar-width:none;flex-shrink:0;}
@@ -332,18 +361,13 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-sy
       <div class="hdr-icon" onclick="$('#scr-settings')">⚙️</div>
       <div class="hdr-icon" onclick="openCamera()">📷</div>
     </div>
-    <div class="srch-wrap"><input class="srch" placeholder="🔍  이름, 회사, 전화번호 검색" oninput="filterCards(this.value)"></div>
-    <div class="segtabs">
-      <div class="segtab on" id="seg-name"    onclick="cardTab('name',this)">이름순</div>
-      <div class="segtab"    id="seg-co"      onclick="cardTab('co',this)">거래처순</div>
-      <div class="segtab"    id="seg-fav"     onclick="cardTab('fav',this)">즐겨찾기 ⭐</div>
-    </div>
+    <div class="srch-wrap"><input class="srch" id="srch-cards" placeholder="🔍  이름, 회사, 전화번호 검색"></div>
     <div style="background:var(--bg2);border-bottom:1px solid var(--bdr);padding:8px 14px;display:flex;gap:16px;flex-shrink:0;">
       <span id="stat-cards" style="font-size:12px;color:var(--t2);"></span>
       <span id="stat-vip"   style="font-size:12px;color:var(--amb);"></span>
       <span id="stat-fav"   style="font-size:12px;color:var(--t2);"></span>
     </div>
-    <div class="body"><div class="cards-grid" id="cards-list"></div></div>
+    <div id="grid-cards" class="ag-theme-quartz-dark" style="flex:1;min-height:0;"></div>
   </div>
 
   <!-- 거래처 탭 -->
@@ -352,7 +376,7 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-sy
       <div class="hdr-t">거래처</div>
       <button class="hdr-btn" onclick="openModal('modal-co')">+ 등록</button>
     </div>
-    <div class="srch-wrap"><input class="srch" placeholder="🔍  거래처명 검색" oninput="filterCos(this.value)"></div>
+    <div class="srch-wrap"><input class="srch" id="srch-cos" placeholder="🔍  거래처명 검색"></div>
     <div class="pills">
       <div class="pill on" onclick="filterCoSt('all',this)">전체</div>
       <div class="pill"    onclick="filterCoSt('active',this)">활성</div>
@@ -364,7 +388,7 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-sy
       <span id="stat-act"  style="font-size:12px;color:var(--grn);"></span>
       <span id="stat-dorm" style="font-size:12px;color:var(--t3);"></span>
     </div>
-    <div class="body"><div class="bp" id="cos-list"></div></div>
+    <div id="grid-cos" class="ag-theme-quartz-dark" style="flex:1;min-height:0;"></div>
   </div>
 
   <!-- 지도 탭 -->
@@ -443,7 +467,7 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-sy
       <span id="stat-vis"  style="font-size:12px;color:var(--t2);"></span>
       <span id="stat-next" style="font-size:12px;color:var(--amb);"></span>
     </div>
-    <div class="body"><div class="vg" id="visits-tl"></div></div>
+    <div id="grid-visits" class="ag-theme-quartz-dark" style="flex:1;min-height:0;"></div>
   </div>
 
   <!-- 설정 탭 -->
@@ -940,23 +964,6 @@ function goCoFromCard(){
 /* ═══════════════════════ RENDER COS ═══════════════════════ */
 const stCls={active:'b-gn',potential:'b-am',dormant:'b-rd'};
 const stLb={active:'활성',potential:'잠재',dormant:'휴면'};
-function filterCos(q){ renderCos(q); }
-function filterCoSt(st,el){
-  document.querySelectorAll('#tab-cos .pill').forEach(p=>p.classList.remove('on'));
-  el.classList.add('on'); renderCos('',st);
-}
-function renderCos(q='',st='all'){
-  const el=document.getElementById('cos-list');
-  let list=COS.filter(c=>(!q||c.nm.includes(q))&&(st==='all'||c.st===st));
-  if(!list.length){ el.innerHTML=`<div class="empty"><div class="empty-ic">🏢</div><div class="empty-t">거래처가 없습니다</div></div>`; return; }
-  el.innerHTML=list.map(c=>`
-    <div class="li" onclick="openCoDetail('${c.id}')">
-      <div class="av" style="background:var(--blue-lt);color:var(--blue);font-size:20px;">🏢</div>
-      <div class="li-info"><div class="li-name">${c.nm}</div><div class="li-sub">${c.addr} · 명함 ${c.cnt}장</div></div>
-      <div class="li-r"><span class="bx ${stCls[c.st]}">${stLb[c.st]}</span><span style="font-size:11px;color:var(--t3);">${c.last}</span></div>
-      <span class="chev">›</span>
-    </div>`).join('');
-}
 
 /* ═══════════════════════ CO DETAIL ═══════════════════════ */
 function openCoDetail(id){
@@ -982,17 +989,6 @@ function openCoDetail(id){
 }
 
 /* ═══════════════════════ VISITS ═══════════════════════ */
-function filterVisits(f,el){
-  document.querySelectorAll('#tab-visits .pill').forEach(p=>p.classList.remove('on'));
-  el.classList.add('on');
-  let list=VISITS;
-  if(f==='month') list=VISITS.filter(v=>v.dt.startsWith('2026-10'));
-  else if(f!=='all') list=VISITS.filter(v=>v.tp.includes(f));
-  document.getElementById('visits-tl').innerHTML=list.map(v=>visitHTML(v)).join('');
-}
-function renderVisits(){
-  document.getElementById('visits-tl').innerHTML=VISITS.map(v=>visitHTML(v)).join('');
-}
 /* 방문 유형 → 색상 클래스 */
 function vtCls(tp){
   if(tp.includes('상담')) return 'vt-bl';
@@ -1082,7 +1078,124 @@ function toast(msg){
 /* ═══════════════════════ INIT (모든 선언 후 실행) ═══════════════════════ */
 document.getElementById('v-date').value = new Date().toISOString().split('T')[0];
 if(API_KEY){ showMain(); } else { document.getElementById('scr-key').classList.add('active'); }
-renderCards(); renderCos(); renderVisits(); renderStats();
+renderStats();
+// ag-Grid는 스크립트 로드 후 초기화 (아래 script 태그에서 실행)
+</script>
+<script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.noStyle.js"></script>
+<script>
+/* ═══════════════════════ AG-GRID ═══════════════════════ */
+let gridCards, gridCos, gridVisits;
+let visitFilter = 'all';
+let cosFilter   = 'all';
+
+const BASE_COL = { sortable:true, resizable:false, suppressMovable:true, filter:false };
+
+/* ── 명함 컬럼 ── */
+const CARD_COLS = [
+  { field:'nm',  headerName:'이름',    width:90,  pinned:'left',
+    cellRenderer: p=>`<strong>${p.value||''}</strong>` },
+  { field:'tl',  headerName:'직책',    flex:1, minWidth:90 },
+  { field:'co',  headerName:'회사',    flex:1, minWidth:100 },
+  { field:'mob', headerName:'휴대전화', width:135 },
+  { field:'em',  headerName:'이메일',   flex:1, minWidth:130 },
+  { field:'tag', headerName:'태그',    width:70,
+    cellRenderer: p=>`<span class="bx ${tagCls[p.value]||'b-bl'}">${p.value||''}</span>` },
+];
+
+/* ── 거래처 컬럼 ── */
+const COS_COLS = [
+  { field:'nm',   headerName:'회사명', flex:1, minWidth:120, pinned:'left' },
+  { field:'ind',  headerName:'업종',   width:100 },
+  { field:'st',   headerName:'상태',   width:70,
+    cellRenderer: p=>`<span class="bx ${stCls[p.value]||'b-gn'}">${stLb[p.value]||''}</span>` },
+  { field:'cnt',  headerName:'명함',   width:62, type:'numericColumn' },
+  { field:'last', headerName:'최근방문', width:108 },
+  { field:'addr', headerName:'주소',   flex:2, minWidth:140 },
+];
+
+/* ── 방문 컬럼 ── */
+const VISIT_COLS = [
+  { field:'dt',   headerName:'날짜',   width:102, sort:'desc' },
+  { field:'co',   headerName:'거래처', flex:1, minWidth:110 },
+  { field:'tp',   headerName:'유형',   width:108,
+    cellRenderer: p=>`<span class="vg-type ${vtCls(p.value||'')}">${p.value||''}</span>` },
+  { field:'memo', headerName:'메모',   flex:2, minWidth:140,
+    cellStyle:{'white-space':'nowrap','overflow':'hidden','text-overflow':'ellipsis'} },
+  { field:'next', headerName:'다음예정', width:100,
+    cellRenderer: p=>p.value?`<span style="color:var(--amb);font-size:11px;">${p.value}</span>`:'-' },
+];
+
+/* ── 그리드 초기화 ── */
+function initGrids(){
+  const base = { defaultColDef:BASE_COL, rowHeight:46, headerHeight:42,
+                 suppressCellFocus:true, animateRows:true };
+
+  gridCards = agGrid.createGrid(document.getElementById('grid-cards'), {
+    ...base, columnDefs:CARD_COLS, rowData:CARDS,
+    onRowClicked: e=>openCard(e.data.id),
+  });
+
+  gridCos = agGrid.createGrid(document.getElementById('grid-cos'), {
+    ...base, columnDefs:COS_COLS, rowData:COS,
+    onRowClicked: e=>openCoDetail(e.data.id),
+    isExternalFilterPresent: ()=>cosFilter!=='all',
+    doesExternalFilterPass: n=>{
+      if(cosFilter==='all') return true;
+      return n.data.st===cosFilter;
+    },
+  });
+
+  gridVisits = agGrid.createGrid(document.getElementById('grid-visits'), {
+    ...base, columnDefs:VISIT_COLS, rowData:VISITS,
+    isExternalFilterPresent: ()=>visitFilter!=='all',
+    doesExternalFilterPass: n=>{
+      if(visitFilter==='month') return n.data.dt.startsWith('2026-10');
+      return n.data.tp.includes(visitFilter);
+    },
+  });
+
+  /* 검색 연결 */
+  document.getElementById('srch-cards').addEventListener('input', e=>{
+    gridCards.setGridOption('quickFilterText', e.target.value);
+  });
+  document.getElementById('srch-cos').addEventListener('input', e=>{
+    gridCos.setGridOption('quickFilterText', e.target.value);
+  });
+}
+
+/* ── renderCards/Cos/Visits → 그리드 데이터 갱신 ── */
+function renderCards(){ if(gridCards) gridCards.setGridOption('rowData',[...CARDS]); }
+function renderCos()  { if(gridCos)   gridCos.setGridOption('rowData',[...COS]);     }
+function renderVisits(){ if(gridVisits) gridVisits.setGridOption('rowData',[...VISITS]); }
+
+/* ── 거래처 상태 필터 ── */
+function filterCoSt(st,el){
+  document.querySelectorAll('#tab-cos .pill').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  cosFilter = st;
+  if(gridCos) gridCos.onFilterChanged();
+}
+
+/* ── 방문 유형 필터 ── */
+function filterVisits(f,el){
+  document.querySelectorAll('#tab-visits .pill').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  visitFilter = f;
+  if(gridVisits) gridVisits.onFilterChanged();
+}
+
+/* ── 탭 전환 시 그리드 크기 재조정 ── */
+const _origTab = tab;
+function tab(t){
+  _origTab(t);
+  setTimeout(()=>{
+    if(t==='cards'  && gridCards)  gridCards.sizeColumnsToFit();
+    if(t==='cos'    && gridCos)    gridCos.sizeColumnsToFit();
+    if(t==='visits' && gridVisits) gridVisits.sizeColumnsToFit();
+  }, 30);
+}
+
+initGrids();
 </script>
 </body>
 </html>
