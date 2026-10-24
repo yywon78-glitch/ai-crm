@@ -801,6 +801,12 @@ function tab(t){
   document.querySelectorAll('.tbi').forEach(b=>b.classList.remove('on'));
   document.getElementById('tab-'+t).style.display='flex';
   document.getElementById('tb-'+t)?.classList.add('on');
+  // ag-Grid 크기 재조정
+  setTimeout(()=>{
+    if(t==='cards'  && typeof gridCards  !=='undefined' && gridCards)  gridCards.sizeColumnsToFit();
+    if(t==='cos'    && typeof gridCos    !=='undefined' && gridCos)    gridCos.sizeColumnsToFit();
+    if(t==='visits' && typeof gridVisits !=='undefined' && gridVisits) gridVisits.sizeColumnsToFit();
+  }, 30);
 }
 
 /* ═══════════════════════ API KEY ═══════════════════════ */
@@ -1182,17 +1188,6 @@ function filterVisits(f,el){
   el.classList.add('on');
   visitFilter = f;
   if(gridVisits) gridVisits.onFilterChanged();
-}
-
-/* ── 탭 전환 시 그리드 크기 재조정 ── */
-const _origTab = tab;
-function tab(t){
-  _origTab(t);
-  setTimeout(()=>{
-    if(t==='cards'  && gridCards)  gridCards.sizeColumnsToFit();
-    if(t==='cos'    && gridCos)    gridCos.sizeColumnsToFit();
-    if(t==='visits' && gridVisits) gridVisits.sizeColumnsToFit();
-  }, 30);
 }
 
 initGrids();
