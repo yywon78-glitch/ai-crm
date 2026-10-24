@@ -60,7 +60,21 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-sy
   background:var(--card);border:1px solid var(--bdr);color:var(--t2);cursor:pointer;transition:all .15s;}
 .pill.on{background:var(--blue-dk);border-color:var(--blue-dk);color:#fff;}
 
-/* ── LIST ITEM ── */
+/* ── CARD GRID (명함탭) ── */
+.cards-grid{padding:12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.cg-card{background:var(--card);border:1px solid var(--bdr);border-radius:14px;
+  padding:16px 12px 14px;display:flex;flex-direction:column;align-items:center;
+  text-align:center;gap:5px;cursor:pointer;transition:background .12s;position:relative;}
+.cg-card:active{background:var(--card2);}
+.cg-fav{position:absolute;top:10px;right:10px;font-size:13px;}
+.cg-av{width:54px;height:54px;border-radius:15px;display:flex;align-items:center;
+  justify-content:center;font-size:22px;font-weight:800;margin-bottom:6px;}
+.cg-name{font-size:15px;font-weight:800;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cg-tl{font-size:11px;color:var(--t2);width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cg-co{font-size:12px;color:var(--t2);width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px;}
+.cg-badge{margin-top:6px;}
+
+/* ── LIST ITEM (거래처·공통용) ── */
 .li{background:var(--card);border:1px solid var(--bdr);border-radius:12px;
   padding:13px;display:flex;align-items:center;gap:11px;cursor:pointer;transition:background .12s;}
 .li:active{background:var(--card2);}
@@ -329,7 +343,7 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-sy
       <span id="stat-vip"   style="font-size:12px;color:var(--amb);"></span>
       <span id="stat-fav"   style="font-size:12px;color:var(--t2);"></span>
     </div>
-    <div class="body"><div class="bp" id="cards-list"></div></div>
+    <div class="body"><div class="cards-grid" id="cards-list"></div></div>
   </div>
 
   <!-- 거래처 탭 -->
@@ -854,28 +868,41 @@ function saveCard(){
 
 /* ═══════════════════════ RENDER CARDS ═══════════════════════ */
 const tagCls={고객:'b-bl',VIP:'b-gn',잠재:'b-am',휴면:'b-rd'};
+
 function renderCards(q='',mode='name'){
   const el=document.getElementById('cards-list');
   let list=CARDS.filter(c=>!q||c.nm.includes(q)||c.co.includes(q)||c.mob.includes(q));
   if(mode==='fav') list=list.filter(c=>c.fav);
-  if(!list.length){ el.innerHTML=`<div class="empty"><div class="empty-ic">🪪</div><div class="empty-t">명함이 없습니다</div><div class="empty-s">카메라로 명함을 스캔해보세요</div></div>`; return; }
+  if(!list.length){
+    el.style.display='block';
+    el.innerHTML=`<div class="empty"><div class="empty-ic">🪪</div><div class="empty-t">명함이 없습니다</div><div class="empty-s">카메라로 명함을 스캔해보세요</div></div>`;
+    return;
+  }
+  el.style.display='';
   if(mode==='co'){
+    // 거래처순: 회사별 그룹 헤더 + 2열 그리드
     const g={};
     list.forEach(c=>(g[c.co||'미분류']=g[c.co||'미분류']||[]).push(c));
     el.innerHTML=Object.entries(g).map(([co,cs])=>
-      `<div style="font-size:11px;font-weight:700;color:var(--t3);padding:3px 1px 5px;">${co}</div>`+
+      `<div style="grid-column:1/-1;font-size:12px;font-weight:700;color:var(--t3);
+        padding:10px 2px 4px;border-top:1px solid var(--bdr2);margin-top:4px;">
+        🏢 ${co} <span style="font-weight:400;color:var(--t3);">(${cs.length})</span>
+       </div>`+
       cs.map(c=>cardHTML(c)).join('')
-    ).join('<div style="height:6px;"></div>');
+    ).join('');
   } else {
     el.innerHTML=list.map(c=>cardHTML(c)).join('');
   }
 }
+
 function cardHTML(c){
-  return `<div class="li" onclick="openCard('${c.id}')">
-    <div class="av" style="background:${c.cl}22;color:${c.cl}">${c.nm[0]}</div>
-    <div class="li-info"><div class="li-name">${c.nm}</div><div class="li-sub">${c.tl?c.tl+' · ':''}${c.co}</div></div>
-    <div class="li-r"><span class="bx ${tagCls[c.tag]||'b-bl'}">${c.tag}</span>${c.fav?'<span style="font-size:13px;">⭐</span>':''}</div>
-    <span class="chev">›</span>
+  return `<div class="cg-card" onclick="openCard('${c.id}')">
+    ${c.fav?'<span class="cg-fav">⭐</span>':''}
+    <div class="cg-av" style="background:${c.cl}22;color:${c.cl}">${c.nm[0]}</div>
+    <div class="cg-name">${c.nm}</div>
+    <div class="cg-tl">${c.tl||'직책 미입력'}</div>
+    <div class="cg-co">${c.co||'회사 미입력'}</div>
+    <div class="cg-badge"><span class="bx ${tagCls[c.tag]||'b-bl'}">${c.tag}</span></div>
   </div>`;
 }
 let curCardMode='name';
