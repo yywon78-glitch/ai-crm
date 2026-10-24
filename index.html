@@ -609,8 +609,13 @@ function push(id){
   el.classList.add('active');
 }
 
+function closeAllModals(){
+  document.querySelectorAll('.moverlay.show').forEach(m=>m.classList.remove('show'));
+}
+
 function pop(){
   if(!stk.length) return;
+  closeAllModals();
   const id = stk.pop();
   const el = document.getElementById(id);
   el.classList.remove('active','behind');
@@ -624,6 +629,7 @@ function pop(){
 
 /* ═══════════════════════ TAB NAV ═══════════════════════ */
 function tab(t){
+  closeAllModals();
   stk.forEach(id=>{ const el=document.getElementById(id); if(el){el.classList.remove('active','behind');el.style.transform='';} });
   stk=[];
   document.getElementById('map-pop').classList.remove('show');
