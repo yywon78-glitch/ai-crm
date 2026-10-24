@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>명함 스캔</title>
+<title>명함관리</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
-body { background:#000; color:#fff; font-family:sans-serif; height:100vh; overflow:hidden; }
+body { background:#0f0f0f; color:#fff; font-family:sans-serif; height:100vh; overflow:hidden; }
 
 /* API 키 입력 화면 */
 #key-screen {
@@ -25,31 +25,79 @@ body { background:#000; color:#fff; font-family:sans-serif; height:100vh; overfl
   background:#4a9eff; border:none; color:#fff; cursor:pointer;
 }
 
+/* 명함관리 메인 메뉴 */
+#menu-screen {
+  display:none; position:fixed; inset:0; background:#0f0f0f;
+  flex-direction:column;
+}
+#menu-header {
+  background:#1a1a1a; padding:20px 20px 16px;
+  border-bottom:1px solid #2a2a2a;
+}
+#menu-header h1 { font-size:22px; font-weight:700; letter-spacing:-0.5px; }
+#menu-header p  { font-size:13px; color:#777; margin-top:4px; }
+#menu-body {
+  flex:1; padding:24px 20px; display:flex; flex-direction:column; gap:14px; overflow-y:auto;
+}
+.menu-item {
+  background:#1a1a1a; border-radius:16px; padding:20px;
+  display:flex; align-items:center; gap:16px;
+  border:1px solid #2a2a2a; cursor:pointer; transition:background 0.15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.menu-item:active { background:#252525; }
+.menu-icon {
+  width:52px; height:52px; border-radius:14px;
+  display:flex; align-items:center; justify-content:center; font-size:26px; flex-shrink:0;
+}
+.menu-icon.blue  { background:rgba(74,158,255,0.15); }
+.menu-icon.green { background:rgba(52,199,89,0.15); }
+.menu-icon.gray  { background:rgba(150,150,150,0.12); }
+.menu-text h3 { font-size:16px; font-weight:600; margin-bottom:4px; }
+.menu-text p  { font-size:13px; color:#777; line-height:1.4; }
+.menu-arrow { margin-left:auto; color:#444; font-size:18px; flex-shrink:0; }
+
 /* 카메라 화면 */
+#camera-screen {
+  display:none; position:fixed; inset:0;
+}
 #video { position:fixed; inset:0; width:100%; height:100%; object-fit:cover; }
+#camera-header {
+  position:fixed; top:0; left:0; right:0; z-index:10;
+  padding:16px 20px; display:flex; align-items:center; gap:12px;
+  background:linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%);
+}
+#cam-back-btn {
+  background:rgba(0,0,0,0.4); border:none; color:#fff;
+  font-size:20px; cursor:pointer; width:40px; height:40px;
+  border-radius:50%; display:flex; align-items:center; justify-content:center;
+}
+#camera-header span { font-size:16px; font-weight:600; }
 #capture-btn {
-  position:fixed; bottom:40px; left:50%; transform:translateX(-50%);
-  width:72px; height:72px; border-radius:50%;
-  background:#fff; border:4px solid rgba(255,255,255,0.4);
+  position:fixed; bottom:50px; left:50%; transform:translateX(-50%);
+  width:76px; height:76px; border-radius:50%;
+  background:#fff; border:5px solid rgba(255,255,255,0.35);
   cursor:pointer; z-index:10;
 }
 #gallery-btn {
-  position:fixed; bottom:52px; left:calc(50% - 90px);
-  width:48px; height:48px; border-radius:10px;
-  background:rgba(255,255,255,0.2); border:none;
-  color:#fff; font-size:22px; cursor:pointer; z-index:10;
+  position:fixed; bottom:62px; left:calc(50% - 100px);
+  width:52px; height:52px; border-radius:12px;
+  background:rgba(255,255,255,0.18); border:none;
+  color:#fff; font-size:24px; cursor:pointer; z-index:10;
+  display:flex; align-items:center; justify-content:center;
 }
 
 /* 로딩 */
 #loading {
-  display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8);
+  display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85);
   z-index:30; align-items:center; justify-content:center; flex-direction:column; gap:16px;
 }
 .spinner {
   width:48px; height:48px; border:4px solid rgba(255,255,255,0.2);
-  border-top-color:#fff; border-radius:50%; animation:spin 1s linear infinite;
+  border-top-color:#4a9eff; border-radius:50%; animation:spin 1s linear infinite;
 }
 @keyframes spin { to { transform:rotate(360deg); } }
+#loading p { font-size:15px; color:#aaa; }
 
 /* 결과 화면 */
 #result-view {
@@ -57,12 +105,13 @@ body { background:#000; color:#fff; font-family:sans-serif; height:100vh; overfl
   flex-direction:column; z-index:20;
 }
 #result-header {
-  background:#222; padding:16px;
+  background:#1a1a1a; padding:16px 20px;
   display:flex; align-items:center; gap:12px; flex-shrink:0;
+  border-bottom:1px solid #2a2a2a;
 }
-#back-btn { background:none; border:none; color:#fff; font-size:24px; cursor:pointer; }
+#back-btn { background:none; border:none; color:#fff; font-size:24px; cursor:pointer; padding:0 4px; }
 #result-header span { font-size:17px; font-weight:700; }
-#result-body { flex:1; overflow-y:auto; padding:20px; font-size:16px; line-height:1.8; white-space:pre-wrap; }
+#result-body { flex:1; overflow-y:auto; padding:20px; font-size:15px; line-height:1.9; white-space:pre-wrap; color:#e0e0e0; }
 
 #file-input { display:none; }
 </style>
@@ -77,16 +126,57 @@ body { background:#000; color:#fff; font-family:sans-serif; height:100vh; overfl
   <button id="key-save-btn" onclick="saveKey()">시작하기</button>
 </div>
 
+<!-- 명함관리 메인 메뉴 -->
+<div id="menu-screen">
+  <div id="menu-header">
+    <h1>명함관리</h1>
+    <p>명함을 스캔하고 정보를 추출합니다</p>
+  </div>
+  <div id="menu-body">
+    <div class="menu-item" onclick="openCamera()">
+      <div class="menu-icon blue">📷</div>
+      <div class="menu-text">
+        <h3>명함 사진 찍기</h3>
+        <p>카메라로 명함을 촬영하여 정보 추출</p>
+      </div>
+      <span class="menu-arrow">›</span>
+    </div>
+    <div class="menu-item" onclick="document.getElementById('file-input').click()">
+      <div class="menu-icon green">🖼️</div>
+      <div class="menu-text">
+        <h3>갤러리에서 선택</h3>
+        <p>저장된 명함 사진에서 정보 추출</p>
+      </div>
+      <span class="menu-arrow">›</span>
+    </div>
+    <div class="menu-item" onclick="changeKey()">
+      <div class="menu-icon gray">⚙️</div>
+      <div class="menu-text">
+        <h3>API 키 변경</h3>
+        <p>Anthropic API 키를 새로 입력합니다</p>
+      </div>
+      <span class="menu-arrow">›</span>
+    </div>
+  </div>
+</div>
+
 <!-- 카메라 -->
-<video id="video" autoplay playsinline muted></video>
-<button id="gallery-btn" onclick="document.getElementById('file-input').click()">🖼️</button>
-<button id="capture-btn" onclick="capture()"></button>
+<div id="camera-screen">
+  <video id="video" autoplay playsinline muted></video>
+  <div id="camera-header">
+    <button id="cam-back-btn" onclick="closeCamera()">←</button>
+    <span>명함 촬영</span>
+  </div>
+  <button id="gallery-btn" onclick="document.getElementById('file-input').click()">🖼️</button>
+  <button id="capture-btn" onclick="capture()"></button>
+</div>
+
 <input type="file" id="file-input" accept="image/*">
 
 <!-- 로딩 -->
 <div id="loading">
   <div class="spinner"></div>
-  <div>분석 중...</div>
+  <p>분석 중...</p>
 </div>
 
 <!-- 결과 -->
@@ -101,12 +191,18 @@ body { background:#000; color:#fff; font-family:sans-serif; height:100vh; overfl
 <script>
 const WORKSPACE_ID = 'wrkspc_01JvEVBZd9wRRDzxSXfGDGxQ';
 
-// API 키 확인
 let API_KEY = localStorage.getItem('crm_key') || '';
+let cameraStream = null;
+
+// 시작
 if (!API_KEY) {
   document.getElementById('key-screen').style.display = 'flex';
 } else {
-  startCamera();
+  showMenu();
+}
+
+function showMenu() {
+  document.getElementById('menu-screen').style.display = 'flex';
 }
 
 function saveKey() {
@@ -115,13 +211,36 @@ function saveKey() {
   API_KEY = k;
   localStorage.setItem('crm_key', k);
   document.getElementById('key-screen').style.display = 'none';
-  startCamera();
+  showMenu();
 }
 
-function startCamera() {
+function changeKey() {
+  document.getElementById('key-screen').style.display = 'flex';
+  document.getElementById('key-input').value = '';
+}
+
+function openCamera() {
+  document.getElementById('camera-screen').style.display = 'block';
+  document.getElementById('menu-screen').style.display = 'none';
   navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' } })
-    .then(s => document.getElementById('video').srcObject = s)
-    .catch(() => {});
+    .then(s => {
+      cameraStream = s;
+      document.getElementById('video').srcObject = s;
+    })
+    .catch(() => {
+      alert('카메라를 사용할 수 없습니다');
+      closeCamera();
+    });
+}
+
+function closeCamera() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(t => t.stop());
+    cameraStream = null;
+  }
+  document.getElementById('video').srcObject = null;
+  document.getElementById('camera-screen').style.display = 'none';
+  showMenu();
 }
 
 function capture() {
@@ -130,6 +249,7 @@ function capture() {
   const c = document.createElement('canvas');
   c.width = v.videoWidth; c.height = v.videoHeight;
   c.getContext('2d').drawImage(v, 0, 0);
+  closeCamera();
   analyze(c.toDataURL('image/jpeg', 0.85));
 }
 
@@ -143,6 +263,7 @@ document.getElementById('file-input').onchange = e => {
 
 async function analyze(dataUrl) {
   document.getElementById('loading').style.display = 'flex';
+  document.getElementById('menu-screen').style.display = 'none';
   try {
     const base64 = dataUrl.split(',')[1];
     const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -155,7 +276,7 @@ async function analyze(dataUrl) {
         'anthropic-dangerous-direct-browser-access': 'true'
       },
       body: JSON.stringify({
-        model: 'claude-opus-4-5',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 1024,
         messages: [{ role:'user', content: [
           { type:'image', source:{ type:'base64', media_type:'image/jpeg', data:base64 } },
@@ -170,6 +291,7 @@ async function analyze(dataUrl) {
     document.getElementById('result-view').style.display = 'flex';
   } catch(e) {
     alert('오류: ' + e.message);
+    showMenu();
   } finally {
     document.getElementById('loading').style.display = 'none';
   }
@@ -177,6 +299,7 @@ async function analyze(dataUrl) {
 
 function goBack() {
   document.getElementById('result-view').style.display = 'none';
+  showMenu();
 }
 </script>
 </body>
