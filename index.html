@@ -81,8 +81,11 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-sy
 .b-pu{background:var(--pur-lt);color:var(--pur);}
 
 /* ── BOTTOM TAB ── */
-.tabbar{height:var(--tab-h);flex-shrink:0;background:var(--bg2);border-top:1px solid var(--bdr);
-  display:flex;align-items:flex-start;padding-top:4px;}
+.tabbar{height:var(--tab-h);background:var(--bg2);border-top:1px solid var(--bdr);
+  display:flex;align-items:flex-start;padding-top:4px;
+  position:fixed;bottom:0;left:0;right:0;z-index:8;}
+/* 탭바 높이만큼 콘텐츠 하단 여백 */
+.body{padding-bottom:calc(var(--tab-h) + 8px);}
 .tbi{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px 0;
   cursor:pointer;color:var(--t3);transition:color .12s;}
 .tbi.on{color:var(--blue);}
