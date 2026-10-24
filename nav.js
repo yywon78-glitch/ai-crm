@@ -87,7 +87,8 @@ function closeAllOverlays() {
 }
 
 function closeCoOverlay() {
-  closeAllOverlays();
+  const el = document.getElementById('overlay-co');
+  if(el) el.classList.remove('show');
 }
 
 function refreshCoVisits(coId) {
