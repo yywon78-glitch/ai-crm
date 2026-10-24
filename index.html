@@ -8,14 +8,14 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-quartz.css">
 <style>
 :root {
-  --bg:   #152030; --bg2: #1e2d45; --card: #243352; --card2: #2a3e68;
-  --bdr:  #2d4060; --bdr2:#243352;
-  --blue: #58a6ff; --blue-dk:#1f6feb; --blue-lt:rgba(88,166,255,.12);
-  --grn:  #3fb950; --grn-lt:rgba(63,185,80,.12);
-  --amb:  #d29922; --amb-lt:rgba(210,153,34,.12);
-  --red:  #f85149; --red-lt:rgba(248,81,73,.12);
-  --pur:  #bc8cff; --pur-lt:rgba(188,140,255,.12);
-  --t1:   #e6edf3; --t2:#8b949e; --t3:#484f58;
+  --bg:   #f0f4f8; --bg2: #ffffff; --card: #ffffff; --card2: #f4f7fb;
+  --bdr:  #dde3ec; --bdr2:#eef1f6;
+  --blue: #2563eb; --blue-dk:#1d4ed8; --blue-lt:rgba(37,99,235,.1);
+  --grn:  #059669; --grn-lt:rgba(5,150,105,.1);
+  --amb:  #d97706; --amb-lt:rgba(217,119,6,.1);
+  --red:  #dc2626; --red-lt:rgba(220,38,38,.1);
+  --pur:  #7c3aed; --pur-lt:rgba(124,58,237,.1);
+  --t1:   #0f172a; --t2:#475569; --t3:#94a3b8;
   --tab-h:60px; --hdr-h:52px;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -55,32 +55,32 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-sy
   cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;}
 .segtab.on{color:var(--blue);border-bottom-color:var(--blue);}
 
-/* ── AG-GRID 커스텀 테마 ── */
-.ag-theme-quartz-dark {
-  --ag-background-color:           #1e2d45;
-  --ag-foreground-color:           #f0f4f8;
-  --ag-secondary-foreground-color: #a8b8cc;
-  --ag-border-color:               #2d4060;
-  --ag-header-background-color:    #16243a;
-  --ag-header-foreground-color:    #b8ccde;
-  --ag-row-background-color:       #1e2d45;
-  --ag-odd-row-background-color:   #243352;
-  --ag-row-hover-color:            #2e4468;
-  --ag-selected-row-background-color: rgba(88,166,255,.22);
+/* ── AG-GRID 라이트 테마 ── */
+.ag-theme-quartz {
+  --ag-background-color:           #ffffff;
+  --ag-foreground-color:           #0f172a;
+  --ag-secondary-foreground-color: #475569;
+  --ag-border-color:               #dde3ec;
+  --ag-header-background-color:    #f0f4f8;
+  --ag-header-foreground-color:    #475569;
+  --ag-row-background-color:       #ffffff;
+  --ag-odd-row-background-color:   #f8fafc;
+  --ag-row-hover-color:            #eff6ff;
+  --ag-selected-row-background-color: rgba(37,99,235,.08);
   --ag-cell-horizontal-padding:    14px;
   --ag-font-size:                  13px;
   --ag-font-family: -apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
   --ag-borders:          none;
   --ag-row-border-style: solid;
-  --ag-row-border-color: #2a3d58;
+  --ag-row-border-color: #eef1f6;
   --ag-row-border-width: 1px;
   --ag-header-column-separator-display: none;
-  --ag-active-color:     #58a6ff;
+  --ag-active-color:     #2563eb;
 }
-.ag-theme-quartz-dark .ag-root-wrapper { border:none; }
-.ag-theme-quartz-dark .ag-row          { cursor:pointer; transition:background .12s; }
-.ag-theme-quartz-dark .ag-cell         { display:flex; align-items:center; }
-.ag-theme-quartz-dark .ag-header-cell-text { font-weight:700; font-size:12px; }
+.ag-theme-quartz .ag-root-wrapper { border:none; }
+.ag-theme-quartz .ag-row          { cursor:pointer; transition:background .12s; }
+.ag-theme-quartz .ag-cell         { display:flex; align-items:center; }
+.ag-theme-quartz .ag-header-cell-text { font-weight:700; font-size:12px; }
 
 /* ── PILLS ── */
 .pills{display:flex;gap:7px;padding:9px 14px;overflow-x:auto;scrollbar-width:none;flex-shrink:0;}
@@ -367,7 +367,7 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-sy
       <span id="stat-vip"   style="font-size:12px;color:var(--amb);"></span>
       <span id="stat-fav"   style="font-size:12px;color:var(--t2);"></span>
     </div>
-    <div id="grid-cards" class="ag-theme-quartz-dark" style="flex:1;min-height:0;"></div>
+    <div id="grid-cards" class="ag-theme-quartz" style="flex:1;min-height:0;"></div>
   </div>
 
   <!-- 거래처 탭 -->
@@ -388,7 +388,7 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-sy
       <span id="stat-act"  style="font-size:12px;color:var(--grn);"></span>
       <span id="stat-dorm" style="font-size:12px;color:var(--t3);"></span>
     </div>
-    <div id="grid-cos" class="ag-theme-quartz-dark" style="flex:1;min-height:0;"></div>
+    <div id="grid-cos" class="ag-theme-quartz" style="flex:1;min-height:0;"></div>
   </div>
 
   <!-- 지도 탭 -->
@@ -467,7 +467,7 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-sy
       <span id="stat-vis"  style="font-size:12px;color:var(--t2);"></span>
       <span id="stat-next" style="font-size:12px;color:var(--amb);"></span>
     </div>
-    <div id="grid-visits" class="ag-theme-quartz-dark" style="flex:1;min-height:0;"></div>
+    <div id="grid-visits" class="ag-theme-quartz" style="flex:1;min-height:0;"></div>
   </div>
 
   <!-- 설정 탭 -->
