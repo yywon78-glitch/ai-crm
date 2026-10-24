@@ -116,11 +116,20 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-sy
   background:linear-gradient(to bottom,rgba(0,0,0,.7),transparent);}
 .cam-top-t{font-size:15px;font-weight:600;color:#fff;}
 .cam-guide{flex:1;display:flex;align-items:center;justify-content:center;}
-.cam-frame{width:82%;aspect-ratio:1.75/1;border:2px solid rgba(255,255,255,.5);border-radius:10px;position:relative;}
-.cam-frame::before,.cam-frame::after{content:'';position:absolute;width:18px;height:18px;border-color:var(--blue);border-style:solid;}
-.cam-frame::before{top:-2px;left:-2px;border-width:3px 0 0 3px;border-radius:5px 0 0 0;}
-.cam-frame::after{bottom:-2px;right:-2px;border-width:0 3px 3px 0;border-radius:0 0 5px 0;}
-.cam-hint{text-align:center;color:rgba(255,255,255,.65);font-size:13px;margin-top:10px;}
+.cam-frame-wrap{display:flex;flex-direction:column;align-items:center;gap:14px;}
+.cam-frame{
+  width:72%;aspect-ratio:1.75/1;border-radius:10px;position:relative;
+  /* 프레임 바깥 어둡게 */
+  box-shadow:0 0 0 9999px rgba(0,0,0,.55);
+}
+/* 모서리 브래킷 4개 */
+.cam-frame::before,.cam-frame::after{content:'';position:absolute;width:22px;height:22px;border-color:#58a6ff;border-style:solid;}
+.cam-frame::before{top:-2px;left:-2px;border-width:3px 0 0 3px;border-radius:6px 0 0 0;}
+.cam-frame::after {bottom:-2px;right:-2px;border-width:0 3px 3px 0;border-radius:0 0 6px 0;}
+.cam-frame .cf-tr{position:absolute;top:-2px;right:-2px;width:22px;height:22px;border:3px solid #58a6ff;border-left:none;border-bottom:none;border-radius:0 6px 0 0;}
+.cam-frame .cf-bl{position:absolute;bottom:-2px;left:-2px;width:22px;height:22px;border:3px solid #58a6ff;border-right:none;border-top:none;border-radius:0 0 0 6px;}
+.cam-hint{text-align:center;color:rgba(255,255,255,.75);font-size:13px;font-weight:500;
+  background:rgba(0,0,0,.45);padding:6px 16px;border-radius:20px;backdrop-filter:blur(4px);}
 .cam-bot{padding:0 0 44px;display:flex;align-items:center;justify-content:space-around;
   background:linear-gradient(to top,rgba(0,0,0,.7),transparent);}
 .cam-gal{width:48px;height:48px;border-radius:11px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);
@@ -467,7 +476,13 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-sy
       <div class="cam-top-t">명함 촬영</div>
     </div>
     <div class="cam-guide">
-      <div><div class="cam-frame"></div><div class="cam-hint">명함을 프레임 안에 맞춰주세요</div></div>
+      <div class="cam-frame-wrap">
+        <div class="cam-frame">
+          <div class="cf-tr"></div>
+          <div class="cf-bl"></div>
+        </div>
+        <div class="cam-hint">명함을 프레임 안에 맞춰주세요</div>
+      </div>
     </div>
     <div class="cam-bot">
       <div class="cam-gal" onclick="document.getElementById('file-inp').click()">🖼️</div>
