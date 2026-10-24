@@ -666,12 +666,6 @@ let captured  = null;
 let stk = [];          // screen stack
 let curCoId = null;
 
-/* ═══════════════════════ INIT ═══════════════════════ */
-(function init(){
-  document.getElementById('v-date').value = new Date().toISOString().split('T')[0];
-  if(API_KEY){ showMain(); } else { document.getElementById('scr-key').classList.add('active'); }
-  renderCards(); renderCos(); renderVisits(); renderStats();
-})();
 
 function renderStats(){
   const vip  = CARDS.filter(c=>c.tag==='VIP').length;
@@ -998,6 +992,11 @@ function toast(msg){
   el.textContent=msg; el.classList.add('show');
   clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('show'),2400);
 }
+
+/* ═══════════════════════ INIT (모든 선언 후 실행) ═══════════════════════ */
+document.getElementById('v-date').value = new Date().toISOString().split('T')[0];
+if(API_KEY){ showMain(); } else { document.getElementById('scr-key').classList.add('active'); }
+renderCards(); renderCos(); renderVisits(); renderStats();
 </script>
 </body>
 </html>
