@@ -10,8 +10,9 @@
 #cam-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
 .cam-ui{position:relative;z-index:10;display:flex;flex-direction:column;height:100%;}
 .cam-top{padding:16px 20px;display:flex;align-items:center;gap:12px;background:linear-gradient(to bottom,rgba(0,0,0,.6) 0%,transparent 100%);}
-.cam-frame{width:92%;max-width:480px;aspect-ratio:1.58;border:2.5px solid rgba(255,255,255,.9);border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,.5);}
-.cam-center{flex:1;display:flex;align-items:center;justify-content:center;}
+.cam-center{flex:1;display:flex;align-items:center;justify-content:center;width:100%;}
+.cam-center>div{width:100%;display:flex;flex-direction:column;align-items:center;padding:0 12px;}
+.cam-frame{width:100%;aspect-ratio:1.58;border:2.5px solid rgba(255,255,255,.9);border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,.5);}
 .cam-hint{color:rgba(255,255,255,.8);font-size:13px;margin-top:12px;text-align:center;}
 .cam-bot{padding:40px 20px 56px;display:flex;align-items:center;justify-content:center;gap:40px;background:linear-gradient(to top,rgba(0,0,0,.6) 0%,transparent 100%);}
 .cam-shut{width:72px;height:72px;border-radius:50%;background:#fff;border:5px solid rgba(255,255,255,.4);cursor:pointer;flex-shrink:0;}
