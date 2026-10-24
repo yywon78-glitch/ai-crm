@@ -757,7 +757,7 @@ function closeCamera(){
 }
 function capturePhoto(){
   const v=document.getElementById('cam-vid');
-  if(!v.videoWidth){ fakeOCR(null); closeCamera(); return; }
+  if(!v.videoWidth){ closeCamera(); processImage(null); return; }
   const c=document.createElement('canvas');
   c.width=v.videoWidth; c.height=v.videoHeight;
   c.getContext('2d').drawImage(v,0,0);
@@ -771,25 +771,35 @@ document.getElementById('file-inp').onchange=e=>{
 };
 
 /* ═══════════════════════ OCR (더미) ═══════════════════════ */
+// 더미 명함 데이터 풀 - 스캔할 때마다 랜덤 추출
+const DUMMY_OCR = [
+  {nm:'홍길동', co:'삼성전자(주)',   tl:'영업팀 과장',    mob:'010-1111-2222',ph:'02-2255-5500',em:'gdhong@samsung.com',  addr:'서울 서초구 서초동 1321'},
+  {nm:'강민서', co:'LG화학(주)',     tl:'기술지원 대리',  mob:'010-3333-4444',ph:'02-3777-5500',em:'mskang@lgchem.com',   addr:'서울 영등포구 여의도동 20'},
+  {nm:'윤지호', co:'카카오(주)',     tl:'서비스 기획자',  mob:'010-5555-6666',ph:'031-8000-5500',em:'jhyoon@kakao.com',   addr:'경기 성남시 분당구 판교로'},
+  {nm:'장서연', co:'CJ제일제당(주)', tl:'구매팀 차장',    mob:'010-7777-8888',ph:'02-6740-5500',em:'syjang@cj.net',      addr:'서울 중구 쌍림동 150'},
+  {nm:'임준혁', co:'한국전력공사',   tl:'스마트그리드 과장',mob:'010-9999-0000',ph:'02-3456-5500',em:'jhlim@kepco.co.kr', addr:'서울 강남구 삼성동 167'},
+];
+
 async function processImage(dataUrl){
-  captured=dataUrl;
-  const img=document.getElementById('res-img');
-  const ph=document.getElementById('res-ph');
-  img.src=dataUrl; img.style.display='block'; ph.style.display='none';
+  captured = dataUrl;
+  const img = document.getElementById('res-img');
+  const ph  = document.getElementById('res-ph');
+  if(dataUrl){ img.src=dataUrl; img.style.display='block'; ph.style.display='none'; }
+  else        { img.style.display='none'; ph.style.display='flex'; }
 
   document.getElementById('ld').classList.add('show');
-  // 더미 딜레이 (실제 API는 Phase2에서)
-  await new Promise(r=>setTimeout(r,1200));
+  await new Promise(r=>setTimeout(r,1100));
   document.getElementById('ld').classList.remove('show');
 
-  // 더미 추출 결과
-  document.getElementById('f-name').value  ='홍길동';
-  document.getElementById('f-co').value    ='(주)예시회사';
-  document.getElementById('f-title').value ='영업팀 과장';
-  document.getElementById('f-mobile').value='010-0000-0000';
-  document.getElementById('f-phone').value ='02-000-0000';
-  document.getElementById('f-email').value ='hong@example.com';
-  document.getElementById('f-addr').value  ='서울시 강남구 테헤란로 123';
+  // 더미 OCR — 기존 거래처 데이터 중 랜덤 추출
+  const d = DUMMY_OCR[Math.floor(Math.random()*DUMMY_OCR.length)];
+  document.getElementById('f-name').value  = d.nm;
+  document.getElementById('f-co').value    = d.co;
+  document.getElementById('f-title').value = d.tl;
+  document.getElementById('f-mobile').value= d.mob;
+  document.getElementById('f-phone').value = d.ph;
+  document.getElementById('f-email').value = d.em;
+  document.getElementById('f-addr').value  = d.addr;
   push('scr-result');
 }
 
@@ -807,7 +817,7 @@ function saveCard(){
     addr:document.getElementById('f-addr').value.trim(),
     tag:'고객',cl:colors[Math.floor(Math.random()*colors.length)],fav:false
   });
-  renderCards(); toast('명함이 저장되었습니다 ✓'); pop();
+  renderCards(); renderStats(); toast('명함이 저장되었습니다 ✓'); pop();
 }
 
 /* ═══════════════════════ RENDER CARDS ═══════════════════════ */
@@ -836,8 +846,10 @@ function cardHTML(c){
     <span class="chev">›</span>
   </div>`;
 }
-function filterCards(q){ renderCards(q); }
+let curCardMode='name';
+function filterCards(q){ renderCards(q, curCardMode); }
 function cardTab(m,el){
+  curCardMode=m;
   document.querySelectorAll('.segtab').forEach(t=>t.classList.remove('on'));
   el.classList.add('on'); renderCards('',m);
 }
@@ -939,8 +951,17 @@ function saveVisit(){
   const dt=document.getElementById('v-date').value;
   const memo=document.getElementById('v-memo').value.trim();
   const next=document.getElementById('v-next').value;
-  VISITS.unshift({id:'v'+Date.now(),co:'(신규)',coId:'',tp,dt,memo:memo||'(메모 없음)',next:next||null});
-  renderVisits(); closeModal(null,'modal-visit'); toast('방문 기록이 저장되었습니다 ✓');
+  // 현재 열려있는 거래처 상세에서 호출됐으면 해당 거래처 연결
+  const activeCo = curCoId ? COS.find(c=>c.id===curCoId) : null;
+  VISITS.unshift({id:'v'+Date.now(),
+    co:   activeCo ? activeCo.nm : '(신규)',
+    coId: curCoId||'',
+    tp, dt, memo:memo||'(메모 없음)', next:next||null
+  });
+  renderVisits(); renderStats();
+  // 거래처 상세가 열려있으면 방문이력 섹션도 갱신
+  if(curCoId) openCoDetail(curCoId);
+  closeModal(null,'modal-visit'); toast('방문 기록이 저장되었습니다 ✓');
 }
 
 /* ═══════════════════════ MAP ═══════════════════════ */
@@ -964,7 +985,7 @@ function saveCo(){
   const nm=document.getElementById('co-nm-inp').value.trim();
   if(!nm){ toast('회사명을 입력해주세요'); return; }
   COS.unshift({id:'co'+Date.now(),nm,addr:document.getElementById('co-addr-inp').value.trim()||'주소 미등록',ind:document.getElementById('co-ind-inp').value.trim()||'',st:'active',cnt:0,last:'-'});
-  renderCos(); closeModal(null,'modal-co'); toast('거래처가 등록되었습니다 ✓');
+  renderCos(); renderStats(); closeModal(null,'modal-co'); toast('거래처가 등록되었습니다 ✓');
 }
 function typeOn(el){ el.closest('.type-grid').querySelectorAll('.type-btn').forEach(b=>b.classList.remove('on')); el.classList.add('on'); }
 function pillOn(el,g){ el.closest('.pills').querySelectorAll('.pill').forEach(p=>p.classList.remove('on')); el.classList.add('on'); }
