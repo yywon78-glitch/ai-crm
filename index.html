@@ -168,18 +168,38 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-sy
 .sec-hdr h3{font-size:13px;font-weight:700;color:var(--t2);}
 .sec-hdr a{font-size:13px;color:var(--blue);cursor:pointer;}
 
-/* ══ VISIT TIMELINE ══ */
+/* ══ VISIT GRID (메인 탭) ══ */
+.vg{padding:12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.vg-card{background:var(--card);border:1px solid var(--bdr);border-radius:13px;
+  padding:13px;display:flex;flex-direction:column;gap:7px;cursor:pointer;transition:background .12s;}
+.vg-card:active{background:var(--card2);}
+.vg-top{display:flex;align-items:center;justify-content:space-between;gap:4px;}
+.vg-type{font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;white-space:nowrap;}
+.vt-bl{background:var(--blue-lt);color:var(--blue);}
+.vt-pu{background:var(--pur-lt);color:var(--pur);}
+.vt-am{background:var(--amb-lt);color:var(--amb);}
+.vt-rd{background:var(--red-lt);color:var(--red);}
+.vt-gn{background:var(--grn-lt);color:var(--grn);}
+.vt-gr{background:rgba(72,79,88,.2);color:var(--t2);}
+.vg-date{font-size:10px;color:var(--t3);flex-shrink:0;}
+.vg-co{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.vg-memo{font-size:11px;color:var(--t2);line-height:1.55;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;flex:1;}
+.vg-next{font-size:10px;color:var(--amb);font-weight:600;
+  background:var(--amb-lt);padding:3px 7px;border-radius:5px;align-self:flex-start;}
+
+/* ══ VISIT MINI (거래처 상세용) ══ */
 .tl{padding:0 14px;}
-.tl-item{display:flex;gap:11px;margin-bottom:14px;}
-.tl-lw{display:flex;flex-direction:column;align-items:center;width:30px;flex-shrink:0;}
-.tl-dot{width:11px;height:11px;border-radius:50%;background:var(--blue);flex-shrink:0;margin-top:3px;}
-.tl-ln{width:2px;flex:1;background:var(--bdr);margin-top:4px;min-height:28px;}
+.tl-item{display:flex;gap:11px;margin-bottom:12px;}
+.tl-lw{display:flex;flex-direction:column;align-items:center;width:28px;flex-shrink:0;}
+.tl-dot{width:10px;height:10px;border-radius:50%;background:var(--blue);flex-shrink:0;margin-top:3px;}
+.tl-ln{width:2px;flex:1;background:var(--bdr);margin-top:4px;min-height:24px;}
 .tl-item:last-child .tl-ln{display:none;}
-.tl-card{flex:1;background:var(--card);border:1px solid var(--bdr);border-radius:11px;padding:11px 13px;}
-.tl-date{font-size:11px;color:var(--t2);margin-bottom:3px;}
-.tl-type{font-size:13px;font-weight:700;margin-bottom:3px;}
+.tl-card{flex:1;background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:10px 12px;}
+.tl-date{font-size:11px;color:var(--t2);margin-bottom:2px;}
+.tl-type{font-size:12px;font-weight:700;margin-bottom:2px;}
 .tl-memo{font-size:12px;color:var(--t2);line-height:1.5;}
-.tl-next{font-size:11px;color:var(--amb);margin-top:5px;font-weight:600;}
+.tl-next{font-size:11px;color:var(--amb);margin-top:4px;font-weight:600;}
 
 /* ══ MAP ══ */
 .map-container{flex:1;background:#0d1f2d;position:relative;overflow:hidden;}
@@ -400,7 +420,7 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:-apple-sy
       <span id="stat-vis"  style="font-size:12px;color:var(--t2);"></span>
       <span id="stat-next" style="font-size:12px;color:var(--amb);"></span>
     </div>
-    <div class="body"><div class="tl" id="visits-tl" style="padding-top:14px;"></div></div>
+    <div class="body"><div class="vg" id="visits-tl"></div></div>
   </div>
 
   <!-- 설정 탭 -->
@@ -914,7 +934,7 @@ function openCoDetail(id){
     : '<div style="padding:10px 0;font-size:13px;color:var(--t3);">소속 명함 없음</div>';
   const coVisits=VISITS.filter(v=>v.co===co.nm);
   document.getElementById('co-visits').innerHTML=coVisits.length
-    ? coVisits.map(v=>visitHTML(v)).join('')
+    ? coVisits.map(v=>visitMiniHTML(v)).join('')
     : '<div style="padding:10px 0;font-size:13px;color:var(--t3);">방문 이력 없음</div>';
   push('scr-co');
 }
@@ -931,13 +951,34 @@ function filterVisits(f,el){
 function renderVisits(){
   document.getElementById('visits-tl').innerHTML=VISITS.map(v=>visitHTML(v)).join('');
 }
+/* 방문 유형 → 색상 클래스 */
+function vtCls(tp){
+  if(tp.includes('상담')) return 'vt-bl';
+  if(tp.includes('인사')) return 'vt-pu';
+  if(tp.includes('견적')) return 'vt-am';
+  if(tp.includes('AS'))   return 'vt-rd';
+  if(tp.includes('납품')) return 'vt-gn';
+  return 'vt-gr';
+}
+/* 메인 방문탭 — 그리드 카드 */
 function visitHTML(v){
+  return `<div class="vg-card">
+    <div class="vg-top">
+      <span class="vg-type ${vtCls(v.tp)}">${v.tp}</span>
+      <span class="vg-date">${v.dt.slice(5)}</span>
+    </div>
+    <div class="vg-co">${v.co}</div>
+    <div class="vg-memo">${v.memo}</div>
+    ${v.next?`<div class="vg-next">📅 ${v.next.slice(5)}</div>`:''}
+  </div>`;
+}
+/* 거래처 상세 — 타임라인 미니 */
+function visitMiniHTML(v){
   return `<div class="tl-item">
     <div class="tl-lw"><div class="tl-dot"></div><div class="tl-ln"></div></div>
     <div class="tl-card">
-      <div class="tl-date">${v.dt} · <strong>${v.co}</strong></div>
-      <div class="tl-type">${v.tp}</div>
-      <div class="tl-memo">${v.memo}</div>
+      <div class="tl-date">${v.dt} <span class="vg-type ${vtCls(v.tp)}" style="padding:1px 6px;font-size:10px;">${v.tp}</span></div>
+      <div class="tl-memo" style="margin-top:4px;">${v.memo}</div>
       ${v.next?`<div class="tl-next">📅 다음 예정: ${v.next}</div>`:''}
     </div>
   </div>`;
