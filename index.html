@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>명함 CRM</title>
+<title>紐낇븿 CRM</title>
 <link rel="stylesheet" href="shared.css">
 <style>
 .home-banner{background:linear-gradient(135deg,#1d4ed8 0%,#2563eb 60%,#3b82f6 100%);padding:24px 20px 28px;color:#fff;}
@@ -36,103 +36,103 @@
 <body>
 <div class="page">
   <header class="hdr">
-    <span class="hdr-t">명함 CRM</span>
-    <div class="hdr-icon" onclick="location.href='settings.html'">⚙️</div>
+    <span class="hdr-t">紐낇븿 CRM</span>
+    <div class="hdr-icon" onclick="location.href='settings.html'">?숋툘</div>
   </header>
   <div class="body">
 
-    <!-- 오늘 방문 예정 -->
+    <!-- ?ㅻ뒛 諛⑸Ц ?덉젙 -->
     <div id="today-visits-wrap" style="display:none;">
       <div class="menu-section" style="padding-bottom:0;">
-        <div class="menu-section-title" style="color:var(--red);">📅 오늘 방문 예정</div>
+        <div class="menu-section-title" style="color:var(--red);">?뱟 ?ㅻ뒛 諛⑸Ц ?덉젙</div>
       </div>
       <div id="today-visits" style="padding:0 14px 8px;display:flex;flex-direction:column;gap:8px;"></div>
     </div>
 
-    <!-- 배너 + 통계 -->
+    <!-- 諛곕꼫 + ?듦퀎 -->
     <div class="home-banner">
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <div class="home-logo">BUSINESS CARD CRM</div>
-        <div style="font-size:11px;font-weight:700;background:rgba(255,255,255,.2);padding:3px 10px;border-radius:20px;">v3.9</div>
+        <div style="font-size:11px;font-weight:700;background:rgba(255,255,255,.2);padding:3px 10px;border-radius:20px;">v4.0</div>
       </div>
-      <div class="home-title">명함 관리 시스템</div>
+      <div class="home-title">紐낇븿 愿由??쒖뒪??/div>
       <div class="home-date" id="today-date"></div>
       <div class="stat-row">
-        <div class="stat-chip"><div class="n" id="s-cards">0</div><div class="l">명함</div></div>
-        <div class="stat-chip"><div class="n" id="s-cos">0</div><div class="l">거래처</div></div>
-        <div class="stat-chip"><div class="n" id="s-visits">0</div><div class="l">방문</div></div>
+        <div class="stat-chip"><div class="n" id="s-cards">0</div><div class="l">紐낇븿</div></div>
+        <div class="stat-chip"><div class="n" id="s-cos">0</div><div class="l">嫄곕옒泥?/div></div>
+        <div class="stat-chip"><div class="n" id="s-visits">0</div><div class="l">諛⑸Ц</div></div>
       </div>
     </div>
 
-    <!-- 주요 기능 -->
+    <!-- 二쇱슂 湲곕뒫 -->
     <div class="menu-section">
-      <div class="menu-section-title">명함 관리</div>
+      <div class="menu-section-title">紐낇븿 愿由?/div>
 
       <div class="menu-card" onclick="location.href='scan.html'">
-        <div class="menu-ic ic-blue">📷</div>
+        <div class="menu-ic ic-blue">?벜</div>
         <div class="menu-txt">
-          <div class="menu-nm">명함 스캔</div>
-          <div class="menu-desc">카메라로 명함을 촬영하고 자동 저장</div>
+          <div class="menu-nm">紐낇븿 ?ㅼ틪</div>
+          <div class="menu-desc">移대찓?쇰줈 紐낇븿??珥ъ쁺?섍퀬 ?먮룞 ???/div>
         </div>
-        <div class="menu-arrow">›</div>
+        <div class="menu-arrow">??/div>
       </div>
 
       <div class="menu-card" onclick="location.href='cards.html'">
-        <div class="menu-ic ic-blue">🪪</div>
+        <div class="menu-ic ic-blue">?お</div>
         <div class="menu-txt">
-          <div class="menu-nm">명함 목록</div>
-          <div class="menu-desc">저장된 명함 검색 · 조회 · 즐겨찾기</div>
+          <div class="menu-nm">紐낇븿 紐⑸줉</div>
+          <div class="menu-desc">??λ맂 紐낇븿 寃??쨌 議고쉶 쨌 利먭꺼李얘린</div>
         </div>
         <div class="menu-badge" id="b-cards"></div>
-        <div class="menu-arrow">›</div>
+        <div class="menu-arrow">??/div>
       </div>
     </div>
 
-    <!-- 거래처·방문 -->
+    <!-- 嫄곕옒泥샕룸갑臾?-->
     <div class="menu-section">
-      <div class="menu-section-title">영업 관리</div>
+      <div class="menu-section-title">?곸뾽 愿由?/div>
 
       <div class="menu-card" onclick="location.href='cos.html'">
-        <div class="menu-ic ic-grn">🏢</div>
+        <div class="menu-ic ic-grn">?룫</div>
         <div class="menu-txt">
-          <div class="menu-nm">거래처 관리</div>
-          <div class="menu-desc">회사별 명함·방문이력 통합 관리</div>
+          <div class="menu-nm">嫄곕옒泥?愿由?/div>
+          <div class="menu-desc">?뚯궗蹂?紐낇븿쨌諛⑸Ц?대젰 ?듯빀 愿由?/div>
         </div>
         <div class="menu-badge" id="b-cos"></div>
-        <div class="menu-arrow">›</div>
+        <div class="menu-arrow">??/div>
       </div>
 
       <div class="menu-card" onclick="location.href='visits.html'">
-        <div class="menu-ic ic-amb">📝</div>
+        <div class="menu-ic ic-amb">?뱷</div>
         <div class="menu-txt">
-          <div class="menu-nm">방문 기록</div>
-          <div class="menu-desc">미팅·상담·견적 방문 이력 관리</div>
+          <div class="menu-nm">諛⑸Ц 湲곕줉</div>
+          <div class="menu-desc">誘명똿쨌?곷떞쨌寃ъ쟻 諛⑸Ц ?대젰 愿由?/div>
         </div>
         <div class="menu-badge" id="b-visits"></div>
-        <div class="menu-arrow">›</div>
+        <div class="menu-arrow">??/div>
       </div>
 
       <div class="menu-card" onclick="location.href='map.html'">
-        <div class="menu-ic ic-pur">🗺️</div>
+        <div class="menu-ic ic-pur">?뿺截?/div>
         <div class="menu-txt">
-          <div class="menu-nm">거래처 지도</div>
-          <div class="menu-desc">주변 거래처 위치 확인</div>
+          <div class="menu-nm">嫄곕옒泥?吏??/div>
+          <div class="menu-desc">二쇰? 嫄곕옒泥??꾩튂 ?뺤씤</div>
         </div>
-        <div class="menu-arrow">›</div>
+        <div class="menu-arrow">??/div>
       </div>
     </div>
 
-    <!-- 설정 -->
+    <!-- ?ㅼ젙 -->
     <div class="menu-section">
-      <div class="menu-section-title">시스템</div>
+      <div class="menu-section-title">?쒖뒪??/div>
 
       <div class="menu-card" onclick="location.href='settings.html'">
-        <div class="menu-ic ic-gray">⚙️</div>
+        <div class="menu-ic ic-gray">?숋툘</div>
         <div class="menu-txt">
-          <div class="menu-nm">설정</div>
-          <div class="menu-desc">API 키 · 데이터 초기화</div>
+          <div class="menu-nm">?ㅼ젙</div>
+          <div class="menu-desc">API ??쨌 ?곗씠??珥덇린??/div>
         </div>
-        <div class="menu-arrow">›</div>
+        <div class="menu-arrow">??/div>
       </div>
     </div>
 
@@ -149,14 +149,14 @@ function load(){
   document.getElementById('s-cards').textContent=cards.length;
   document.getElementById('s-cos').textContent=cos.length;
   document.getElementById('s-visits').textContent=visits.length;
-  document.getElementById('b-cards').textContent=cards.length+'장';
-  document.getElementById('b-cos').textContent=cos.length+'개';
-  document.getElementById('b-visits').textContent=visits.length+'건';
+  document.getElementById('b-cards').textContent=cards.length+'??;
+  document.getElementById('b-cos').textContent=cos.length+'媛?;
+  document.getElementById('b-visits').textContent=visits.length+'嫄?;
 
   const now=new Date();
-  const days=['일','월','화','수','목','금','토'];
+  const days=['??,'??,'??,'??,'紐?,'湲?,'??];
   document.getElementById('today-date').textContent=
-    `${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 (${days[now.getDay()]})`;
+    `${now.getFullYear()}??${now.getMonth()+1}??${now.getDate()}??(${days[now.getDay()]})`;
 }
 renderTabBar('home');
 load();
@@ -170,10 +170,10 @@ function loadTodayVisits() {
   wrap.style.display='block';
   el.innerHTML = visits.map(v=>`
     <div class="menu-card" onclick="location.href='cos.html'" style="border-color:var(--red);background:#fff5f5;">
-      <div class="menu-ic" style="background:var(--red-lt);">📅</div>
+      <div class="menu-ic" style="background:var(--red-lt);">?뱟</div>
       <div class="menu-txt">
         <div class="menu-nm">${v.co}</div>
-        <div class="menu-desc">${v.tp} · 오늘 방문 예정</div>
+        <div class="menu-desc">${v.tp} 쨌 ?ㅻ뒛 諛⑸Ц ?덉젙</div>
       </div>
     </div>`).join('');
 }

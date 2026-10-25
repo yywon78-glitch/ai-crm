@@ -1,81 +1,81 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>설정</title>
+<title>?ㅼ젙</title>
 <link rel="stylesheet" href="shared.css">
 </head>
 <body>
 <div class="page">
   <header class="hdr">
-    <div class="hdr-back" onclick="history.back()">←</div>
-    <span class="hdr-t">설정</span>
+    <div class="hdr-back" onclick="history.back()">??/div>
+    <span class="hdr-t">?ㅼ젙</span>
   </header>
   <div class="body">
     <div style="height:8px;"></div>
 
     <div class="set-grp">
-      <div class="set-lbl">API 연동</div>
+      <div class="set-lbl">API ?곕룞</div>
       <div class="set-item" onclick="editKey()">
-        <span class="set-ic">🔑</span>
-        <div class="set-txt"><div class="set-t">Anthropic API 키</div><div class="set-s" id="key-status">미설정</div></div>
-        <span class="set-arrow">›</span>
+        <span class="set-ic">?뵎</span>
+        <div class="set-txt"><div class="set-t">Anthropic API ??/div><div class="set-s" id="key-status">誘몄꽕??/div></div>
+        <span class="set-arrow">??/span>
       </div>
       <div class="set-item" onclick="editWorkspace()">
-        <span class="set-ic">🏷</span>
-        <div class="set-txt"><div class="set-t">Workspace ID</div><div class="set-s" id="ws-status">미설정 (오류 시 필요)</div></div>
-        <span class="set-arrow">›</span>
+        <span class="set-ic">?뤇</span>
+        <div class="set-txt"><div class="set-t">Workspace ID</div><div class="set-s" id="ws-status">誘몄꽕??(?ㅻ쪟 ???꾩슂)</div></div>
+        <span class="set-arrow">??/span>
       </div>
     </div>
 
     <div class="set-grp">
-      <div class="set-lbl">데이터</div>
+      <div class="set-lbl">?곗씠??/div>
       <div class="set-item" onclick="confirmReset()">
-        <span class="set-ic">🗑</span>
-        <div class="set-txt"><div class="set-t">데이터 초기화</div><div class="set-s">샘플 데이터로 되돌리기</div></div>
-        <span class="set-arrow">›</span>
+        <span class="set-ic">?뿊</span>
+        <div class="set-txt"><div class="set-t">?곗씠??珥덇린??/div><div class="set-s">?섑뵆 ?곗씠?곕줈 ?섎룎由ш린</div></div>
+        <span class="set-arrow">??/span>
       </div>
     </div>
 
     <div class="set-grp">
-      <div class="set-lbl">데이터 내보내기</div>
+      <div class="set-lbl">?곗씠???대낫?닿린</div>
       <div class="set-item" onclick="exportJSON()">
-        <span class="set-ic">📤</span>
-        <div class="set-txt"><div class="set-t">JSON 내보내기</div><div class="set-s">명함·거래처·방문기록 전체 백업</div></div>
-        <span class="set-arrow">›</span>
+        <span class="set-ic">?뱾</span>
+        <div class="set-txt"><div class="set-t">JSON ?대낫?닿린</div><div class="set-s">紐낇븿쨌嫄곕옒泥샕룸갑臾멸린濡??꾩껜 諛깆뾽</div></div>
+        <span class="set-arrow">??/span>
       </div>
       <div class="set-item" onclick="exportCSV()">
-        <span class="set-ic">📊</span>
-        <div class="set-txt"><div class="set-t">CSV 내보내기</div><div class="set-s">엑셀에서 열 수 있는 형식</div></div>
-        <span class="set-arrow">›</span>
+        <span class="set-ic">?뱤</span>
+        <div class="set-txt"><div class="set-t">CSV ?대낫?닿린</div><div class="set-s">?묒??먯꽌 ?????덈뒗 ?뺤떇</div></div>
+        <span class="set-arrow">??/span>
       </div>
     </div>
 
     <div class="set-grp">
-      <div class="set-lbl">앱 정보</div>
+      <div class="set-lbl">???뺣낫</div>
       <div class="set-item">
-        <span class="set-ic">ℹ️</span>
-        <div class="set-txt"><div class="set-t">버전</div><div class="set-s">v3.9 · 2026-10-25 · 명함편집/OCR/내보내기</div></div>
+        <span class="set-ic">?뱄툘</span>
+        <div class="set-txt"><div class="set-t">踰꾩쟾</div><div class="set-s">v4.0 쨌 2026-10-25 쨌 紐낇븿?몄쭛/OCR/?대낫?닿린</div></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- API 키 편집 모달 -->
+<!-- API ???몄쭛 紐⑤떖 -->
 <div class="moverlay" id="modal-key" onclick="if(event.target===this)closeKeyModal()">
   <div class="msheet">
     <div class="m-handle"></div>
-    <div class="m-title">Anthropic API 키</div>
+    <div class="m-title">Anthropic API ??/div>
     <div class="m-body">
-      <div><div class="flb">API 키</div><input class="finp" id="key-inp" type="password" placeholder="sk-ant-..."></div>
-      <div style="font-size:12px;color:var(--t2);">console.anthropic.com에서 발급받을 수 있습니다.</div>
-      <button class="m-btn" onclick="saveKey()">저장</button>
+      <div><div class="flb">API ??/div><input class="finp" id="key-inp" type="password" placeholder="sk-ant-..."></div>
+      <div style="font-size:12px;color:var(--t2);">console.anthropic.com?먯꽌 諛쒓툒諛쏆쓣 ???덉뒿?덈떎.</div>
+      <button class="m-btn" onclick="saveKey()">???/button>
     </div>
   </div>
 </div>
 
-<!-- Workspace ID 편집 모달 -->
+<!-- Workspace ID ?몄쭛 紐⑤떖 -->
 <div class="moverlay" id="modal-ws" onclick="if(event.target===this)closeWsModal()">
   <div class="msheet">
     <div class="m-handle"></div>
@@ -83,10 +83,10 @@
     <div class="m-body">
       <div><div class="flb">Workspace ID</div><input class="finp" id="ws-inp" placeholder="wrkspc_..."></div>
       <div style="font-size:12px;color:var(--t2);line-height:1.6;">
-        console.anthropic.com → Settings → Workspaces에서 확인.<br>
-        "API key is not scoped" 오류 발생 시 입력하세요.
+        console.anthropic.com ??Settings ??Workspaces?먯꽌 ?뺤씤.<br>
+        "API key is not scoped" ?ㅻ쪟 諛쒖깮 ???낅젰?섏꽭??
       </div>
-      <button class="m-btn" onclick="saveWorkspace()">저장</button>
+      <button class="m-btn" onclick="saveWorkspace()">???/button>
     </div>
   </div>
 </div>
@@ -96,9 +96,9 @@
 <script>
 function load(){
   const k=DB.getKey();
-  document.getElementById('key-status').textContent = k ? `설정됨 (${k.slice(0,12)}...)` : '미설정';
+  document.getElementById('key-status').textContent = k ? `?ㅼ젙??(${k.slice(0,12)}...)` : '誘몄꽕??;
   const w=DB.getWorkspace();
-  document.getElementById('ws-status').textContent = w ? `설정됨 (${w.slice(0,16)}...)` : '미설정 (오류 시 필요)';
+  document.getElementById('ws-status').textContent = w ? `?ㅼ젙??(${w.slice(0,16)}...)` : '誘몄꽕??(?ㅻ쪟 ???꾩슂)';
 }
 
 function editKey(){
@@ -111,7 +111,7 @@ function saveKey(){
   DB.setKey(k);
   closeKeyModal();
   load();
-  toast('API 키가 저장됐습니다 ✓');
+  toast('API ?ㅺ? ??λ릱?듬땲????);
 }
 
 function editWorkspace(){
@@ -124,7 +124,7 @@ function saveWorkspace(){
   DB.setWorkspace(k);
   closeWsModal();
   load();
-  toast('Workspace ID가 저장됐습니다 ✓');
+  toast('Workspace ID媛 ??λ릱?듬땲????);
 }
 
 function exportJSON(){
@@ -134,28 +134,28 @@ function exportJSON(){
   a.href=URL.createObjectURL(blob);
   a.download=`crm_backup_${new Date().toISOString().split('T')[0]}.json`;
   a.click(); URL.revokeObjectURL(a.href);
-  toast('JSON 내보내기 완료 ✓');
+  toast('JSON ?대낫?닿린 ?꾨즺 ??);
 }
 
 function exportCSV(){
   const cards=DB.getCards();
-  const headers=['이름','회사','직책','휴대전화','유선전화','이메일','주소','태그','즐겨찾기'];
+  const headers=['?대쫫','?뚯궗','吏곸콉','?대??꾪솕','?좎꽑?꾪솕','?대찓??,'二쇱냼','?쒓렇','利먭꺼李얘린'];
   const rows=cards.map(c=>[c.nm,c.co,c.tl,c.mob,c.ph,c.em,c.addr,c.tag,c.fav?'Y':'N'].map(v=>`"${(v||'').replace(/"/g,'""')}"`).join(','));
-  const csv='﻿'+[headers.join(','),...rows].join('\n');
+  const csv='癤?+[headers.join(','),...rows].join('\n');
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
   a.download=`crm_cards_${new Date().toISOString().split('T')[0]}.csv`;
   a.click(); URL.revokeObjectURL(a.href);
-  toast('CSV 내보내기 완료 ✓');
+  toast('CSV ?대낫?닿린 ?꾨즺 ??);
 }
 
 function confirmReset(){
-  if(confirm('모든 데이터를 초기화하고 샘플 데이터로 되돌립니다. 계속하시겠습니까?')){
+  if(confirm('紐⑤뱺 ?곗씠?곕? 珥덇린?뷀븯怨??섑뵆 ?곗씠?곕줈 ?섎룎由쎈땲?? 怨꾩냽?섏떆寃좎뒿?덇퉴?')){
     localStorage.removeItem('crm_cards');
     localStorage.removeItem('crm_cos');
     localStorage.removeItem('crm_visits');
-    toast('초기화 완료 ✓');
+    toast('珥덇린???꾨즺 ??);
   }
 }
 
