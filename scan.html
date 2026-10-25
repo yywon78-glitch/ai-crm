@@ -178,8 +178,8 @@ async function resizeForOCR(dataUrl, maxW=1600){
     const rw=Math.round(sw*scale), rh=Math.round(sh*scale);
     c.width=rh; c.height=rw;
     const ctx=c.getContext('2d');
-    if(orient===8){ctx.translate(0,rw);ctx.rotate(-Math.PI/2);}
-    else{ctx.translate(rh,0);ctx.rotate(Math.PI/2);}
+    if(orient===8){ctx.translate(rh,0);ctx.rotate(Math.PI/2);}   // orient 8 → CW
+    else{ctx.translate(0,rw);ctx.rotate(-Math.PI/2);}           // orient 6(기본) → CCW
     ctx.drawImage(src,0,0,rw,rh);
   } else {
     const scale=Math.min(1,maxW/sw);
