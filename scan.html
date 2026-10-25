@@ -145,19 +145,20 @@ document.getElementById('inp-cam').onchange = onFile;
 document.getElementById('inp-gal').onchange = onFile;
 
 let _triggerEl = 'inp-cam';
+const _stored = sessionStorage.getItem('camImg') || sessionStorage.getItem('galImg');
+if(_stored){
+  const _key = sessionStorage.getItem('camImg') ? 'camImg' : 'galImg';
+  sessionStorage.removeItem(_key);
+  _prevDataUrl = _stored;
+  document.getElementById('prev-img').src = _stored;
+  document.getElementById('cam-trigger').style.display = 'none';
+  document.getElementById('preview-view').style.display = 'flex';
+}
 if(new URLSearchParams(location.search).get('gal')){
   _triggerEl = 'inp-gal';
   document.getElementById('trig-ic').textContent='🖼️';
   document.getElementById('trig-t1').textContent='탭하여 갤러리 선택';
   document.getElementById('trig-t2').textContent='사진첩에서 명함을 선택합니다';
-  const stored = sessionStorage.getItem('galImg');
-  if(stored){
-    sessionStorage.removeItem('galImg');
-    _prevDataUrl = stored;
-    document.getElementById('prev-img').src = stored;
-    document.getElementById('cam-trigger').style.display = 'none';
-    document.getElementById('preview-view').style.display = 'flex';
-  }
 }
 
 function retake(){
@@ -354,12 +355,13 @@ function saveCard(){
     if(captured) dup.img = captured;
     try { DB.setCards(cards); } catch(e) { dup.img = null; DB.setCards(cards); }
     toast('업데이트됐습니다 ✓');
-    location.href='index.html';
+    location.href='card.html?id='+dup.id;
     return;
   }
 
+  const newId = 'c'+Date.now();
   cards.unshift({
-    id:'c'+Date.now(), nm, co,
+    id:newId, nm, co,
     tl:document.getElementById('f-tl').value.trim(),
     mob:document.getElementById('f-mob').value.trim(),
     ph:document.getElementById('f-ph').value.trim(),
@@ -370,7 +372,7 @@ function saveCard(){
   });
   try { DB.setCards(cards); } catch(e) { cards[0].img = null; DB.setCards(cards); }
   toast('명함이 저장됐습니다 ✓');
-  location.href='index.html';
+  location.href='card.html?id='+newId;
 }
 </script>
 </body>

@@ -68,7 +68,7 @@
     <div class="menu-section">
       <div class="menu-section-title">명함 관리</div>
 
-      <div class="menu-card" onclick="location.href='scan.html'">
+      <div class="menu-card" onclick="document.getElementById('cam-inp').click()">
         <div class="menu-ic ic-blue">📷</div>
         <div class="menu-txt">
           <div class="menu-nm">명함 스캔</div>
@@ -150,10 +150,17 @@
   <nav class="tabbar" id="tabbar"></nav>
 </div>
 
+<input type="file" id="cam-inp" accept="image/*" capture="environment" style="display:none">
 <input type="file" id="gal-inp" accept="image/*" style="display:none">
 <script src="data.js"></script>
 <script src="nav.js"></script>
 <script>
+document.getElementById('cam-inp').onchange = function(e){
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ev => { sessionStorage.setItem('camImg', ev.target.result); location.href='scan.html'; };
+  r.readAsDataURL(f); e.target.value='';
+};
 document.getElementById('gal-inp').onchange = function(e){
   const f = e.target.files[0]; if(!f) return;
   const r = new FileReader();
