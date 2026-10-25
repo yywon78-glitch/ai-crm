@@ -101,12 +101,28 @@ function stopCam(){
 function capture(){
   const v=document.getElementById('cam-vid');
   if(!v.videoWidth){ processImage(null); return; }
+
+  /* 프레임 위치 → 비디오 원본 좌표로 변환 */
+  const vRect=v.getBoundingClientRect();
+  const fRect=document.querySelector('.cam-frame').getBoundingClientRect();
+  const natW=v.videoWidth, natH=v.videoHeight;
+
+  /* object-fit:cover 보정 */
+  const scale=Math.max(vRect.width/natW, vRect.height/natH);
+  const offX=(natW*scale-vRect.width)/2;
+  const offY=(natH*scale-vRect.height)/2;
+
+  const cx=((fRect.left-vRect.left)+offX)/scale;
+  const cy=((fRect.top -vRect.top )+offY)/scale;
+  const cw=fRect.width/scale;
+  const ch=fRect.height/scale;
+
   const c=document.createElement('canvas');
-  c.width=v.videoWidth; c.height=v.videoHeight;
+  c.width=Math.round(cw); c.height=Math.round(ch);
   const ctx=c.getContext('2d');
   ctx.imageSmoothingEnabled=true;
   ctx.imageSmoothingQuality='high';
-  ctx.drawImage(v,0,0);
+  ctx.drawImage(v, cx, cy, cw, ch, 0, 0, c.width, c.height);
   processImage(c.toDataURL('image/jpeg',1.0));
 }
 
