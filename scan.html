@@ -16,7 +16,12 @@
 </head>
 <body>
 
-<!-- 숨은 파일 입력 -->
+<!-- 전체화면 카메라/갤러리 트리거 -->
+<label id="cam-trigger" for="inp-cam" style="position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg);gap:16px;cursor:pointer;touch-action:manipulation;">
+  <div style="font-size:72px;">📷</div>
+  <div style="font-size:18px;font-weight:700;color:var(--t1);">탭하여 촬영</div>
+  <div style="font-size:13px;color:var(--t2);">명함을 카메라로 스캔합니다</div>
+</label>
 <input type="file" id="inp-cam" accept="image/*" capture="environment" style="display:none">
 <input type="file" id="inp-gal" accept="image/*" style="display:none">
 
@@ -86,16 +91,18 @@ function onFile(e){
 document.getElementById('inp-cam').onchange = onFile;
 document.getElementById('inp-gal').onchange = onFile;
 
-// 진입 시 자동 실행: ?gal=1 이면 갤러리, 아니면 카메라
+// ?gal=1 이면 갤러리 트리거로 교체
 if(new URLSearchParams(location.search).get('gal')){
-  document.getElementById('inp-gal').click();
-} else {
-  document.getElementById('inp-cam').click();
+  document.getElementById('cam-trigger').setAttribute('for','inp-gal');
+  document.querySelector('#cam-trigger div:nth-child(1)').textContent='🖼️';
+  document.querySelector('#cam-trigger div:nth-child(2)').textContent='탭하여 갤러리 선택';
+  document.querySelector('#cam-trigger div:nth-child(3)').textContent='사진첩에서 명함을 선택합니다';
 }
 
 function retake(){
   document.getElementById('result-view').style.display = 'none';
-  document.getElementById('inp-cam').click();
+  document.getElementById('cam-trigger').setAttribute('for','inp-cam');
+  document.getElementById('cam-trigger').style.display = 'flex';
 }
 
 function showErr(msg){
@@ -244,6 +251,7 @@ async function processImage(dataUrl){
       if(cropped){ imgEl.src = cropped; imgEl.style.display = 'block'; }
       document.getElementById('res-ph').style.display = 'none';
       fillForm(cards[0]);
+      document.getElementById('cam-trigger').style.display = 'none';
       document.getElementById('result-view').style.display = 'flex';
     } else {
       showMulti(cards);
@@ -276,6 +284,7 @@ function showMulti(cards){
         <div style="font-size:12px;color:var(--t2);margin-top:2px;">${[c.mob,c.ph,c.em].filter(Boolean).join(' · ')}</div>
       </div>
     </label>`).join('');
+  document.getElementById('cam-trigger').style.display = 'none';
   document.getElementById('multi-box').style.display = 'flex';
 }
 
