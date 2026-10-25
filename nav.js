@@ -5,21 +5,10 @@ function renderTabBar(active) {
   el.innerHTML = `
     <div class="tbi${active==='home'?' on':''}"   onclick="location.href='index.html'"><span class="ic">🏠</span><span class="lb">홈</span></div>
     <div class="tbi${active==='cards'?' on':''}"  onclick="location.href='cards.html'"><span class="ic">🪪</span><span class="lb">명함</span></div>
-    <div class="tb-scan" onclick="document.getElementById('_tab-cam').click()"><div class="scan-fab">📷</div><span class="lb">스캔</span></div>
+    <div class="tb-scan" onclick="location.href='scan.html'"><div class="scan-fab">📷</div><span class="lb">스캔</span></div>
     <div class="tbi${active==='cos'?' on':''}"    onclick="location.href='cos.html'"><span class="ic">🏢</span><span class="lb">거래처</span></div>
     <div class="tbi${active==='visits'?' on':''}" onclick="location.href='visits.html'"><span class="ic">📝</span><span class="lb">방문</span></div>
   `;
-  if(!document.getElementById('_tab-cam')){
-    const inp = document.createElement('input');
-    inp.type='file'; inp.id='_tab-cam'; inp.accept='image/*'; inp.setAttribute('capture','environment'); inp.style.display='none';
-    inp.onchange = function(e){
-      const f = e.target.files[0]; if(!f) return;
-      const r = new FileReader();
-      r.onload = ev => { sessionStorage.setItem('camImg', ev.target.result); location.href='scan.html'; };
-      r.readAsDataURL(f); e.target.value='';
-    };
-    document.body.appendChild(inp);
-  }
 }
 
 /* ── 토스트 ── */

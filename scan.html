@@ -48,17 +48,13 @@
   <header class="hdr">
     <div class="hdr-back" onclick="history.back()">←</div>
     <span class="hdr-t">스캔 결과</span>
-    <button class="hdr-btn" onclick="retake()" style="background:var(--t2);margin-right:4px;">재촬영</button>
+    <button class="hdr-btn" onclick="retake()" style="background:var(--t2);margin-right:6px;">재촬영</button>
     <button class="hdr-btn" onclick="saveCard()">저장</button>
   </header>
   <div class="body">
     <div class="res-img-wrap">
       <img id="res-img" class="res-img" style="display:none;">
       <div class="res-ph" id="res-ph">📷 명함 이미지</div>
-    </div>
-    <div style="display:flex;gap:10px;padding:10px 14px 0;">
-      <button onclick="rotateResult(-90)" style="flex:1;padding:12px;border-radius:10px;background:var(--bg);border:1.5px solid var(--bdr);font-size:18px;font-weight:700;cursor:pointer;touch-action:manipulation;">↺ 좌회전</button>
-      <button onclick="rotateResult(90)"  style="flex:1;padding:12px;border-radius:10px;background:var(--bg);border:1.5px solid var(--bdr);font-size:18px;font-weight:700;cursor:pointer;touch-action:manipulation;">↻ 우회전</button>
     </div>
     <div style="height:14px;"></div>
     <div class="fgrp"><div class="flb">이름 *</div><input class="finp" id="f-nm" placeholder="이름"></div>
@@ -137,8 +133,10 @@ function onFile(e){
   if(!f) return;
   const r = new FileReader();
   r.onload = ev => {
+    _prevDataUrl = ev.target.result;
     document.getElementById('cam-trigger').style.display = 'none';
-    processImage(ev.target.result);
+    document.getElementById('prev-img').src = _prevDataUrl;
+    document.getElementById('preview-view').style.display = 'flex';
   };
   r.readAsDataURL(f);
   e.target.value = '';
@@ -147,42 +145,17 @@ document.getElementById('inp-cam').onchange = onFile;
 document.getElementById('inp-gal').onchange = onFile;
 
 let _triggerEl = 'inp-cam';
-const _stored = sessionStorage.getItem('camImg') || sessionStorage.getItem('galImg');
-if(_stored){
-  const _key = sessionStorage.getItem('camImg') ? 'camImg' : 'galImg';
-  sessionStorage.removeItem(_key);
-  processImage(_stored);
-} else {
-  if(new URLSearchParams(location.search).get('gal')){
-    _triggerEl = 'inp-gal';
-    document.getElementById('trig-ic').textContent = '🖼️';
-    document.getElementById('trig-t1').textContent = '탭하여 갤러리 선택';
-    document.getElementById('trig-t2').textContent = '사진첩에서 명함을 선택합니다';
-  }
-  document.getElementById('cam-trigger').style.display = 'flex';
+if(new URLSearchParams(location.search).get('gal')){
+  _triggerEl = 'inp-gal';
+  document.getElementById('trig-ic').textContent = '🖼️';
+  document.getElementById('trig-t1').textContent = '탭하여 갤러리 선택';
+  document.getElementById('trig-t2').textContent = '사진첩에서 명함을 선택합니다';
 }
+document.getElementById('cam-trigger').style.display = 'flex';
 
 function retake(){
   document.getElementById('result-view').style.display = 'none';
   document.getElementById('cam-trigger').style.display = 'flex';
-}
-
-function rotateResult(deg){
-  const el = document.getElementById('res-img');
-  if(!el.src || el.style.display==='none') return;
-  const img = new Image();
-  img.onload = ()=>{
-    const c = document.createElement('canvas');
-    c.width = img.height; c.height = img.width;
-    const ctx = c.getContext('2d');
-    ctx.translate(c.width/2, c.height/2);
-    ctx.rotate(deg * Math.PI / 180);
-    ctx.drawImage(img, -img.width/2, -img.height/2);
-    const rotated = c.toDataURL('image/jpeg', 0.9);
-    el.src = rotated;
-    captured = rotated;
-  };
-  img.src = el.src;
 }
 
 function showErr(msg){
