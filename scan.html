@@ -216,18 +216,23 @@ async function processImage(dataUrl){
       }
       const data = await res.json();
       const text = data.content?.[0]?.text || '';
+      if(!text){ showErr('Claude 응답 없음\n\n'+JSON.stringify(data)); return; }
       const match = text.match(/\{[\s\S]*\}/);
       if(match){
-        const info = JSON.parse(match[0]);
-        document.getElementById('f-nm').value  = info.nm  || '';
-        document.getElementById('f-co').value  = info.co  || '';
-        document.getElementById('f-tl').value  = info.tl  || '';
-        document.getElementById('f-mob').value = info.mob || '';
-        document.getElementById('f-ph').value  = info.ph  || '';
-        document.getElementById('f-em').value  = info.em  || '';
-        document.getElementById('f-addr').value= info.addr|| '';
+        try {
+          const info = JSON.parse(match[0]);
+          document.getElementById('f-nm').value  = info.nm  || '';
+          document.getElementById('f-co').value  = info.co  || '';
+          document.getElementById('f-tl').value  = info.tl  || '';
+          document.getElementById('f-mob').value = info.mob || '';
+          document.getElementById('f-ph').value  = info.ph  || '';
+          document.getElementById('f-em').value  = info.em  || '';
+          document.getElementById('f-addr').value= info.addr|| '';
+        } catch(pe){
+          showErr('JSON 파싱 오류\n\n'+text); return;
+        }
       } else {
-        toast('인식 실패 — 필드를 직접 입력해주세요');
+        showErr('JSON 없음 — Claude 응답:\n\n'+text); return;
       }
     } catch(e){
       showErr(e.message);
