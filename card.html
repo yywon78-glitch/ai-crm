@@ -9,7 +9,7 @@
 <body>
 <div class="page">
   <header class="hdr">
-    <div class="hdr-back" onclick="history.back()">←</div>
+    <div class="hdr-back" onclick="history.length>1?history.back():location.href='cards.html'">←</div>
     <span class="hdr-t">명함 상세</span>
     <div class="hdr-icon" id="fav-btn" onclick="toggleFav()">☆</div>
     <div class="hdr-icon" onclick="toast('편집 기능 준비 중')">✏️</div>
