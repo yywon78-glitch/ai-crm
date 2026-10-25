@@ -25,6 +25,22 @@
 <input type="file" id="inp-cam" accept="image/*" capture="environment" style="display:none">
 <input type="file" id="inp-gal" accept="image/*" style="display:none">
 
+<!-- 미리보기 + 회전 -->
+<div id="preview-view" class="page" style="display:none;">
+  <header class="hdr">
+    <div class="hdr-back" onclick="backToTrigger()">←</div>
+    <span class="hdr-t">사진 확인</span>
+    <button class="hdr-btn" onclick="startOCR()" style="min-width:64px;">인식 시작</button>
+  </header>
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#111;overflow:hidden;">
+    <img id="prev-img" style="max-width:100%;max-height:calc(100vh - 160px);object-fit:contain;display:block;">
+  </div>
+  <div style="display:flex;gap:12px;padding:16px;background:var(--card);border-top:1px solid var(--bdr);">
+    <button onclick="rotatePrev(-90)" style="flex:1;padding:14px;border-radius:12px;background:var(--bg);border:1.5px solid var(--bdr);font-size:20px;cursor:pointer;touch-action:manipulation;">↺ 좌회전</button>
+    <button onclick="rotatePrev(90)"  style="flex:1;padding:14px;border-radius:12px;background:var(--bg);border:1.5px solid var(--bdr);font-size:20px;cursor:pointer;touch-action:manipulation;">↻ 우회전</button>
+  </div>
+</div>
+
 <!-- OCR 결과 (1장) -->
 <div id="result-view" class="page">
   <header class="hdr">
@@ -79,34 +95,48 @@
 <script>
 let captured = null;
 let _multiCards = [];
-let _rotation = 0;
+let _prevDataUrl = null;
+const COLORS = ['#2563eb','#16a34a','#d97706','#7c3aed','#dc2626','#0891b2'];
 
-function rotateImage(){
-  _rotation = (_rotation + 90) % 360;
-  const src = document.getElementById('res-img').src;
+// 미리보기 회전
+function rotatePrev(deg){
+  const src = document.getElementById('prev-img').src;
   const img = new Image();
   img.onload = ()=>{
-    const swap = _rotation % 180 !== 0;
+    const swap = Math.abs(deg) === 90;
     const c = document.createElement('canvas');
     c.width  = swap ? img.height : img.width;
     c.height = swap ? img.width  : img.height;
     const ctx = c.getContext('2d');
     ctx.translate(c.width/2, c.height/2);
-    ctx.rotate((_rotation * Math.PI) / 180);
+    ctx.rotate(deg * Math.PI / 180);
     ctx.drawImage(img, -img.width/2, -img.height/2);
-    const rotated = c.toDataURL('image/jpeg', 0.9);
-    document.getElementById('res-img').src = rotated;
-    captured = rotated;
+    _prevDataUrl = c.toDataURL('image/jpeg', 0.9);
+    document.getElementById('prev-img').src = _prevDataUrl;
   };
   img.src = src;
 }
-const COLORS = ['#2563eb','#16a34a','#d97706','#7c3aed','#dc2626','#0891b2'];
+
+function backToTrigger(){
+  document.getElementById('preview-view').style.display = 'none';
+  document.getElementById('cam-trigger').style.display = 'flex';
+}
+
+function startOCR(){
+  document.getElementById('preview-view').style.display = 'none';
+  processImage(_prevDataUrl);
+}
 
 function onFile(e){
   const f = e.target.files[0];
   if(!f){ history.back(); return; }
   const r = new FileReader();
-  r.onload = ev => processImage(ev.target.result);
+  r.onload = ev => {
+    _prevDataUrl = ev.target.result;
+    document.getElementById('cam-trigger').style.display = 'none';
+    document.getElementById('prev-img').src = _prevDataUrl;
+    document.getElementById('preview-view').style.display = 'flex';
+  };
   r.readAsDataURL(f);
   e.target.value = '';
 }
@@ -123,7 +153,7 @@ if(new URLSearchParams(location.search).get('gal')){
 
 function retake(){
   document.getElementById('result-view').style.display = 'none';
-  document.getElementById('inp-cam').click();
+  document.getElementById('cam-trigger').style.display = 'flex';
 }
 
 function showErr(msg){
@@ -174,10 +204,6 @@ function resizeForOCR(dataUrl, maxW=1600){
 
 async function processImage(dataUrl){
   captured = dataUrl;
-  _rotation = 0;
-  const img = document.getElementById('res-img');
-  img.src = dataUrl; img.style.display = 'block';
-  document.getElementById('res-ph').style.display = 'none';
 
   const ldMsg = document.getElementById('ld-msg');
   document.getElementById('ld').classList.add('show');
