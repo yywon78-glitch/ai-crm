@@ -5,10 +5,7 @@ function renderTabBar(active) {
   el.innerHTML = `
     <div class="tbi${active==='home'?' on':''}"   onclick="location.href='index.html'"><span class="ic">🏠</span><span class="lb">홈</span></div>
     <div class="tbi${active==='cards'?' on':''}"  onclick="location.href='cards.html'"><span class="ic">🪪</span><span class="lb">명함</span></div>
-    <div class="tb-scan" style="display:flex;flex-direction:column;align-items:center;gap:0;">
-      <div onclick="location.href='scan.html'" style="display:flex;flex-direction:column;align-items:center;cursor:pointer;margin-top:-14px;touch-action:manipulation;"><div class="scan-fab">📷</div><span class="lb" style="color:var(--blue);">명함스캔</span></div>
-      <div onclick="location.href='scan.html?gal=1'" style="font-size:9px;font-weight:700;color:var(--t2);cursor:pointer;padding:2px 8px;touch-action:manipulation;">갤러리등록</div>
-    </div>
+    <div class="tb-scan" onclick="location.href='scan.html'"><div class="scan-fab">📷</div><span class="lb">스캔</span></div>
     <div class="tbi${active==='cos'?' on':''}"    onclick="location.href='cos.html'"><span class="ic">🏢</span><span class="lb">거래처</span></div>
     <div class="tbi${active==='visits'?' on':''}" onclick="location.href='visits.html'"><span class="ic">📝</span><span class="lb">방문</span></div>
   `;
