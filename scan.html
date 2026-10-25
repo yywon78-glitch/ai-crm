@@ -48,7 +48,6 @@
   <header class="hdr">
     <div class="hdr-back" onclick="history.back()">←</div>
     <span class="hdr-t">스캔 결과</span>
-    <button class="hdr-btn" onclick="rotateResult()" style="background:var(--t2);margin-right:4px;">↻ 회전</button>
     <button class="hdr-btn" onclick="retake()" style="background:var(--t2);margin-right:4px;">재촬영</button>
     <button class="hdr-btn" onclick="saveCard()">저장</button>
   </header>
@@ -56,6 +55,10 @@
     <div class="res-img-wrap">
       <img id="res-img" class="res-img" style="display:none;">
       <div class="res-ph" id="res-ph">📷 명함 이미지</div>
+    </div>
+    <div style="display:flex;gap:10px;padding:10px 14px 0;">
+      <button onclick="rotateResult(-90)" style="flex:1;padding:12px;border-radius:10px;background:var(--bg);border:1.5px solid var(--bdr);font-size:18px;font-weight:700;cursor:pointer;touch-action:manipulation;">↺ 좌회전</button>
+      <button onclick="rotateResult(90)"  style="flex:1;padding:12px;border-radius:10px;background:var(--bg);border:1.5px solid var(--bdr);font-size:18px;font-weight:700;cursor:pointer;touch-action:manipulation;">↻ 우회전</button>
     </div>
     <div style="height:14px;"></div>
     <div class="fgrp"><div class="flb">이름 *</div><input class="finp" id="f-nm" placeholder="이름"></div>
@@ -164,16 +167,16 @@ function retake(){
   document.getElementById('cam-trigger').style.display = 'flex';
 }
 
-function rotateResult(){
+function rotateResult(deg){
   const el = document.getElementById('res-img');
-  if(!el.src) return;
+  if(!el.src || el.style.display==='none') return;
   const img = new Image();
   img.onload = ()=>{
     const c = document.createElement('canvas');
     c.width = img.height; c.height = img.width;
     const ctx = c.getContext('2d');
     ctx.translate(c.width/2, c.height/2);
-    ctx.rotate(90 * Math.PI / 180);
+    ctx.rotate(deg * Math.PI / 180);
     ctx.drawImage(img, -img.width/2, -img.height/2);
     const rotated = c.toDataURL('image/jpeg', 0.9);
     el.src = rotated;
