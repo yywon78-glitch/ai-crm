@@ -3,200 +3,152 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>명함</title>
+<title>명함 CRM</title>
 <link rel="stylesheet" href="shared.css">
+<style>
+.home-banner{background:linear-gradient(135deg,#1d4ed8 0%,#2563eb 60%,#3b82f6 100%);padding:24px 20px 28px;color:#fff;}
+.home-logo{font-size:13px;font-weight:700;opacity:.8;letter-spacing:.5px;margin-bottom:6px;}
+.home-title{font-size:26px;font-weight:800;margin-bottom:4px;}
+.home-date{font-size:13px;opacity:.75;}
+.stat-row{display:flex;gap:10px;margin-top:18px;}
+.stat-chip{flex:1;background:rgba(255,255,255,.18);border-radius:12px;padding:10px 12px;text-align:center;}
+.stat-chip .n{font-size:22px;font-weight:800;line-height:1;}
+.stat-chip .l{font-size:11px;font-weight:600;opacity:.85;margin-top:3px;}
+
+.menu-section{padding:16px 14px 8px;}
+.menu-section-title{font-size:11px;font-weight:700;color:var(--t3);letter-spacing:.5px;margin-bottom:8px;}
+.menu-card{background:var(--card);border:1.5px solid var(--bdr);border-radius:14px;padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer;margin-bottom:9px;transition:background .12s;}
+.menu-card:active{background:var(--card2);}
+.menu-ic{width:48px;height:48px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+.ic-blue{background:rgba(37,99,235,.1);}
+.ic-grn{background:rgba(22,163,74,.1);}
+.ic-amb{background:rgba(217,119,6,.1);}
+.ic-pur{background:rgba(124,58,237,.1);}
+.ic-red{background:rgba(220,38,38,.1);}
+.ic-gray{background:rgba(107,114,128,.1);}
+.menu-txt{flex:1;}
+.menu-nm{font-size:15px;font-weight:700;}
+.menu-desc{font-size:12px;color:var(--t2);margin-top:3px;}
+.menu-badge{font-size:12px;font-weight:700;color:var(--blue);flex-shrink:0;}
+.menu-arrow{color:var(--t3);font-size:17px;flex-shrink:0;}
+</style>
 </head>
 <body>
-<!-- ① 메인 목록 -->
 <div class="page">
   <header class="hdr">
-    <span class="hdr-t">명함</span>
+    <span class="hdr-t">명함 CRM</span>
     <div class="hdr-icon" onclick="location.href='settings.html'">⚙️</div>
-    <div class="hdr-icon" onclick="location.href='scan.html'">📷</div>
   </header>
-  <div class="srch-wrap">
-    <input class="srch" id="srch" placeholder="🔍  이름, 회사, 전화번호 검색" oninput="render()">
-  </div>
-  <div class="segtabs">
-    <div class="segtab on" id="seg-name" onclick="setMode('name',this)">이름순</div>
-    <div class="segtab"    id="seg-co"   onclick="setMode('co',this)">거래처순</div>
-    <div class="segtab"    id="seg-fav"  onclick="setMode('fav',this)">즐겨찾기</div>
-  </div>
-  <div class="pills" id="stat-pills"></div>
-  <div class="body"><div class="bp" id="list"></div></div>
-  <nav class="tabbar" id="tabbar"></nav>
-</div>
+  <div class="body">
 
-<!-- ② 명함 상세 오버레이 -->
-<div class="overlay" id="overlay-card" style="z-index:100;"></div>
-
-<!-- ③ 거래처 상세 오버레이 (명함 상세에서 진입 시) -->
-<div class="overlay" id="overlay-co" style="z-index:110;"></div>
-
-<!-- ④ 방문기록 추가 모달 -->
-<div class="moverlay" id="modal-visit" style="z-index:200;" onclick="if(event.target===this)closeVisitModal()">
-  <div class="msheet">
-    <div class="m-handle"></div>
-    <div class="m-title">방문 기록 추가</div>
-    <div class="m-body">
-      <div style="font-size:13px;font-weight:600;color:var(--blue);padding:2px 0;" id="v-co-lbl"></div>
-      <div>
-        <div class="flb">방문 유형</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;" id="type-grid"></div>
+    <!-- 배너 + 통계 -->
+    <div class="home-banner">
+      <div class="home-logo">BUSINESS CARD CRM</div>
+      <div class="home-title">명함 관리 시스템</div>
+      <div class="home-date" id="today-date"></div>
+      <div class="stat-row">
+        <div class="stat-chip"><div class="n" id="s-cards">0</div><div class="l">명함</div></div>
+        <div class="stat-chip"><div class="n" id="s-cos">0</div><div class="l">거래처</div></div>
+        <div class="stat-chip"><div class="n" id="s-visits">0</div><div class="l">방문</div></div>
       </div>
-      <div><div class="flb">방문 날짜</div><input class="finp" type="date" id="v-dt"></div>
-      <div><div class="flb">메모</div><textarea class="finp" id="v-memo" rows="3" style="resize:none;" placeholder="미팅 내용을 입력하세요..."></textarea></div>
-      <div><div class="flb">다음 일정</div><input class="finp" type="date" id="v-next"></div>
-      <button class="m-btn" onclick="saveVisit()">저장</button>
     </div>
+
+    <!-- 주요 기능 -->
+    <div class="menu-section">
+      <div class="menu-section-title">명함 관리</div>
+
+      <div class="menu-card" onclick="location.href='scan.html'">
+        <div class="menu-ic ic-blue">📷</div>
+        <div class="menu-txt">
+          <div class="menu-nm">명함 스캔</div>
+          <div class="menu-desc">카메라로 명함을 촬영하고 자동 저장</div>
+        </div>
+        <div class="menu-arrow">›</div>
+      </div>
+
+      <div class="menu-card" onclick="location.href='cards.html'">
+        <div class="menu-ic ic-blue">🪪</div>
+        <div class="menu-txt">
+          <div class="menu-nm">명함 목록</div>
+          <div class="menu-desc">저장된 명함 검색 · 조회 · 즐겨찾기</div>
+        </div>
+        <div class="menu-badge" id="b-cards"></div>
+        <div class="menu-arrow">›</div>
+      </div>
+    </div>
+
+    <!-- 거래처·방문 -->
+    <div class="menu-section">
+      <div class="menu-section-title">영업 관리</div>
+
+      <div class="menu-card" onclick="location.href='cos.html'">
+        <div class="menu-ic ic-grn">🏢</div>
+        <div class="menu-txt">
+          <div class="menu-nm">거래처 관리</div>
+          <div class="menu-desc">회사별 명함·방문이력 통합 관리</div>
+        </div>
+        <div class="menu-badge" id="b-cos"></div>
+        <div class="menu-arrow">›</div>
+      </div>
+
+      <div class="menu-card" onclick="location.href='visits.html'">
+        <div class="menu-ic ic-amb">📝</div>
+        <div class="menu-txt">
+          <div class="menu-nm">방문 기록</div>
+          <div class="menu-desc">미팅·상담·견적 방문 이력 관리</div>
+        </div>
+        <div class="menu-badge" id="b-visits"></div>
+        <div class="menu-arrow">›</div>
+      </div>
+
+      <div class="menu-card" onclick="location.href='map.html'">
+        <div class="menu-ic ic-pur">🗺️</div>
+        <div class="menu-txt">
+          <div class="menu-nm">거래처 지도</div>
+          <div class="menu-desc">주변 거래처 위치 확인</div>
+        </div>
+        <div class="menu-arrow">›</div>
+      </div>
+    </div>
+
+    <!-- 설정 -->
+    <div class="menu-section">
+      <div class="menu-section-title">시스템</div>
+
+      <div class="menu-card" onclick="location.href='settings.html'">
+        <div class="menu-ic ic-gray">⚙️</div>
+        <div class="menu-txt">
+          <div class="menu-nm">설정</div>
+          <div class="menu-desc">API 키 · 데이터 초기화</div>
+        </div>
+        <div class="menu-arrow">›</div>
+      </div>
+    </div>
+
+    <div style="height:16px;"></div>
   </div>
+  <nav class="tabbar" id="tabbar"></nav>
 </div>
 
 <script src="data.js"></script>
 <script src="nav.js"></script>
 <script>
-let mode = 'name';
-const tagCls = {고객:'b-bl',VIP:'b-gn',잠재:'b-am',휴면:'b-rd'};
+function load(){
+  const cards=DB.getCards(), cos=DB.getCos(), visits=DB.getVisits();
+  document.getElementById('s-cards').textContent=cards.length;
+  document.getElementById('s-cos').textContent=cos.length;
+  document.getElementById('s-visits').textContent=visits.length;
+  document.getElementById('b-cards').textContent=cards.length+'장';
+  document.getElementById('b-cos').textContent=cos.length+'개';
+  document.getElementById('b-visits').textContent=visits.length+'건';
 
-function setMode(m, el) {
-  mode = m;
-  document.querySelectorAll('.segtab').forEach(t=>t.classList.remove('on'));
-  el.classList.add('on');
-  render();
+  const now=new Date();
+  const days=['일','월','화','수','목','금','토'];
+  document.getElementById('today-date').textContent=
+    `${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 (${days[now.getDay()]})`;
 }
-
-function render() {
-  const q = document.getElementById('srch').value;
-  const cards = DB.getCards();
-  const tot=cards.length, vip=cards.filter(c=>c.tag==='VIP').length, fav=cards.filter(c=>c.fav).length;
-  document.getElementById('stat-pills').innerHTML =
-    `<div class="pill">🪪 총 ${tot}장</div><div class="pill">⭐ VIP ${vip}명</div><div class="pill">💛 즐겨찾기 ${fav}명</div>`;
-
-  let list = cards.filter(c=>!q||c.nm.includes(q)||(c.co||'').includes(q)||(c.mob||'').includes(q));
-  if(mode==='fav') list=list.filter(c=>c.fav);
-
-  const el = document.getElementById('list');
-  if(!list.length){ el.innerHTML=`<div class="empty"><div class="empty-ic">🪪</div><div class="empty-t">명함이 없습니다</div><div class="empty-s">카메라로 스캔해보세요</div></div>`; return; }
-  if(mode==='co'){
-    const g={};
-    list.forEach(c=>(g[c.co||'미분류']=g[c.co||'미분류']||[]).push(c));
-    el.innerHTML=Object.entries(g).map(([co,cs])=>`<div class="group-lbl">${co}</div>`+cs.map(cardHTML).join('')).join('<div style="height:4px"></div>');
-  } else {
-    if(mode==='name') list=[...list].sort((a,b)=>a.nm.localeCompare(b.nm,'ko'));
-    el.innerHTML=list.map(cardHTML).join('');
-  }
-}
-
-function cardHTML(c){
-  return `<div class="li" onclick="openCardOverlay('${c.id}')">
-    <div class="av" style="background:${c.cl}18;color:${c.cl}">${c.nm[0]}</div>
-    <div class="li-info">
-      <div class="li-name">${c.nm}${c.fav?' ⭐':''}</div>
-      <div class="li-sub">${c.tl?c.tl+' · ':''}${c.co||''}</div>
-    </div>
-    <div class="li-r"><span class="bx ${tagCls[c.tag]||'b-bl'}">${c.tag}</span><span class="chev">›</span></div>
-  </div>`;
-}
-
-/* ── 명함 상세 오버레이 ── */
-function openCardOverlay(id) {
-  const card = DB.getCards().find(c=>c.id===id);
-  if(!card) return;
-  const rows = [
-    card.mob && {ic:'📱',lbl:'휴대전화',val:card.mob,action:'전화',href:`tel:${card.mob}`},
-    card.ph  && {ic:'📞',lbl:'유선전화',val:card.ph, action:'전화',href:`tel:${card.ph}`},
-    card.em  && {ic:'✉️',lbl:'이메일',  val:card.em, action:'메일',href:`mailto:${card.em}`},
-    card.addr&& {ic:'📍',lbl:'주소',    val:card.addr,action:'지도',href:`https://map.kakao.com/?q=${encodeURIComponent(card.addr)}`},
-  ].filter(Boolean);
-
-  const visits = DB.getVisits().filter(v=>{
-    const cos=DB.getCos(); const co=cos.find(c=>c.nm===card.co); return co && v.coId===co.id;
-  });
-
-  document.getElementById('overlay-card').innerHTML = `
-    <header class="hdr">
-      <div class="hdr-back" onclick="closeCardOverlay()">←</div>
-      <span class="hdr-t">명함 상세</span>
-      <div class="hdr-icon" onclick="toggleFav('${id}',this)">
-        ${card.fav?'★':'☆'}
-      </div>
-    </header>
-    <div class="overlay-body">
-      <div class="det-hero">
-        <div class="det-av" style="background:${card.cl}18;color:${card.cl}">${card.nm[0]}</div>
-        <div>
-          <div class="det-nm">${card.nm}</div>
-          <div class="det-tl">${card.tl||''}</div>
-          <div class="det-co" onclick="goToCoFromCard('${id}')">${card.co||''}</div>
-        </div>
-      </div>
-      <div class="info-sec">
-        ${rows.map(r=>`
-          <div class="info-item">
-            <span class="info-ic">${r.ic}</span>
-            <div class="info-body"><div class="info-lbl">${r.lbl}</div><div class="info-val">${r.val}</div></div>
-            <a class="info-action" href="${r.href}">${r.action}</a>
-          </div>`).join('')}
-      </div>
-      <div class="orig-wrap">
-        <div class="orig-hdr">📷 명함 원본</div>
-        ${card.img?`<img src="${card.img}" style="width:100%;border-radius:8px;">`:`<div class="orig-ph">이미지 저장됨</div>`}
-      </div>
-      <button class="action-btn" onclick="openVisitFromCard('${id}')">📝 방문 기록 추가</button>
-      <div class="sec-hdr"><h3>방문 이력</h3></div>
-      <div class="tl" id="card-visit-tl">
-        ${visits.length ? visits.map(v=>`
-          <div class="tl-item">
-            <div class="tl-dot">${v.tp.split(' ')[0]}</div>
-            <div class="tl-body">
-              <div class="tl-tp">${v.tp}</div><div class="tl-dt">${v.dt}</div>
-              <div class="tl-memo">${v.memo||''}</div>
-              ${v.next?`<div class="tl-next">📅 다음 일정: ${v.next}</div>`:''}
-            </div>
-          </div>`).join('') : '<div style="padding:16px;font-size:13px;color:var(--t3);text-align:center;">방문 기록이 없습니다</div>'}
-      </div>
-      <div style="height:20px;"></div>
-    </div>`;
-  document.getElementById('overlay-card').classList.add('show');
-  document.getElementById('overlay-card')._cardId = id;
-}
-
-function closeCardOverlay() {
-  closeAllOverlays();
-  render();
-}
-
-function toggleFav(id, btn) {
-  const cards = DB.getCards();
-  const c = cards.find(x=>x.id===id);
-  if(!c) return;
-  c.fav = !c.fav;
-  DB.setCards(cards);
-  btn.textContent = c.fav ? '★' : '☆';
-  toast(c.fav ? '즐겨찾기에 추가됐습니다 ★' : '즐겨찾기에서 제거됐습니다');
-}
-
-function goToCoFromCard(cardId) {
-  const card = DB.getCards().find(c=>c.id===cardId);
-  if(!card||!card.co) return;
-  const co = DB.getCos().find(c=>c.nm===card.co);
-  if(!co){ toast('등록된 거래처가 없습니다'); return; }
-  openCoOverlay(co.id);
-}
-
-function openVisitFromCard(cardId) {
-  const card = DB.getCards().find(c=>c.id===cardId);
-  if(!card) return;
-  const co = DB.getCos().find(c=>c.nm===card.co);
-  openVisitModal(co?co.id:'', card.co||'');
-  document.getElementById('overlay-card')._cardId = cardId;
-}
-
-/* refreshCoVisits 호출 후 카드 방문이력도 갱신 */
-const _origRefresh = typeof refreshCoVisits !== 'undefined' ? refreshCoVisits : null;
-
-renderTabBar('cards');
-render();
+renderTabBar('home');
+load();
 </script>
 </body>
 </html>
