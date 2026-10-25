@@ -26,18 +26,18 @@
 <input type="file" id="inp-gal" accept="image/*" style="display:none">
 
 <!-- 미리보기 + 회전 -->
-<div id="preview-view" class="page" style="display:none;">
-  <header class="hdr">
+<div id="preview-view" style="display:none;position:fixed;inset:0;z-index:20;flex-direction:column;background:#000;">
+  <header class="hdr" style="flex-shrink:0;">
     <div class="hdr-back" onclick="backToTrigger()">←</div>
-    <span class="hdr-t">사진 확인</span>
-    <button class="hdr-btn" onclick="startOCR()" style="min-width:64px;">인식 시작</button>
+    <span class="hdr-t" style="color:#fff;">사진 확인</span>
+    <button class="hdr-btn" onclick="startOCR()">인식 시작</button>
   </header>
-  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#111;overflow:hidden;">
-    <img id="prev-img" style="max-width:100%;max-height:calc(100vh - 160px);object-fit:contain;display:block;">
+  <div style="flex:1;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+    <img id="prev-img" style="max-width:100%;max-height:100%;object-fit:contain;">
   </div>
-  <div style="display:flex;gap:12px;padding:16px;background:var(--card);border-top:1px solid var(--bdr);">
-    <button onclick="rotatePrev(-90)" style="flex:1;padding:14px;border-radius:12px;background:var(--bg);border:1.5px solid var(--bdr);font-size:20px;cursor:pointer;touch-action:manipulation;">↺ 좌회전</button>
-    <button onclick="rotatePrev(90)"  style="flex:1;padding:14px;border-radius:12px;background:var(--bg);border:1.5px solid var(--bdr);font-size:20px;cursor:pointer;touch-action:manipulation;">↻ 우회전</button>
+  <div style="flex-shrink:0;display:flex;gap:12px;padding:16px 16px 32px;background:var(--card);border-top:1px solid var(--bdr);">
+    <button onclick="rotatePrev(-90)" style="flex:1;padding:16px;border-radius:12px;background:var(--bg);border:1.5px solid var(--bdr);font-size:22px;font-weight:700;cursor:pointer;touch-action:manipulation;">↺ 좌회전</button>
+    <button onclick="rotatePrev(90)"  style="flex:1;padding:16px;border-radius:12px;background:var(--bg);border:1.5px solid var(--bdr);font-size:22px;font-weight:700;cursor:pointer;touch-action:manipulation;">↻ 우회전</button>
   </div>
 </div>
 
@@ -259,9 +259,10 @@ async function processImage(dataUrl){
     if(!cards.length){ showErr('명함을 찾을 수 없습니다'); return; }
 
     if(cards.length === 1){
-      // 미리보기는 원본 dataUrl 유지 (브라우저가 EXIF 올바르게 표시)
-      // captured는 OCR용 resized 저장
       fillForm(cards[0]);
+      const ri = document.getElementById('res-img');
+      ri.src = dataUrl; ri.style.display = 'block';
+      document.getElementById('res-ph').style.display = 'none';
       document.getElementById('cam-trigger').style.display = 'none';
       document.getElementById('result-view').style.display = 'flex';
     } else {
