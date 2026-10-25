@@ -6,12 +6,6 @@
 <title>명함 스캔</title>
 <link rel="stylesheet" href="shared.css">
 <style>
-.scan-home{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:32px 24px;}
-.scan-illust{font-size:80px;line-height:1;}
-.scan-desc{font-size:15px;color:var(--t2);text-align:center;line-height:1.7;}
-.scan-btn-wrap{display:flex;flex-direction:column;gap:12px;width:100%;max-width:300px;}
-.scan-btn-main{width:100%;padding:18px;border-radius:16px;background:var(--blue);border:none;color:#fff;font-size:17px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;}
-.scan-btn-sub{width:100%;padding:15px;border-radius:16px;background:var(--bg);border:1.5px solid var(--bdr);color:var(--t1);font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;}
 #result-view{display:none;flex-direction:column;}
 .res-img-wrap{background:#111;display:flex;align-items:center;justify-content:center;}
 .res-img{width:100%;max-height:240px;object-fit:contain;display:block;}
@@ -22,28 +16,14 @@
 </head>
 <body>
 
-<!-- 촬영 홈 -->
-<div class="page" id="scan-home-view">
-  <header class="hdr">
-    <div class="hdr-back" onclick="history.back()">←</div>
-    <span class="hdr-t">명함 스캔</span>
-  </header>
-  <div class="scan-home">
-    <div class="scan-illust">🪪</div>
-    <div class="scan-desc">명함을 촬영하거나 사진을 선택하세요<br>여러 장이 찍힌 사진도 가능합니다</div>
-    <div class="scan-btn-wrap">
-      <button class="scan-btn-main" onclick="document.getElementById('inp-cam').click()">📷 카메라로 촬영</button>
-      <button class="scan-btn-sub"  onclick="document.getElementById('inp-gal').click()">🖼️ 갤러리에서 선택</button>
-    </div>
-  </div>
-  <input type="file" id="inp-cam" accept="image/*" capture="environment" style="display:none">
-  <input type="file" id="inp-gal" accept="image/*" style="display:none">
-</div>
+<!-- 숨은 파일 입력 -->
+<input type="file" id="inp-cam" accept="image/*" capture="environment" style="display:none">
+<input type="file" id="inp-gal" accept="image/*" style="display:none">
 
 <!-- OCR 결과 (1장) -->
 <div id="result-view" class="page">
   <header class="hdr">
-    <div class="hdr-back" onclick="backToHome()">←</div>
+    <div class="hdr-back" onclick="history.back()">←</div>
     <span class="hdr-t">스캔 결과</span>
     <button class="hdr-btn" onclick="retake()" style="background:var(--t2);margin-right:6px;">재촬영</button>
     <button class="hdr-btn" onclick="saveCard()">저장</button>
@@ -68,7 +48,7 @@
 <!-- 여러 명함 선택 저장 -->
 <div id="multi-box">
   <header class="hdr">
-    <div class="hdr-back" onclick="document.getElementById('multi-box').style.display='none';backToHome()">←</div>
+    <div class="hdr-back" onclick="document.getElementById('multi-box').style.display='none';history.back()">←</div>
     <span class="hdr-t" id="multi-title">명함 선택</span>
     <button class="hdr-btn" onclick="saveMulti()">선택 저장</button>
   </header>
@@ -84,7 +64,7 @@
   <div style="background:#fff;border-radius:16px;padding:24px;max-width:340px;width:100%;">
     <div style="font-size:16px;font-weight:700;color:#dc2626;margin-bottom:12px;">❌ OCR 오류</div>
     <div id="err-msg" style="font-size:13px;color:#374151;line-height:1.6;word-break:break-all;margin-bottom:20px;"></div>
-    <button onclick="document.getElementById('err-box').style.display='none'" style="width:100%;padding:12px;border-radius:10px;background:#dc2626;color:#fff;border:none;font-size:15px;font-weight:700;cursor:pointer;">확인</button>
+    <button onclick="document.getElementById('err-box').style.display='none';history.back()" style="width:100%;padding:12px;border-radius:10px;background:#dc2626;color:#fff;border:none;font-size:15px;font-weight:700;cursor:pointer;">확인</button>
   </div>
 </div>
 
@@ -96,7 +76,8 @@ let _multiCards = [];
 const COLORS = ['#2563eb','#16a34a','#d97706','#7c3aed','#dc2626','#0891b2'];
 
 function onFile(e){
-  const f = e.target.files[0]; if(!f) return;
+  const f = e.target.files[0];
+  if(!f){ history.back(); return; }
   const r = new FileReader();
   r.onload = ev => processImage(ev.target.result);
   r.readAsDataURL(f);
@@ -105,12 +86,15 @@ function onFile(e){
 document.getElementById('inp-cam').onchange = onFile;
 document.getElementById('inp-gal').onchange = onFile;
 
-// 진입 시 바로 카메라 실행
-document.getElementById('inp-cam').click();
+// 진입 시 자동 실행: ?gal=1 이면 갤러리, 아니면 카메라
+if(new URLSearchParams(location.search).get('gal')){
+  document.getElementById('inp-gal').click();
+} else {
+  document.getElementById('inp-cam').click();
+}
 
 function retake(){
   document.getElementById('result-view').style.display = 'none';
-  document.getElementById('scan-home-view').style.display = 'flex';
   document.getElementById('inp-cam').click();
 }
 
@@ -173,7 +157,7 @@ function resizeForOCR(dataUrl, maxW=1600){
     img.onload=()=>{
       const sw=img.naturalWidth||img.width, sh=img.naturalHeight||img.height;
       const c=document.createElement('canvas');
-      const needRot=(orient===6||orient===8) && sw<sh; // 세로 원본픽셀 + 가로사진
+      const needRot=(orient===6||orient===8) && sw<sh;
       if(needRot){
         const scale=Math.min(1,maxW/sh);
         const rw=Math.round(sw*scale), rh=Math.round(sh*scale);
@@ -260,7 +244,6 @@ async function processImage(dataUrl){
       if(cropped){ imgEl.src = cropped; imgEl.style.display = 'block'; }
       document.getElementById('res-ph').style.display = 'none';
       fillForm(cards[0]);
-      document.getElementById('scan-home-view').style.display = 'none';
       document.getElementById('result-view').style.display = 'flex';
     } else {
       showMulti(cards);
@@ -321,11 +304,6 @@ function saveMulti(){
   document.getElementById('multi-box').style.display = 'none';
   toast(`저장 ${added}장, 업데이트 ${updated}장 ✓`);
   setTimeout(()=>location.href='index.html', 1200);
-}
-
-function backToHome(){
-  document.getElementById('result-view').style.display = 'none';
-  document.getElementById('scan-home-view').style.display = 'flex';
 }
 
 function saveCard(){
