@@ -133,7 +133,7 @@ function cropCard(dataUrl, box){
   });
 }
 
-function resizeForOCR(dataUrl, maxW=2400){
+function resizeForOCR(dataUrl, maxW=1600){
   return new Promise(resolve=>{
     const i = new Image();
     i.onload = () => {
@@ -180,7 +180,7 @@ async function processImage(dataUrl){
         'anthropic-workspace-id': DB.getWorkspace()||'wrkspc_01Pdf2hnBKy4HbTJCfTcdq9W'
       },
       body: JSON.stringify({
-        model:'claude-sonnet-4-6',
+        model:'claude-haiku-4-5-20251001',
         max_tokens: 2048,
         messages:[{role:'user', content:[
           {type:'image', source:{type:'base64', media_type:'image/jpeg', data:base64}},
