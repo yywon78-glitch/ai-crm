@@ -213,11 +213,8 @@ async function processImage(dataUrl){
     if(!cards.length){ showErr('명함을 찾을 수 없습니다'); return; }
 
     if(cards.length === 1){
-      const cropped = await cropCard(resized, null);
-      captured = cropped;
-      const imgEl = document.getElementById('res-img');
-      if(cropped){ imgEl.src = cropped; imgEl.style.display = 'block'; }
-      document.getElementById('res-ph').style.display = 'none';
+      // 미리보기는 원본 dataUrl 유지 (브라우저가 EXIF 올바르게 표시)
+      // captured는 OCR용 resized 저장
       fillForm(cards[0]);
       document.getElementById('cam-trigger').style.display = 'none';
       document.getElementById('result-view').style.display = 'flex';
