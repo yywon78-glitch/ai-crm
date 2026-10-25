@@ -148,6 +148,14 @@ if(new URLSearchParams(location.search).get('gal')){
   document.getElementById('trig-ic').textContent='🖼️';
   document.getElementById('trig-t1').textContent='탭하여 갤러리 선택';
   document.getElementById('trig-t2').textContent='사진첩에서 명함을 선택합니다';
+  const stored = sessionStorage.getItem('galImg');
+  if(stored){
+    sessionStorage.removeItem('galImg');
+    _prevDataUrl = stored;
+    document.getElementById('prev-img').src = stored;
+    document.getElementById('cam-trigger').style.display = 'none';
+    document.getElementById('preview-view').style.display = 'flex';
+  }
 }
 
 function retake(){

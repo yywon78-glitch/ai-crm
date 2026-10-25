@@ -77,7 +77,7 @@
         <div class="menu-arrow">›</div>
       </div>
 
-      <div class="menu-card" onclick="location.href='scan.html?gal=1'">
+      <div class="menu-card" onclick="document.getElementById('gal-inp').click()">
         <div class="menu-ic ic-blue">🖼️</div>
         <div class="menu-txt">
           <div class="menu-nm">갤러리 스캔</div>
@@ -150,9 +150,16 @@
   <nav class="tabbar" id="tabbar"></nav>
 </div>
 
+<input type="file" id="gal-inp" accept="image/*" style="display:none">
 <script src="data.js"></script>
 <script src="nav.js"></script>
 <script>
+document.getElementById('gal-inp').onchange = function(e){
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ev => { sessionStorage.setItem('galImg', ev.target.result); location.href='scan.html?gal=1'; };
+  r.readAsDataURL(f); e.target.value='';
+};
 function load(){
   const cards=DB.getCards(), cos=DB.getCos(), visits=DB.getVisits();
   document.getElementById('s-cards').textContent=cards.length;
