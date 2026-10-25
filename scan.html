@@ -87,7 +87,7 @@
   <div style="background:#fff;border-radius:16px;padding:24px;max-width:340px;width:100%;">
     <div style="font-size:16px;font-weight:700;color:#dc2626;margin-bottom:12px;">❌ OCR 오류</div>
     <div id="err-msg" style="font-size:13px;color:#374151;line-height:1.6;word-break:break-all;margin-bottom:20px;"></div>
-    <button onclick="document.getElementById('err-box').style.display='none';history.back()" style="width:100%;padding:12px;border-radius:10px;background:#dc2626;color:#fff;border:none;font-size:15px;font-weight:700;cursor:pointer;">확인</button>
+    <button onclick="document.getElementById('err-box').style.display='none';backToTrigger()" style="width:100%;padding:12px;border-radius:10px;background:#dc2626;color:#fff;border:none;font-size:15px;font-weight:700;cursor:pointer;">확인</button>
   </div>
 </div>
 
@@ -130,7 +130,7 @@ function startOCR(){
 
 function onFile(e){
   const f = e.target.files[0];
-  if(!f){ history.back(); return; }
+  if(!f) return;
   const r = new FileReader();
   r.onload = ev => {
     _prevDataUrl = ev.target.result;
