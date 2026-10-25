@@ -133,20 +133,48 @@ function cropCard(dataUrl, box){
   });
 }
 
+function getExifOrient(dataUrl){
+  try{
+    const b=atob(dataUrl.split(',')[1]);
+    const v=n=>b.charCodeAt(n);
+    if(v(0)!==0xFF||v(1)!==0xD8) return 1;
+    let p=2;
+    while(p<b.length){
+      if(v(p)!==0xFF) break;
+      const seg=v(p+1), len=(v(p+2)<<8)|v(p+3);
+      if(seg===0xE1&&len>10&&v(p+4)===0x45&&v(p+5)===0x78){
+        const t=p+10, le=v(t)===0x49;
+        const r16=o=>le?(v(t+o)|v(t+o+1)<<8):(v(t+o)<<8|v(t+o+1));
+        const r32=o=>le?(v(t+o)|v(t+o+1)<<8|v(t+o+2)<<16|v(t+o+3)<<24):(v(t+o)<<24|v(t+o+1)<<16|v(t+o+2)<<8|v(t+o+3));
+        const ifd=r32(4), n=r16(ifd);
+        for(let i=0;i<n;i++){const e=ifd+2+i*12; if(r16(e)===0x0112) return r16(e+8);}
+      }
+      if(seg===0xDA) break;
+      p+=2+len;
+    }
+  }catch(e){}
+  return 1;
+}
+
 function resizeForOCR(dataUrl, maxW=1600){
+  const orient=getExifOrient(dataUrl);
   return new Promise(resolve=>{
     const img=new Image();
     img.onload=()=>{
-      let sw=img.width, sh=img.height;
+      const sw=img.width, sh=img.height;
       const c=document.createElement('canvas');
       if(sh>sw){
-        // 세로 이미지 → 90° 회전해서 가로로 만들어 OCR
+        // 세로 이미지 → 가로로 회전 (EXIF 방향으로 좌/우 결정)
         const scale=Math.min(1,maxW/sh);
-        c.width=Math.round(sh*scale); c.height=Math.round(sw*scale);
+        const rw=Math.round(sw*scale), rh=Math.round(sh*scale);
+        c.width=rh; c.height=rw;
         const ctx=c.getContext('2d');
-        ctx.translate(c.width,0);
-        ctx.rotate(Math.PI/2);
-        ctx.drawImage(img,0,0,Math.round(sw*scale),Math.round(sh*scale));
+        if(orient===8){
+          ctx.translate(0,rw); ctx.rotate(-Math.PI/2); // 반시계
+        } else {
+          ctx.translate(rh,0); ctx.rotate(Math.PI/2);  // 시계 (기본)
+        }
+        ctx.drawImage(img,0,0,rw,rh);
       } else {
         const scale=Math.min(1,maxW/sw);
         c.width=Math.round(sw*scale); c.height=Math.round(sh*scale);
