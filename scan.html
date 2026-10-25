@@ -196,7 +196,10 @@ async function processImage(dataUrl){
       });
       if(!res.ok){
         const err=await res.json().catch(()=>({}));
-        throw new Error(`API ${res.status}: ${err.error?.message||'요청 실패'}`);
+        const msg=`API ${res.status}: ${err.error?.message||JSON.stringify(err)}`;
+        document.getElementById('ld').classList.remove('show');
+        alert('OCR 오류\n\n'+msg);
+        return;
       }
       const data = await res.json();
       const text = data.content?.[0]?.text || '';
@@ -214,7 +217,9 @@ async function processImage(dataUrl){
         toast('인식 실패 — 필드를 직접 입력해주세요');
       }
     } catch(e){
-      toast('OCR 오류: '+e.message);
+      document.getElementById('ld').classList.remove('show');
+      alert('OCR 오류\n\n'+e.message);
+      return;
     }
   }
 
