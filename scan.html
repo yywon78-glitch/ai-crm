@@ -184,7 +184,7 @@ async function processImage(dataUrl){
         max_tokens: 2048,
         messages:[{role:'user', content:[
           {type:'image', source:{type:'base64', media_type:'image/jpeg', data:base64}},
-          {type:'text', text:'이 이미지에서 명함을 모두 찾아 각각 정보를 추출해. JSON 배열만 반환해. 형식: [{nm,co,tl,mob,ph,em,addr,box:{x1,y1,x2,y2}},...]. box는 명함 영역의 픽셀 좌표(이 이미지 크기 기준). 명함이 1장이어도 배열로. 없는 필드는 빈 문자열.'}
+          {type:'text', text:'이 이미지에서 명함을 모두 찾아 각각 정보를 추출해. JSON 배열만 반환해. 형식: [{nm,co,tl,mob,ph,em,addr},...]. 명함이 1장이어도 배열로. 없는 필드는 빈 문자열.'}
         ]}]
       })
     });
@@ -208,7 +208,7 @@ async function processImage(dataUrl){
     if(!cards.length){ showErr('명함을 찾을 수 없습니다'); return; }
 
     if(cards.length === 1){
-      const cropped = await cropCard(resized, cards[0].box);
+      const cropped = await cropCard(resized, null);
       captured = cropped;
       const imgEl = document.getElementById('res-img');
       if(cropped){ imgEl.src = cropped; imgEl.style.display = 'block'; }
