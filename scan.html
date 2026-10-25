@@ -145,21 +145,14 @@ document.getElementById('inp-cam').onchange = onFile;
 document.getElementById('inp-gal').onchange = onFile;
 
 let _triggerEl = 'inp-cam';
-const _stored = sessionStorage.getItem('camImg') || sessionStorage.getItem('galImg');
-if(_stored){
-  const _key = sessionStorage.getItem('camImg') ? 'camImg' : 'galImg';
-  sessionStorage.removeItem(_key);
-  _prevDataUrl = _stored;
-  document.getElementById('prev-img').src = _stored;
-  document.getElementById('preview-view').style.display = 'flex';
+const _p = new URLSearchParams(location.search);
+if(_p.get('cam')){
+  document.getElementById('inp-cam').click();
+} else if(_p.get('gal')){
+  _triggerEl = 'inp-gal';
+  document.getElementById('inp-gal').click();
 } else {
   document.getElementById('cam-trigger').style.display = 'flex';
-}
-if(new URLSearchParams(location.search).get('gal')){
-  _triggerEl = 'inp-gal';
-  document.getElementById('trig-ic').textContent='🖼️';
-  document.getElementById('trig-t1').textContent='탭하여 갤러리 선택';
-  document.getElementById('trig-t2').textContent='사진첩에서 명함을 선택합니다';
 }
 
 function retake(){
