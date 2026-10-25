@@ -15,21 +15,7 @@ function renderTabBar(active) {
     inp.onchange = function(e){
       const f = e.target.files[0]; if(!f) return;
       const r = new FileReader();
-      r.onload = ev => {
-        const img = new Image();
-        img.onload = () => {
-          const max = 1400, sc = Math.min(1, max / Math.max(img.width, img.height));
-          const c = document.createElement('canvas');
-          c.width = Math.round(img.width * sc); c.height = Math.round(img.height * sc);
-          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-          try { sessionStorage.setItem('camImg', c.toDataURL('image/jpeg', 0.82)); }
-          catch(_) { c.width = Math.round(c.width/2); c.height = Math.round(c.height/2);
-                     c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-                     sessionStorage.setItem('camImg', c.toDataURL('image/jpeg', 0.75)); }
-          location.href = 'scan.html';
-        };
-        img.src = ev.target.result;
-      };
+      r.onload = ev => { sessionStorage.setItem('camImg', ev.target.result); location.href='scan.html'; };
       r.readAsDataURL(f); e.target.value='';
     };
     document.body.appendChild(inp);
