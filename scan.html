@@ -30,14 +30,16 @@
   <header class="hdr" style="flex-shrink:0;">
     <div class="hdr-back" onclick="backToTrigger()">←</div>
     <span class="hdr-t" style="color:#fff;">사진 확인</span>
-    <button class="hdr-btn" onclick="startOCR()">인식 시작</button>
   </header>
   <div style="flex:1;overflow:hidden;display:flex;align-items:center;justify-content:center;">
     <img id="prev-img" style="max-width:100%;max-height:100%;object-fit:contain;">
   </div>
-  <div style="flex-shrink:0;display:flex;gap:12px;padding:16px 16px 32px;background:var(--card);border-top:1px solid var(--bdr);">
-    <button onclick="rotatePrev(-90)" style="flex:1;padding:16px;border-radius:12px;background:var(--bg);border:1.5px solid var(--bdr);font-size:22px;font-weight:700;cursor:pointer;touch-action:manipulation;">↺ 좌회전</button>
-    <button onclick="rotatePrev(90)"  style="flex:1;padding:16px;border-radius:12px;background:var(--bg);border:1.5px solid var(--bdr);font-size:22px;font-weight:700;cursor:pointer;touch-action:manipulation;">↻ 우회전</button>
+  <div style="flex-shrink:0;padding:16px 16px 32px;background:var(--card);border-top:1px solid var(--bdr);">
+    <div style="display:flex;gap:12px;margin-bottom:12px;">
+      <button onclick="rotatePrev(-90)" style="flex:1;padding:14px;border-radius:12px;background:var(--bg);border:1.5px solid var(--bdr);font-size:20px;font-weight:700;cursor:pointer;touch-action:manipulation;">↺ 좌회전</button>
+      <button onclick="rotatePrev(90)"  style="flex:1;padding:14px;border-radius:12px;background:var(--bg);border:1.5px solid var(--bdr);font-size:20px;font-weight:700;cursor:pointer;touch-action:manipulation;">↻ 우회전</button>
+    </div>
+    <button onclick="startOCR()" style="width:100%;padding:18px;border-radius:14px;background:var(--blue);color:#fff;border:none;font-size:20px;font-weight:700;cursor:pointer;touch-action:manipulation;">인식 시작</button>
   </div>
 </div>
 
