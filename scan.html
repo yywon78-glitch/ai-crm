@@ -6,53 +6,32 @@
 <title>명함 스캔</title>
 <link rel="stylesheet" href="shared.css">
 <style>
-.scan-home{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:32px 24px;}
-.scan-illust{font-size:80px;line-height:1;}
-.scan-desc{font-size:15px;color:var(--t2);text-align:center;line-height:1.7;}
-.scan-btn-wrap{display:flex;flex-direction:column;gap:12px;width:100%;max-width:300px;}
-.scan-btn-main{width:100%;padding:18px;border-radius:16px;background:var(--blue);border:none;color:#fff;font-size:17px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;}
-.scan-btn-sub{width:100%;padding:15px;border-radius:16px;background:var(--bg);border:1.5px solid var(--bdr);color:var(--t1);font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;}
-#result-view{display:none;flex-direction:column;}
-.res-img-wrap{background:#111;display:flex;align-items:center;justify-content:center;}
-.res-img{width:100%;max-height:240px;object-fit:contain;display:block;}
-.res-ph{color:rgba(255,255,255,.4);font-size:13px;padding:40px 20px;text-align:center;}
+#result-view{position:fixed;inset:0 0 var(--tab-h) 0;z-index:50;background:var(--bg);display:none;flex-direction:column;overflow:hidden;}
+.res-img-wrap{background:#111;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.res-img{width:100%;max-height:200px;object-fit:contain;display:block;}
 .fgrp{padding:0 14px;margin-bottom:12px;}
-#multi-box{display:none;position:fixed;inset:0;z-index:300;background:var(--bg);flex-direction:column;}
+#multi-view{position:fixed;inset:0 0 var(--tab-h) 0;z-index:60;background:var(--bg);display:none;flex-direction:column;}
 </style>
 </head>
 <body>
 
-<!-- 촬영 홈 -->
-<div class="page" id="scan-home-view">
-  <header class="hdr">
-    <div class="hdr-back" onclick="history.back()">←</div>
-    <span class="hdr-t">명함 스캔</span>
-  </header>
-  <div class="scan-home">
-    <div class="scan-illust">🪪</div>
-    <div class="scan-desc">명함을 촬영하거나 사진을 선택하세요<br>여러 장이 찍힌 사진도 가능합니다</div>
-    <div class="scan-btn-wrap">
-      <button class="scan-btn-main" onclick="document.getElementById('inp-cam').click()">📷 카메라로 촬영</button>
-      <button class="scan-btn-sub"  onclick="document.getElementById('inp-gal').click()">🖼️ 갤러리에서 선택</button>
-    </div>
-  </div>
-  <input type="file" id="inp-cam" accept="image/*" capture="environment" style="display:none">
-  <input type="file" id="inp-gal" accept="image/*" style="display:none">
-</div>
+<!-- 숨은 파일 입력 -->
+<input type="file" id="inp-cam" accept="image/*" capture="environment" style="display:none">
+<input type="file" id="inp-gal" accept="image/*" style="display:none">
 
 <!-- OCR 결과 (1장) -->
-<div id="result-view" class="page">
+<div id="result-view">
   <header class="hdr">
-    <div class="hdr-back" onclick="backToHome()">←</div>
+    <div class="hdr-back" onclick="closeResult()">←</div>
     <span class="hdr-t">스캔 결과</span>
-    <button class="hdr-btn" onclick="saveCard()">저장</button>
+    <div class="hdr-icon" onclick="document.getElementById('inp-gal').click()" style="font-size:16px;">🖼️</div>
+    <button class="hdr-btn" onclick="saveCard()" style="min-height:40px;padding:0 18px;font-size:14px;">저장</button>
   </header>
-  <div class="body">
+  <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;">
     <div class="res-img-wrap">
-      <img id="res-img" class="res-img" style="display:none;">
-      <div class="res-ph" id="res-ph">📷 명함 이미지</div>
+      <img id="res-img" style="width:100%;max-height:200px;object-fit:contain;display:none;">
     </div>
-    <div style="height:14px;"></div>
+    <div style="height:12px;"></div>
     <div class="fgrp"><div class="flb">이름 *</div><input class="finp" id="f-nm" placeholder="이름"></div>
     <div class="fgrp"><div class="flb">회사</div><input class="finp" id="f-co" placeholder="회사명"></div>
     <div class="fgrp"><div class="flb">직책</div><input class="finp" id="f-tl" placeholder="직책 / 부서"></div>
@@ -64,26 +43,26 @@
   </div>
 </div>
 
-<!-- 여러 명함 선택 저장 -->
-<div id="multi-box">
+<!-- 여러 명함 선택 -->
+<div id="multi-view">
   <header class="hdr">
-    <div class="hdr-back" onclick="document.getElementById('multi-box').style.display='none';backToHome()">←</div>
+    <div class="hdr-back" onclick="closeMulti()">←</div>
     <span class="hdr-t" id="multi-title">명함 선택</span>
-    <button class="hdr-btn" onclick="saveMulti()">선택 저장</button>
+    <button class="hdr-btn" onclick="saveMulti()" style="min-height:40px;padding:0 18px;font-size:14px;">저장</button>
   </header>
-  <div style="padding:12px 14px;font-size:13px;color:var(--t2);">저장할 명함을 선택하세요 (전체 선택됨)</div>
-  <div class="body"><div class="bp" id="multi-list"></div></div>
+  <div style="padding:10px 14px 6px;font-size:13px;color:var(--t2);">저장할 명함을 선택하세요</div>
+  <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 14px 14px;" id="multi-list"></div>
 </div>
 
 <!-- 로딩 -->
 <div class="ld" id="ld"><div class="spinner"></div><p id="ld-msg">명함 인식 중...</p></div>
 
 <!-- 오류 -->
-<div id="err-box" style="display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.85);align-items:center;justify-content:center;padding:24px;">
+<div id="err-box" style="display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.8);align-items:center;justify-content:center;padding:24px;">
   <div style="background:#fff;border-radius:16px;padding:24px;max-width:340px;width:100%;">
     <div style="font-size:16px;font-weight:700;color:#dc2626;margin-bottom:12px;">❌ OCR 오류</div>
     <div id="err-msg" style="font-size:13px;color:#374151;line-height:1.6;word-break:break-all;margin-bottom:20px;"></div>
-    <button onclick="document.getElementById('err-box').style.display='none'" style="width:100%;padding:12px;border-radius:10px;background:#dc2626;color:#fff;border:none;font-size:15px;font-weight:700;cursor:pointer;">확인</button>
+    <button onclick="document.getElementById('err-box').style.display='none'" style="width:100%;padding:14px;border-radius:10px;background:#dc2626;color:#fff;border:none;font-size:15px;font-weight:700;cursor:pointer;">확인</button>
   </div>
 </div>
 
@@ -94,15 +73,19 @@ let captured = null;
 let _multiCards = [];
 const COLORS = ['#2563eb','#16a34a','#d97706','#7c3aed','#dc2626','#0891b2'];
 
+/* 스캔 탭 클릭 시 바로 카메라 열기 */
+document.getElementById('inp-cam').click();
+
 function onFile(e){
-  const f = e.target.files[0]; if(!f) return;
+  const f = e.target.files[0];
+  if(!f){ history.back(); return; }
   const r = new FileReader();
   r.onload = ev => processImage(ev.target.result);
   r.readAsDataURL(f);
   e.target.value = '';
 }
 document.getElementById('inp-cam').onchange = onFile;
-document.getElementById('inp-gal').onchange = onFile;
+document.getElementById('inp-gal').onchange  = onFile;
 
 function showErr(msg){
   document.getElementById('ld').classList.remove('show');
@@ -117,7 +100,7 @@ function resizeForOCR(dataUrl, maxW=1600){
       const w = Math.min(i.width, maxW), h = i.height*(w/i.width);
       const c = document.createElement('canvas');
       c.width = w; c.height = h;
-      c.getContext('2d').drawImage(i, 0, 0, w, h);
+      c.getContext('2d').drawImage(i,0,0,w,h);
       resolve(c.toDataURL('image/jpeg', 0.9));
     };
     i.src = dataUrl;
@@ -128,7 +111,6 @@ async function processImage(dataUrl){
   captured = dataUrl;
   const img = document.getElementById('res-img');
   img.src = dataUrl; img.style.display = 'block';
-  document.getElementById('res-ph').style.display = 'none';
 
   const ldMsg = document.getElementById('ld-msg');
   document.getElementById('ld').classList.add('show');
@@ -137,12 +119,14 @@ async function processImage(dataUrl){
   if(!apiKey){
     document.getElementById('ld').classList.remove('show');
     if(confirm('API 키가 설정되지 않았습니다.\n설정 화면으로 이동할까요?')) location.href='settings.html';
+    else history.back();
     return;
   }
 
   try{
     ldMsg.textContent = '이미지 준비 중...';
     const resized = await resizeForOCR(dataUrl);
+    captured = resized;
     const base64 = resized.split(',')[1];
     ldMsg.textContent = 'AI 명함 인식 중...';
 
@@ -173,37 +157,39 @@ async function processImage(dataUrl){
 
     const data = await res.json();
     const text = data.content?.[0]?.text || '';
-    if(!text){ showErr('응답 없음: '+JSON.stringify(data)); return; }
+    if(!text){ showErr('응답 없음'); return; }
 
     const arrMatch = text.match(/\[[\s\S]*\]/);
-    if(!arrMatch){ showErr('인식 실패:\n\n'+text); return; }
+    if(!arrMatch){ showErr('인식 실패:\n'+text); return; }
 
     const cards = JSON.parse(arrMatch[0]);
     document.getElementById('ld').classList.remove('show');
-
     if(!cards.length){ showErr('명함을 찾을 수 없습니다'); return; }
 
     if(cards.length === 1){
       fillForm(cards[0]);
-      document.getElementById('scan-home-view').style.display = 'none';
       document.getElementById('result-view').style.display = 'flex';
     } else {
       showMulti(cards);
     }
-
   }catch(e){
     showErr(e.message);
   }
 }
 
-function fillForm(info){
-  document.getElementById('f-nm').value   = info.nm   || '';
-  document.getElementById('f-co').value   = info.co   || '';
-  document.getElementById('f-tl').value   = info.tl   || '';
-  document.getElementById('f-mob').value  = info.mob  || '';
-  document.getElementById('f-ph').value   = info.ph   || '';
-  document.getElementById('f-em').value   = info.em   || '';
-  document.getElementById('f-addr').value = info.addr || '';
+function fillForm(c){
+  document.getElementById('f-nm').value   = c.nm   || '';
+  document.getElementById('f-co').value   = c.co   || '';
+  document.getElementById('f-tl').value   = c.tl   || '';
+  document.getElementById('f-mob').value  = c.mob  || '';
+  document.getElementById('f-ph').value   = c.ph   || '';
+  document.getElementById('f-em').value   = c.em   || '';
+  document.getElementById('f-addr').value = c.addr || '';
+}
+
+function closeResult(){
+  document.getElementById('result-view').style.display = 'none';
+  history.back();
 }
 
 function showMulti(cards){
@@ -211,81 +197,70 @@ function showMulti(cards){
   document.getElementById('multi-title').textContent = `명함 ${cards.length}장 인식됨`;
   document.getElementById('multi-list').innerHTML = cards.map((c,i)=>`
     <label style="display:flex;align-items:flex-start;gap:12px;padding:14px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;cursor:pointer;margin-bottom:9px;">
-      <input type="checkbox" checked data-i="${i}" style="width:18px;height:18px;margin-top:3px;flex-shrink:0;accent-color:var(--blue);">
-      <div style="flex:1;">
-        <div style="font-size:15px;font-weight:700;">${c.nm||'(이름없음)'} <span style="font-size:12px;font-weight:400;color:var(--t2);">${c.tl||''}</span></div>
+      <input type="checkbox" checked data-i="${i}" style="width:20px;height:20px;margin-top:2px;flex-shrink:0;accent-color:var(--blue);">
+      <div>
+        <div style="font-size:15px;font-weight:700;">${c.nm||'(이름없음)'} <span style="font-size:12px;color:var(--t2);">${c.tl||''}</span></div>
         <div style="font-size:13px;color:var(--blue);margin-top:2px;">${c.co||''}</div>
-        <div style="font-size:12px;color:var(--t2);margin-top:2px;">${[c.mob,c.ph,c.em].filter(Boolean).join(' · ')}</div>
+        <div style="font-size:12px;color:var(--t2);margin-top:2px;">${[c.mob,c.ph].filter(Boolean).join(' · ')}</div>
       </div>
     </label>`).join('');
-  document.getElementById('multi-box').style.display = 'flex';
+  document.getElementById('multi-view').style.display = 'flex';
+}
+
+function closeMulti(){
+  document.getElementById('multi-view').style.display = 'none';
+  history.back();
 }
 
 function saveMulti(){
-  const selected = [...document.querySelectorAll('#multi-list input[type=checkbox]:checked')]
-    .map(el => _multiCards[+el.dataset.i]);
-  if(!selected.length){ toast('저장할 명함을 선택해주세요'); return; }
-
+  const sel = [...document.querySelectorAll('#multi-list input:checked')].map(el=>_multiCards[+el.dataset.i]);
+  if(!sel.length){ toast('저장할 명함을 선택해주세요'); return; }
   const saved = DB.getCards();
   let added=0, updated=0;
-  selected.forEach(info=>{
-    const nm=(info.nm||'').trim(); if(!nm) return;
-    const co=(info.co||'').trim();
-    const dup = saved.find(c=>c.nm===nm&&c.co===co);
-    if(dup){
-      Object.assign(dup,{tl:info.tl||'',mob:info.mob||'',ph:info.ph||'',em:info.em||'',addr:info.addr||''});
-      updated++;
-    } else {
-      saved.unshift({id:'c'+Date.now()+Math.random(),nm,co,
-        tl:info.tl||'',mob:info.mob||'',ph:info.ph||'',em:info.em||'',addr:info.addr||'',
-        tag:'고객',cl:COLORS[Math.floor(Math.random()*COLORS.length)],fav:false,img:null});
-      added++;
-    }
+  sel.forEach(c=>{
+    const nm=(c.nm||'').trim(); if(!nm) return;
+    const co=(c.co||'').trim();
+    const dup = saved.find(x=>x.nm===nm&&x.co===co);
+    if(dup){ Object.assign(dup,{tl:c.tl||'',mob:c.mob||'',ph:c.ph||'',em:c.em||'',addr:c.addr||''}); updated++; }
+    else { saved.unshift({id:'c'+Date.now()+Math.random(),nm,co,tl:c.tl||'',mob:c.mob||'',ph:c.ph||'',em:c.em||'',addr:c.addr||'',tag:'고객',cl:COLORS[Math.floor(Math.random()*COLORS.length)],fav:false,img:null}); added++; }
   });
   DB.setCards(saved);
-  document.getElementById('multi-box').style.display = 'none';
   toast(`저장 ${added}장, 업데이트 ${updated}장 ✓`);
-  setTimeout(()=>location.href='index.html', 1200);
-}
-
-function backToHome(){
-  document.getElementById('result-view').style.display = 'none';
-  document.getElementById('scan-home-view').style.display = 'flex';
+  setTimeout(()=>location.href='index.html', 1000);
 }
 
 function saveCard(){
   const nm = document.getElementById('f-nm').value.trim();
-  if(!nm){ toast('이름을 입력해주세요'); return; }
   const co = document.getElementById('f-co').value.trim();
-  const cards = DB.getCards();
+  const tl = document.getElementById('f-tl').value.trim();
+  const mob= document.getElementById('f-mob').value.trim();
+  const ph = document.getElementById('f-ph').value.trim();
+  const em = document.getElementById('f-em').value.trim();
+  const addr=document.getElementById('f-addr').value.trim();
 
+  if(!nm){ alert('이름을 입력해주세요'); return; }
+
+  const cards = DB.getCards();
   const dup = cards.find(c=>c.nm===nm&&c.co===co);
   if(dup){
-    if(!confirm(`이미 등록된 명함입니다.\n\n${nm} / ${co}\n\n업데이트할까요?`)) return;
-    dup.tl   = document.getElementById('f-tl').value.trim();
-    dup.mob  = document.getElementById('f-mob').value.trim();
-    dup.ph   = document.getElementById('f-ph').value.trim();
-    dup.em   = document.getElementById('f-em').value.trim();
-    dup.addr = document.getElementById('f-addr').value.trim();
-    if(captured) dup.img = captured;
+    if(!confirm(`이미 등록된 명함입니다.\n${nm} / ${co}\n업데이트할까요?`)) return;
+    Object.assign(dup,{tl,mob,ph,em,addr});
+    if(captured) dup.img=captured;
     DB.setCards(cards);
-    toast('업데이트됐습니다 ✓');
+    alert('업데이트됐습니다');
     location.href='index.html';
     return;
   }
 
-  cards.unshift({
-    id:'c'+Date.now(), nm, co,
-    tl:document.getElementById('f-tl').value.trim(),
-    mob:document.getElementById('f-mob').value.trim(),
-    ph:document.getElementById('f-ph').value.trim(),
-    em:document.getElementById('f-em').value.trim(),
-    addr:document.getElementById('f-addr').value.trim(),
-    tag:'고객', cl:COLORS[Math.floor(Math.random()*COLORS.length)], fav:false,
-    img:captured||null
-  });
-  DB.setCards(cards);
-  toast('명함이 저장됐습니다 ✓');
+  cards.unshift({id:'c'+Date.now(),nm,co,tl,mob,ph,em,addr,
+    tag:'고객',cl:COLORS[Math.floor(Math.random()*COLORS.length)],fav:false,img:captured||null});
+  try {
+    DB.setCards(cards);
+  } catch(e) {
+    cards[0].img = null;
+    DB.setCards(cards);
+  }
+  alert('명함이 저장됐습니다');
   location.href='index.html';
 }
 </script>
