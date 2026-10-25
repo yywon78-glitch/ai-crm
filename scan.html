@@ -133,19 +133,59 @@ function cropCard(dataUrl, box){
   });
 }
 
-function resizeForOCR(dataUrl, maxW=1600){
-  return new Promise(resolve=>{
-    const img=new Image();
-    img.onload=()=>{
-      const sw=img.naturalWidth||img.width, sh=img.naturalHeight||img.height;
-      const scale=Math.min(1,maxW/sw);
-      const c=document.createElement('canvas');
-      c.width=Math.round(sw*scale); c.height=Math.round(sh*scale);
-      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-      resolve(c.toDataURL('image/jpeg',0.9));
-    };
-    img.src=dataUrl;
-  });
+function getExifOrient(dataUrl){
+  try{
+    const b=atob(dataUrl.split(',')[1]);
+    const v=n=>b.charCodeAt(n);
+    if(v(0)!==0xFF||v(1)!==0xD8) return 1;
+    let p=2;
+    while(p<b.length){
+      if(v(p)!==0xFF) break;
+      const seg=v(p+1), len=(v(p+2)<<8)|v(p+3);
+      if(seg===0xE1&&len>10&&v(p+4)===0x45&&v(p+5)===0x78){
+        const t=p+10, le=v(t)===0x49;
+        const r16=o=>le?(v(t+o)|v(t+o+1)<<8):(v(t+o)<<8|v(t+o+1));
+        const r32=o=>le?(v(t+o)|v(t+o+1)<<8|v(t+o+2)<<16|v(t+o+3)<<24):(v(t+o)<<24|v(t+o+1)<<16|v(t+o+2)<<8|v(t+o+3));
+        const ifd=r32(4), n=r16(ifd);
+        for(let i=0;i<n;i++){const e=ifd+2+i*12; if(r16(e)===0x0112) return r16(e+8);}
+      }
+      if(seg===0xDA) break;
+      p+=2+len;
+    }
+  }catch(e){}
+  return 1;
+}
+
+async function resizeForOCR(dataUrl, maxW=1600){
+  const orient = getExifOrient(dataUrl);
+  let src, sw, sh;
+  try{
+    const blob = await fetch(dataUrl).then(r=>r.blob());
+    const bmp  = await createImageBitmap(blob, {imageOrientation:'none'});
+    src=bmp; sw=bmp.width; sh=bmp.height;
+  }catch(e){
+    await new Promise(res=>{
+      const img=new Image();
+      img.onload=()=>{src=img;sw=img.naturalWidth||img.width;sh=img.naturalHeight||img.height;res();};
+      img.src=dataUrl;
+    });
+  }
+  const c = document.createElement('canvas');
+  // orient 6/8 은 sw,sh 크기 관계없이 90° 회전 필요
+  if(orient===6||orient===8){
+    const scale = Math.min(1, maxW/Math.max(sw,sh));
+    const rw=Math.round(sw*scale), rh=Math.round(sh*scale);
+    c.width=rh; c.height=rw;
+    const ctx=c.getContext('2d');
+    if(orient===8){ctx.translate(rh,0);ctx.rotate(Math.PI/2);}
+    else          {ctx.translate(0,rw);ctx.rotate(-Math.PI/2);}
+    ctx.drawImage(src,0,0,rw,rh);
+  } else {
+    const scale = Math.min(1, maxW/sw);
+    c.width=Math.round(sw*scale); c.height=Math.round(sh*scale);
+    c.getContext('2d').drawImage(src,0,0,c.width,c.height);
+  }
+  return c.toDataURL('image/jpeg',0.9);
 }
 
 async function processImage(dataUrl){
