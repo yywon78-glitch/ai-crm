@@ -17,7 +17,7 @@
 <body>
 
 <!-- 전체화면 카메라/갤러리 트리거 -->
-<div id="cam-trigger" onclick="document.getElementById(_triggerEl).click()" style="position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg);gap:16px;cursor:pointer;touch-action:manipulation;">
+<div id="cam-trigger" onclick="document.getElementById(_triggerEl).click()" style="position:fixed;inset:0;z-index:10;display:none;flex-direction:column;align-items:center;justify-content:center;background:var(--bg);gap:16px;cursor:pointer;touch-action:manipulation;">
   <div id="trig-ic" style="font-size:72px;">📷</div>
   <div id="trig-t1" style="font-size:18px;font-weight:700;color:var(--t1);">탭하여 촬영</div>
   <div id="trig-t2" style="font-size:13px;color:var(--t2);">명함을 카메라로 스캔합니다</div>
@@ -151,8 +151,9 @@ if(_stored){
   sessionStorage.removeItem(_key);
   _prevDataUrl = _stored;
   document.getElementById('prev-img').src = _stored;
-  document.getElementById('cam-trigger').style.display = 'none';
   document.getElementById('preview-view').style.display = 'flex';
+} else {
+  document.getElementById('cam-trigger').style.display = 'flex';
 }
 if(new URLSearchParams(location.search).get('gal')){
   _triggerEl = 'inp-gal';
