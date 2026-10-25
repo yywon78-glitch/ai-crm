@@ -158,10 +158,10 @@ function getExifOrient(dataUrl){
 
 async function resizeForOCR(dataUrl, maxW=1600){
   const orient=getExifOrient(dataUrl);
-  let src, sw, sh;
+  let src, sw, sh, eff=orient;
   try{
     const blob=await fetch(dataUrl).then(r=>r.blob());
-    src=await createImageBitmap(blob); // EXIF 무시한 원본 픽셀
+    src=await createImageBitmap(blob,{imageOrientation:'none'}); // raw픽셀, EXIF 무시
     sw=src.width; sh=src.height;
   }catch(e){
     await new Promise(res=>{
@@ -169,8 +169,9 @@ async function resizeForOCR(dataUrl, maxW=1600){
       img.onload=()=>{src=img;sw=img.naturalWidth||img.width;sh=img.naturalHeight||img.height;res();};
       img.src=dataUrl;
     });
+    eff=1; // 브라우저가 EXIF 자동 처리 → 수동 보정 불필요
   }
-  const swap=orient>=5&&orient<=8;
+  const swap=eff>=5&&eff<=8;
   const lw=swap?sh:sw, lh=swap?sw:sh;
   const scale=Math.min(1,maxW/lw);
   const dw=Math.round(lw*scale), dh=Math.round(lh*scale);
@@ -179,7 +180,7 @@ async function resizeForOCR(dataUrl, maxW=1600){
   c.width=dw; c.height=dh;
   const ctx=c.getContext('2d');
   ctx.save();
-  switch(orient){
+  switch(eff){
     case 2:ctx.transform(-1,0,0,1,rw,0);break;
     case 3:ctx.transform(-1,0,0,-1,rw,rh);break;
     case 4:ctx.transform(1,0,0,-1,0,rh);break;
