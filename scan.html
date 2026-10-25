@@ -172,16 +172,17 @@ async function resizeForOCR(dataUrl, maxW=1600){
     });
   }
   const c=document.createElement('canvas');
-  if(sh>sw){
-    // 원본이 세로 → 가로로 회전
+  if((orient===6||orient===8) && sh>sw){
+    // 가로사진이 세로로 저장된 경우 → 회전해서 가로로
     const scale=Math.min(1,maxW/sh);
     const rw=Math.round(sw*scale), rh=Math.round(sh*scale);
     c.width=rh; c.height=rw;
     const ctx=c.getContext('2d');
-    if(orient===8){ctx.translate(rh,0);ctx.rotate(Math.PI/2);}   // orient 8 → CW
-    else{ctx.translate(0,rw);ctx.rotate(-Math.PI/2);}           // orient 6(기본) → CCW
+    if(orient===8){ctx.translate(rh,0);ctx.rotate(Math.PI/2);}  // orient 8 → CW
+    else{ctx.translate(0,rw);ctx.rotate(-Math.PI/2);}           // orient 6 → CCW
     ctx.drawImage(src,0,0,rw,rh);
   } else {
+    // 세로사진 그대로 or 브라우저가 이미 보정한 경우 → 그냥 리사이즈
     const scale=Math.min(1,maxW/sw);
     c.width=Math.round(sw*scale); c.height=Math.round(sh*scale);
     c.getContext('2d').drawImage(src,0,0,c.width,c.height);
