@@ -17,11 +17,11 @@
 <body>
 
 <!-- 전체화면 카메라/갤러리 트리거 -->
-<label id="cam-trigger" for="inp-cam" style="position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg);gap:16px;cursor:pointer;touch-action:manipulation;">
-  <div style="font-size:72px;">📷</div>
-  <div style="font-size:18px;font-weight:700;color:var(--t1);">탭하여 촬영</div>
-  <div style="font-size:13px;color:var(--t2);">명함을 카메라로 스캔합니다</div>
-</label>
+<div id="cam-trigger" onclick="document.getElementById(_triggerEl).click()" style="position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg);gap:16px;cursor:pointer;touch-action:manipulation;">
+  <div id="trig-ic" style="font-size:72px;">📷</div>
+  <div id="trig-t1" style="font-size:18px;font-weight:700;color:var(--t1);">탭하여 촬영</div>
+  <div id="trig-t2" style="font-size:13px;color:var(--t2);">명함을 카메라로 스캔합니다</div>
+</div>
 <input type="file" id="inp-cam" accept="image/*" capture="environment" style="display:none">
 <input type="file" id="inp-gal" accept="image/*" style="display:none">
 
@@ -91,17 +91,17 @@ function onFile(e){
 document.getElementById('inp-cam').onchange = onFile;
 document.getElementById('inp-gal').onchange = onFile;
 
-// ?gal=1 이면 갤러리 트리거로 교체
+let _triggerEl = 'inp-cam';
 if(new URLSearchParams(location.search).get('gal')){
-  document.getElementById('cam-trigger').setAttribute('for','inp-gal');
-  document.querySelector('#cam-trigger div:nth-child(1)').textContent='🖼️';
-  document.querySelector('#cam-trigger div:nth-child(2)').textContent='탭하여 갤러리 선택';
-  document.querySelector('#cam-trigger div:nth-child(3)').textContent='사진첩에서 명함을 선택합니다';
+  _triggerEl = 'inp-gal';
+  document.getElementById('trig-ic').textContent='🖼️';
+  document.getElementById('trig-t1').textContent='탭하여 갤러리 선택';
+  document.getElementById('trig-t2').textContent='사진첩에서 명함을 선택합니다';
 }
 
 function retake(){
   document.getElementById('result-view').style.display = 'none';
-  document.getElementById('cam-trigger').setAttribute('for','inp-cam');
+  _triggerEl = 'inp-cam';
   document.getElementById('cam-trigger').style.display = 'flex';
 }
 
