@@ -120,6 +120,7 @@ function rotatePrev(deg){
 
 function backToTrigger(){
   document.getElementById('preview-view').style.display = 'none';
+  if(_fromIndex){ history.back(); return; }
   document.getElementById('cam-trigger').style.display = 'flex';
 }
 
@@ -145,16 +146,29 @@ document.getElementById('inp-cam').onchange = onFile;
 document.getElementById('inp-gal').onchange = onFile;
 
 let _triggerEl = 'inp-cam';
-if(new URLSearchParams(location.search).get('gal')){
-  _triggerEl = 'inp-gal';
-  document.getElementById('trig-ic').textContent = '🖼️';
-  document.getElementById('trig-t1').textContent = '탭하여 갤러리 선택';
-  document.getElementById('trig-t2').textContent = '사진첩에서 명함을 선택합니다';
+let _fromIndex = false;
+
+const _pending = sessionStorage.getItem('scan_data');
+if(_pending){
+  _fromIndex = true;
+  sessionStorage.removeItem('scan_data');
+  sessionStorage.removeItem('scan_mode');
+  _prevDataUrl = _pending;
+  document.getElementById('prev-img').src = _prevDataUrl;
+  document.getElementById('preview-view').style.display = 'flex';
+} else {
+  if(new URLSearchParams(location.search).get('gal')){
+    _triggerEl = 'inp-gal';
+    document.getElementById('trig-ic').textContent = '🖼️';
+    document.getElementById('trig-t1').textContent = '탭하여 갤러리 선택';
+    document.getElementById('trig-t2').textContent = '사진첩에서 명함을 선택합니다';
+  }
+  document.getElementById('cam-trigger').style.display = 'flex';
 }
-document.getElementById('cam-trigger').style.display = 'flex';
 
 function retake(){
   document.getElementById('result-view').style.display = 'none';
+  if(_fromIndex){ history.back(); return; }
   document.getElementById('cam-trigger').style.display = 'flex';
 }
 
@@ -347,6 +361,7 @@ function saveCard(){
     if(captured) dup.img = captured;
     try { DB.setCards(cards); } catch(e) { dup.img = null; DB.setCards(cards); }
     toast('업데이트됐습니다 ✓');
+    history.replaceState(null,'','cards.html');
     location.href='card.html?id='+dup.id;
     return;
   }
@@ -364,6 +379,7 @@ function saveCard(){
   });
   try { DB.setCards(cards); } catch(e) { cards[0].img = null; DB.setCards(cards); }
   toast('명함이 저장됐습니다 ✓');
+  history.replaceState(null,'','cards.html');
   location.href='card.html?id='+newId;
 }
 </script>

@@ -53,7 +53,7 @@
     <div class="home-banner">
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <div class="home-logo">BUSINESS CARD CRM</div>
-        <div style="font-size:11px;font-weight:700;background:rgba(255,255,255,.2);padding:3px 10px;border-radius:20px;">v6.0</div>
+        <div style="font-size:11px;font-weight:700;background:rgba(255,255,255,.2);padding:3px 10px;border-radius:20px;">v6.1</div>
       </div>
       <div class="home-title">명함 관리 시스템</div>
       <div class="home-date" id="today-date"></div>
@@ -68,7 +68,7 @@
     <div class="menu-section">
       <div class="menu-section-title">명함 관리</div>
 
-      <div class="menu-card" onclick="location.href='scan.html'">
+      <div class="menu-card" onclick="document.getElementById('inp-cam').click()">
         <div class="menu-ic ic-blue">📷</div>
         <div class="menu-txt">
           <div class="menu-nm">명함 스캔</div>
@@ -77,7 +77,7 @@
         <div class="menu-arrow">›</div>
       </div>
 
-      <div class="menu-card" onclick="location.href='scan.html?gal=1'" >
+      <div class="menu-card" onclick="document.getElementById('inp-gal').click()">
         <div class="menu-ic ic-blue">🖼️</div>
         <div class="menu-txt">
           <div class="menu-nm">갤러리 스캔</div>
@@ -150,9 +150,37 @@
   <nav class="tabbar" id="tabbar"></nav>
 </div>
 
+<input type="file" id="inp-cam" accept="image/*" capture="environment" style="display:none">
+<input type="file" id="inp-gal" accept="image/*" style="display:none">
 <script src="data.js"></script>
 <script src="nav.js"></script>
 <script>
+(function(){
+  function onScanFile(e, mode){
+    const f = e.target.files[0];
+    if(!f) return;
+    const r = new FileReader();
+    r.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        const maxW = 1600;
+        const scale = Math.min(1, maxW / Math.max(img.width, img.height));
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.width * scale);
+        c.height = Math.round(img.height * scale);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        sessionStorage.setItem('scan_data', c.toDataURL('image/jpeg', 0.9));
+        sessionStorage.setItem('scan_mode', mode);
+        location.href = 'scan.html';
+      };
+      img.src = ev.target.result;
+    };
+    r.readAsDataURL(f);
+    e.target.value = '';
+  }
+  document.getElementById('inp-cam').onchange = e => onScanFile(e, 'cam');
+  document.getElementById('inp-gal').onchange = e => onScanFile(e, 'gal');
+})();
 function load(){
   const cards=DB.getCards(), cos=DB.getCos(), visits=DB.getVisits();
   document.getElementById('s-cards').textContent=cards.length;
