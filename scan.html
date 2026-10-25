@@ -126,19 +126,57 @@ async function processImage(dataUrl){
   else { img.style.display='none'; ph.style.display='block'; }
 
   document.getElementById('ld').classList.add('show');
-  await new Promise(r=>setTimeout(r,1000));
+
+  const apiKey = DB.getKey();
+  if(apiKey && dataUrl){
+    try {
+      const base64 = dataUrl.split(',')[1];
+      const res = await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version':'2023-06-01',
+          'anthropic-dangerous-direct-browser-access':'true'
+        },
+        body: JSON.stringify({
+          model:'claude-haiku-4-5-20251001',
+          max_tokens:512,
+          messages:[{role:'user',content:[
+            {type:'image',source:{type:'base64',media_type:'image/jpeg',data:base64}},
+            {type:'text',text:'이 명함 이미지에서 정보를 추출해 JSON만 반환해. 키: nm(이름),co(회사),tl(직책),mob(휴대전화),ph(유선전화),em(이메일),addr(주소). 없으면 빈 문자열.'}
+          ]}]
+        })
+      });
+      const data = await res.json();
+      const text = data.content?.[0]?.text || '';
+      const match = text.match(/\{[\s\S]*?\}/);
+      if(match){
+        const info = JSON.parse(match[0]);
+        document.getElementById('f-nm').value  = info.nm  || '';
+        document.getElementById('f-co').value  = info.co  || '';
+        document.getElementById('f-tl').value  = info.tl  || '';
+        document.getElementById('f-mob').value = info.mob || '';
+        document.getElementById('f-ph').value  = info.ph  || '';
+        document.getElementById('f-em').value  = info.em  || '';
+        document.getElementById('f-addr').value= info.addr|| '';
+      }
+    } catch(e){
+      toast('OCR 오류: '+e.message);
+    }
+  } else {
+    /* API 키 없을 때 더미 데이터 */
+    document.getElementById('f-nm').value='홍길동';
+    document.getElementById('f-co').value='(주)예시회사';
+    document.getElementById('f-tl').value='영업팀 과장';
+    document.getElementById('f-mob').value='010-0000-0000';
+    document.getElementById('f-ph').value='02-000-0000';
+    document.getElementById('f-em').value='hong@example.com';
+    document.getElementById('f-addr').value='서울시 강남구 테헤란로 123';
+    toast('API 키 미설정 — 더미 데이터로 표시');
+  }
+
   document.getElementById('ld').classList.remove('show');
-
-  /* 더미 OCR — Phase2에서 실제 API 연동 */
-  const sample = DB.getCos()[Math.floor(Math.random()*DB.getCos().length)];
-  document.getElementById('f-nm').value='홍길동';
-  document.getElementById('f-co').value=sample?sample.nm:'(주)예시회사';
-  document.getElementById('f-tl').value='영업팀 과장';
-  document.getElementById('f-mob').value='010-0000-0000';
-  document.getElementById('f-ph').value='02-000-0000';
-  document.getElementById('f-em').value='hong@example.com';
-  document.getElementById('f-addr').value='서울시 강남구 테헤란로 123';
-
   document.getElementById('cam-view').style.display='none';
   document.getElementById('result-view').style.display='flex';
 }

@@ -117,9 +117,8 @@ function openCardOverlay(id) {
     <header class="hdr">
       <div class="hdr-back" onclick="closeCardOverlay()">←</div>
       <span class="hdr-t">명함 상세</span>
-      <div class="hdr-icon" onclick="toggleFav('${id}',this)">
-        ${card.fav?'★':'☆'}
-      </div>
+      <div class="hdr-icon" onclick="toggleFav('${id}',this)">${card.fav?'★':'☆'}</div>
+      <div class="hdr-icon" onclick="openCardEdit('${id}')">✏️</div>
     </header>
     <div class="overlay-body">
       <div class="det-hero">

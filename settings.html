@@ -34,6 +34,20 @@
     </div>
 
     <div class="set-grp">
+      <div class="set-lbl">데이터 내보내기</div>
+      <div class="set-item" onclick="exportJSON()">
+        <span class="set-ic">📤</span>
+        <div class="set-txt"><div class="set-t">JSON 내보내기</div><div class="set-s">명함·거래처·방문기록 전체 백업</div></div>
+        <span class="set-arrow">›</span>
+      </div>
+      <div class="set-item" onclick="exportCSV()">
+        <span class="set-ic">📊</span>
+        <div class="set-txt"><div class="set-t">CSV 내보내기</div><div class="set-s">엑셀에서 열 수 있는 형식</div></div>
+        <span class="set-arrow">›</span>
+      </div>
+    </div>
+
+    <div class="set-grp">
       <div class="set-lbl">앱 정보</div>
       <div class="set-item">
         <span class="set-ic">ℹ️</span>
@@ -75,6 +89,29 @@ function saveKey(){
   closeKeyModal();
   load();
   toast('API 키가 저장됐습니다 ✓');
+}
+
+function exportJSON(){
+  const data={cards:DB.getCards(),cos:DB.getCos(),visits:DB.getVisits(),exported:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`crm_backup_${new Date().toISOString().split('T')[0]}.json`;
+  a.click(); URL.revokeObjectURL(a.href);
+  toast('JSON 내보내기 완료 ✓');
+}
+
+function exportCSV(){
+  const cards=DB.getCards();
+  const headers=['이름','회사','직책','휴대전화','유선전화','이메일','주소','태그','즐겨찾기'];
+  const rows=cards.map(c=>[c.nm,c.co,c.tl,c.mob,c.ph,c.em,c.addr,c.tag,c.fav?'Y':'N'].map(v=>`"${(v||'').replace(/"/g,'""')}"`).join(','));
+  const csv='﻿'+[headers.join(','),...rows].join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`crm_cards_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click(); URL.revokeObjectURL(a.href);
+  toast('CSV 내보내기 완료 ✓');
 }
 
 function confirmReset(){

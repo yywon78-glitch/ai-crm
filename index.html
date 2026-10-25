@@ -41,6 +41,14 @@
   </header>
   <div class="body">
 
+    <!-- 오늘 방문 예정 -->
+    <div id="today-visits-wrap" style="display:none;">
+      <div class="menu-section" style="padding-bottom:0;">
+        <div class="menu-section-title" style="color:var(--red);">📅 오늘 방문 예정</div>
+      </div>
+      <div id="today-visits" style="padding:0 14px 8px;display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+
     <!-- 배너 + 통계 -->
     <div class="home-banner">
       <div class="home-logo">BUSINESS CARD CRM</div>
@@ -149,6 +157,24 @@ function load(){
 }
 renderTabBar('home');
 load();
+
+function loadTodayVisits() {
+  const today = new Date().toISOString().split('T')[0];
+  const visits = DB.getVisits().filter(v=>v.next===today);
+  const wrap = document.getElementById('today-visits-wrap');
+  const el = document.getElementById('today-visits');
+  if(!visits.length){ wrap.style.display='none'; return; }
+  wrap.style.display='block';
+  el.innerHTML = visits.map(v=>`
+    <div class="menu-card" onclick="location.href='cos.html'" style="border-color:var(--red);background:#fff5f5;">
+      <div class="menu-ic" style="background:var(--red-lt);">📅</div>
+      <div class="menu-txt">
+        <div class="menu-nm">${v.co}</div>
+        <div class="menu-desc">${v.tp} · 오늘 방문 예정</div>
+      </div>
+    </div>`).join('');
+}
+loadTodayVisits();
 </script>
 </body>
 </html>
