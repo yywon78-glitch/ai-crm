@@ -156,34 +156,37 @@ function getExifOrient(dataUrl){
   return 1;
 }
 
-function resizeForOCR(dataUrl, maxW=1600){
+async function resizeForOCR(dataUrl, maxW=1600){
   const orient=getExifOrient(dataUrl);
-  return new Promise(resolve=>{
-    const img=new Image();
-    img.onload=()=>{
-      const sw=img.width, sh=img.height;
-      const c=document.createElement('canvas');
-      if(sh>sw){
-        // 세로 이미지 → 가로로 회전 (EXIF 방향으로 좌/우 결정)
-        const scale=Math.min(1,maxW/sh);
-        const rw=Math.round(sw*scale), rh=Math.round(sh*scale);
-        c.width=rh; c.height=rw;
-        const ctx=c.getContext('2d');
-        if(orient===8){
-          ctx.translate(0,rw); ctx.rotate(-Math.PI/2); // 반시계
-        } else {
-          ctx.translate(rh,0); ctx.rotate(Math.PI/2);  // 시계 (기본)
-        }
-        ctx.drawImage(img,0,0,rw,rh);
-      } else {
-        const scale=Math.min(1,maxW/sw);
-        c.width=Math.round(sw*scale); c.height=Math.round(sh*scale);
-        c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-      }
-      resolve(c.toDataURL('image/jpeg',0.9));
-    };
-    img.src=dataUrl;
-  });
+  let src, sw, sh;
+  try{
+    // createImageBitmap({imageOrientation:'none'}) = EXIF 무시한 원본 픽셀
+    const blob=await fetch(dataUrl).then(r=>r.blob());
+    const bmp=await createImageBitmap(blob,{imageOrientation:'none'});
+    src=bmp; sw=bmp.width; sh=bmp.height;
+  }catch(e){
+    await new Promise(res=>{
+      const img=new Image();
+      img.onload=()=>{src=img;sw=img.naturalWidth||img.width;sh=img.naturalHeight||img.height;res();};
+      img.src=dataUrl;
+    });
+  }
+  const c=document.createElement('canvas');
+  if(sh>sw){
+    // 원본이 세로 → 가로로 회전
+    const scale=Math.min(1,maxW/sh);
+    const rw=Math.round(sw*scale), rh=Math.round(sh*scale);
+    c.width=rh; c.height=rw;
+    const ctx=c.getContext('2d');
+    if(orient===8){ctx.translate(0,rw);ctx.rotate(-Math.PI/2);}
+    else{ctx.translate(rh,0);ctx.rotate(Math.PI/2);}
+    ctx.drawImage(src,0,0,rw,rh);
+  } else {
+    const scale=Math.min(1,maxW/sw);
+    c.width=Math.round(sw*scale); c.height=Math.round(sh*scale);
+    c.getContext('2d').drawImage(src,0,0,c.width,c.height);
+  }
+  return c.toDataURL('image/jpeg',0.9);
 }
 
 async function processImage(dataUrl){
