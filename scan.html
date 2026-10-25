@@ -45,6 +45,7 @@
   <header class="hdr">
     <div class="hdr-back" onclick="backToHome()">←</div>
     <span class="hdr-t">스캔 결과</span>
+    <button class="hdr-btn" onclick="retake()" style="background:var(--t2);margin-right:6px;">재촬영</button>
     <button class="hdr-btn" onclick="saveCard()">저장</button>
   </header>
   <div class="body">
@@ -103,6 +104,15 @@ function onFile(e){
 }
 document.getElementById('inp-cam').onchange = onFile;
 document.getElementById('inp-gal').onchange = onFile;
+
+// 진입 시 바로 카메라 실행
+document.getElementById('inp-cam').click();
+
+function retake(){
+  document.getElementById('result-view').style.display = 'none';
+  document.getElementById('scan-home-view').style.display = 'flex';
+  document.getElementById('inp-cam').click();
+}
 
 function showErr(msg){
   document.getElementById('ld').classList.remove('show');
