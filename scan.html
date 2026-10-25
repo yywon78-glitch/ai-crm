@@ -94,7 +94,11 @@ let camStream = null;
 let captured = null;
 
 /* 카메라 시작 */
-navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:3840},height:{ideal:2160}}})
+navigator.mediaDevices.getUserMedia({video:{
+  facingMode:'environment',
+  width: {ideal: window.screen.width  * window.devicePixelRatio},
+  height:{ideal: window.screen.height * window.devicePixelRatio}
+}})
   .then(s=>{ camStream=s; document.getElementById('cam-vid').srcObject=s; })
   .catch(()=>{ toast('카메라를 사용할 수 없습니다'); });
 
