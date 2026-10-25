@@ -76,7 +76,7 @@
 </div>
 
 <!-- 로딩 -->
-<div class="ld" id="ld"><div class="spinner"></div><p>명함 인식 중...</p></div>
+<div class="ld" id="ld"><div class="spinner"></div><p id="ld-msg">명함 인식 중...</p></div>
 
 <script src="data.js"></script>
 <script src="nav.js"></script>
@@ -156,13 +156,27 @@ async function processImage(dataUrl){
   if(dataUrl){ img.src=dataUrl; img.style.display='block'; ph.style.display='none'; }
   else { img.style.display='none'; ph.style.display='block'; }
 
+  const ldMsg = document.getElementById('ld-msg');
   document.getElementById('ld').classList.add('show');
 
   const apiKey = DB.getKey();
+  if(!apiKey){
+    document.getElementById('ld').classList.remove('show');
+    if(confirm('API 키가 설정되지 않았습니다.\n설정 화면으로 이동할까요?')){
+      location.href='settings.html';
+    } else {
+      document.getElementById('cam-view').style.display='none';
+      document.getElementById('result-view').style.display='flex';
+    }
+    return;
+  }
+
   if(apiKey && dataUrl){
     try {
+      ldMsg.textContent='이미지 준비 중...';
       const resized = await resizeForOCR(dataUrl);
       const base64 = resized.split(',')[1];
+      ldMsg.textContent='AI 명함 인식 중...';
       const res = await fetch('https://api.anthropic.com/v1/messages',{
         method:'POST',
         headers:{
@@ -202,16 +216,6 @@ async function processImage(dataUrl){
     } catch(e){
       toast('OCR 오류: '+e.message);
     }
-  } else {
-    /* API 키 없을 때 더미 데이터 */
-    document.getElementById('f-nm').value='홍길동';
-    document.getElementById('f-co').value='(주)예시회사';
-    document.getElementById('f-tl').value='영업팀 과장';
-    document.getElementById('f-mob').value='010-0000-0000';
-    document.getElementById('f-ph').value='02-000-0000';
-    document.getElementById('f-em').value='hong@example.com';
-    document.getElementById('f-addr').value='서울시 강남구 테헤란로 123';
-    toast('API 키 미설정 — 더미 데이터로 표시');
   }
 
   document.getElementById('ld').classList.remove('show');
