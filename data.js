@@ -31,8 +31,10 @@ const _VISITS = [
 
 /* ── DB 레이어 ── */
 const DB = {
-  getKey:    ()=> localStorage.getItem('crm_key')||'',
-  setKey:    k => localStorage.setItem('crm_key', k),
+  getKey:       ()=> localStorage.getItem('crm_key')||'',
+  setKey:       k => localStorage.setItem('crm_key', k),
+  getWorkspace: ()=> localStorage.getItem('crm_workspace')||'',
+  setWorkspace: k => localStorage.setItem('crm_workspace', k),
 
   getCards:  ()=> JSON.parse(localStorage.getItem('crm_cards')||'null') || [..._CARDS],
   setCards:  d => localStorage.setItem('crm_cards', JSON.stringify(d)),
