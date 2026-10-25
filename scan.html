@@ -133,65 +133,29 @@ function cropCard(dataUrl, box){
   });
 }
 
-function getExifOrient(dataUrl){
-  try{
-    const b=atob(dataUrl.split(',')[1]);
-    const v=n=>b.charCodeAt(n);
-    if(v(0)!==0xFF||v(1)!==0xD8) return 1;
-    let p=2;
-    while(p<b.length){
-      if(v(p)!==0xFF) break;
-      const seg=v(p+1), len=(v(p+2)<<8)|v(p+3);
-      if(seg===0xE1&&len>10&&v(p+4)===0x45&&v(p+5)===0x78){
-        const t=p+10, le=v(t)===0x49;
-        const r16=o=>le?(v(t+o)|v(t+o+1)<<8):(v(t+o)<<8|v(t+o+1));
-        const r32=o=>le?(v(t+o)|v(t+o+1)<<8|v(t+o+2)<<16|v(t+o+3)<<24):(v(t+o)<<24|v(t+o+1)<<16|v(t+o+2)<<8|v(t+o+3));
-        const ifd=r32(4), n=r16(ifd);
-        for(let i=0;i<n;i++){const e=ifd+2+i*12; if(r16(e)===0x0112) return r16(e+8);}
+function resizeForOCR(dataUrl, maxW=1600){
+  return new Promise(resolve=>{
+    const img=new Image();
+    img.onload=()=>{
+      let sw=img.width, sh=img.height;
+      const c=document.createElement('canvas');
+      if(sh>sw){
+        // 세로 이미지 → 90° 회전해서 가로로 만들어 OCR
+        const scale=Math.min(1,maxW/sh);
+        c.width=Math.round(sh*scale); c.height=Math.round(sw*scale);
+        const ctx=c.getContext('2d');
+        ctx.translate(c.width,0);
+        ctx.rotate(Math.PI/2);
+        ctx.drawImage(img,0,0,Math.round(sw*scale),Math.round(sh*scale));
+      } else {
+        const scale=Math.min(1,maxW/sw);
+        c.width=Math.round(sw*scale); c.height=Math.round(sh*scale);
+        c.getContext('2d').drawImage(img,0,0,c.width,c.height);
       }
-      if(seg===0xDA) break;
-      p+=2+len;
-    }
-  }catch(e){}
-  return 1;
-}
-
-async function resizeForOCR(dataUrl, maxW=1600){
-  const orient=getExifOrient(dataUrl);
-  let src, sw, sh, eff=orient;
-  try{
-    const blob=await fetch(dataUrl).then(r=>r.blob());
-    src=await createImageBitmap(blob,{imageOrientation:'none'});
-    sw=src.width; sh=src.height;
-  }catch(e){
-    await new Promise(res=>{
-      const img=new Image();
-      img.onload=()=>{src=img;sw=img.naturalWidth||img.width;sh=img.naturalHeight||img.height;res();};
-      img.src=dataUrl;
-    });
-    eff=1;
-  }
-  const swap=eff>=5&&eff<=8;
-  const lw=swap?sh:sw, lh=swap?sw:sh;
-  const scale=Math.min(1,maxW/lw);
-  const dw=Math.round(lw*scale), dh=Math.round(lh*scale);
-  const rw=Math.round(sw*scale), rh=Math.round(sh*scale);
-  const c=document.createElement('canvas');
-  c.width=dw; c.height=dh;
-  const ctx=c.getContext('2d');
-  ctx.save();
-  switch(eff){
-    case 2:ctx.transform(-1,0,0,1,rw,0);break;
-    case 3:ctx.transform(-1,0,0,-1,rw,rh);break;
-    case 4:ctx.transform(1,0,0,-1,0,rh);break;
-    case 5:ctx.transform(0,1,1,0,0,0);break;
-    case 6:ctx.transform(0,1,-1,0,rh,0);break;
-    case 7:ctx.transform(0,-1,-1,0,rh,rw);break;
-    case 8:ctx.transform(0,-1,1,0,0,rw);break;
-  }
-  ctx.drawImage(src,0,0,rw,rh);
-  ctx.restore();
-  return c.toDataURL('image/jpeg',0.9);
+      resolve(c.toDataURL('image/jpeg',0.9));
+    };
+    img.src=dataUrl;
+  });
 }
 
 async function processImage(dataUrl){
