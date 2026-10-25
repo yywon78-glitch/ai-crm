@@ -199,7 +199,7 @@ async function processImage(dataUrl){
           'x-api-key': apiKey,
           'anthropic-version':'2023-06-01',
           'anthropic-dangerous-direct-browser-access':'true'
-        }, {'anthropic-workspace-id': DB.getWorkspace() || 'default'}),
+        }, {'anthropic-workspace-id': DB.getWorkspace() || 'wrkspc_01Pdf2hnBKy4HbTJCfTcdq9W'}),
         body: JSON.stringify({
           model:'claude-haiku-4-5-20251001',
           max_tokens:512,
