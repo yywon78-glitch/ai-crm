@@ -133,10 +133,8 @@ function onFile(e){
   if(!f){ history.back(); return; }
   const r = new FileReader();
   r.onload = ev => {
-    _prevDataUrl = ev.target.result;
     document.getElementById('cam-trigger').style.display = 'none';
-    document.getElementById('prev-img').src = _prevDataUrl;
-    document.getElementById('preview-view').style.display = 'flex';
+    processImage(ev.target.result);
   };
   r.readAsDataURL(f);
   e.target.value = '';
@@ -149,10 +147,8 @@ const _stored = sessionStorage.getItem('camImg') || sessionStorage.getItem('galI
 if(_stored){
   const _key = sessionStorage.getItem('camImg') ? 'camImg' : 'galImg';
   sessionStorage.removeItem(_key);
-  _prevDataUrl = _stored;
-  document.getElementById('prev-img').src = _stored;
   document.getElementById('cam-trigger').style.display = 'none';
-  document.getElementById('preview-view').style.display = 'flex';
+  processImage(_stored);
 }
 if(new URLSearchParams(location.search).get('gal')){
   _triggerEl = 'inp-gal';
