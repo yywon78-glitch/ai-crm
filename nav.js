@@ -5,39 +5,34 @@ function renderTabBar(active) {
   el.innerHTML = `
     <div class="tbi${active==='home'?' on':''}"   onclick="location.href='index.html'"><span class="ic">🏠</span><span class="lb">홈</span></div>
     <div class="tbi${active==='cards'?' on':''}"  onclick="location.href='cards.html'"><span class="ic">🪪</span><span class="lb">명함</span></div>
-    <div class="tb-scan" onclick="_openScanFromTab()"><div class="scan-fab">📷</div><span class="lb">스캔</span></div>
+    <div class="tb-scan"><label style="display:flex;flex-direction:column;align-items:center;cursor:pointer;width:100%;"><input type="file" accept="image/*" capture="environment" style="display:none" onchange="_tbScanHandler(event)"><div class="scan-fab">📷</div><span class="lb">스캔</span></label></div>
     <div class="tbi${active==='cos'?' on':''}"    onclick="location.href='cos.html'"><span class="ic">🏢</span><span class="lb">거래처</span></div>
     <div class="tbi${active==='visits'?' on':''}" onclick="location.href='visits.html'"><span class="ic">📝</span><span class="lb">방문</span></div>
   `;
 }
 
-/* ── 하단 스캔 탭 직접 진입 ── */
-function _openScanFromTab() {
-  const inp = document.createElement('input');
-  inp.type = 'file'; inp.accept = 'image/*'; inp.capture = 'environment';
-  inp.style.cssText = 'position:fixed;top:-200px;opacity:0;';
-  document.body.appendChild(inp);
-  inp.onchange = function(e) {
-    const f = e.target.files[0];
-    inp.remove();
-    if(!f) return;
-    const r = new FileReader();
-    r.onload = ev => {
-      const img = new Image();
-      img.onload = () => {
-        const maxW = 1600, scale = Math.min(1, maxW / Math.max(img.width, img.height));
-        const c = document.createElement('canvas');
-        c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
-        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-        sessionStorage.setItem('scan_data', c.toDataURL('image/jpeg', 0.9));
-        sessionStorage.setItem('scan_mode', 'cam');
-        location.href = 'scan.html';
-      };
-      img.src = ev.target.result;
+/* ── 하단 스캔 탭 핸들러 ── */
+function _tbScanHandler(e) {
+  const f = e.target.files[0];
+  e.target.value = '';
+  if(!f) return;
+  const pg = location.pathname.split('/').pop() + location.search;
+  const back = (!pg || pg === 'index.html') ? 'cards.html' : pg;
+  const r = new FileReader();
+  r.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      const maxW=1600, scale=Math.min(1,maxW/Math.max(img.width,img.height));
+      const c=document.createElement('canvas');
+      c.width=Math.round(img.width*scale); c.height=Math.round(img.height*scale);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      sessionStorage.setItem('scan_data', c.toDataURL('image/jpeg',0.9));
+      sessionStorage.setItem('scan_back', back);
+      location.href = 'scan.html';
     };
-    r.readAsDataURL(f);
+    img.src = ev.target.result;
   };
-  inp.click();
+  r.readAsDataURL(f);
 }
 
 /* ── 토스트 ── */

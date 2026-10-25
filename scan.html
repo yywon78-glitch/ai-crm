@@ -344,6 +344,13 @@ function saveMulti(){
   setTimeout(()=>location.href='index.html', 1200);
 }
 
+function _goAfterSave(dest){
+  const back = sessionStorage.getItem('scan_back') || 'cards.html';
+  sessionStorage.removeItem('scan_back');
+  history.replaceState(null,'', back);
+  location.href = dest;
+}
+
 function saveCard(){
   const nm = document.getElementById('f-nm').value.trim();
   if(!nm){ toast('이름을 입력해주세요'); return; }
@@ -361,8 +368,7 @@ function saveCard(){
     if(captured) dup.img = captured;
     try { DB.setCards(cards); } catch(e) { dup.img = null; DB.setCards(cards); }
     toast('업데이트됐습니다 ✓');
-    history.replaceState(null,'','cards.html');
-    location.href='card.html?id='+dup.id;
+    _goAfterSave('card.html?id='+dup.id);
     return;
   }
 
@@ -379,8 +385,7 @@ function saveCard(){
   });
   try { DB.setCards(cards); } catch(e) { cards[0].img = null; DB.setCards(cards); }
   toast('명함이 저장됐습니다 ✓');
-  history.replaceState(null,'','cards.html');
-  location.href='card.html?id='+newId;
+  _goAfterSave('card.html?id='+newId);
 }
 </script>
 </body>

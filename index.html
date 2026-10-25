@@ -53,7 +53,7 @@
     <div class="home-banner">
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <div class="home-logo">BUSINESS CARD CRM</div>
-        <div style="font-size:11px;font-weight:700;background:rgba(255,255,255,.2);padding:3px 10px;border-radius:20px;">v6.2</div>
+        <div style="font-size:11px;font-weight:700;background:rgba(255,255,255,.2);padding:3px 10px;border-radius:20px;">v6.3</div>
       </div>
       <div class="home-title">명함 관리 시스템</div>
       <div class="home-date" id="today-date"></div>
@@ -170,7 +170,7 @@
         c.height = Math.round(img.height * scale);
         c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
         sessionStorage.setItem('scan_data', c.toDataURL('image/jpeg', 0.9));
-        sessionStorage.setItem('scan_mode', mode);
+        sessionStorage.setItem('scan_back', 'cards.html');
         location.href = 'scan.html';
       };
       img.src = ev.target.result;

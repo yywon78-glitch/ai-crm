@@ -22,7 +22,7 @@
         <div id="co-badge" style="margin-top:6px;"></div>
       </div>
     </div>
-    <div class="sec-hdr"><h3>소속 명함</h3><a onclick="location.href='scan.html'">+ 명함 추가</a></div>
+    <div class="sec-hdr"><h3>소속 명함</h3><a onclick="sessionStorage.setItem('scan_back','co.html?id='+id);location.href='scan.html'">+ 명함 추가</a></div>
     <div class="bp" id="co-cards" style="padding:0 14px 0;"></div>
     <div class="sec-hdr"><h3>방문 이력</h3><a onclick="openVisitModal()">+ 기록</a></div>
     <div class="tl" id="co-visits"></div>
