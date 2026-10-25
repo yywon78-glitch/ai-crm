@@ -48,7 +48,8 @@
   <header class="hdr">
     <div class="hdr-back" onclick="history.back()">←</div>
     <span class="hdr-t">스캔 결과</span>
-    <button class="hdr-btn" onclick="retake()" style="background:var(--t2);margin-right:6px;">재촬영</button>
+    <button class="hdr-btn" onclick="rotateResult()" style="background:var(--t2);margin-right:4px;">↻ 회전</button>
+    <button class="hdr-btn" onclick="retake()" style="background:var(--t2);margin-right:4px;">재촬영</button>
     <button class="hdr-btn" onclick="saveCard()">저장</button>
   </header>
   <div class="body">
@@ -133,10 +134,8 @@ function onFile(e){
   if(!f) return;
   const r = new FileReader();
   r.onload = ev => {
-    _prevDataUrl = ev.target.result;
     document.getElementById('cam-trigger').style.display = 'none';
-    document.getElementById('prev-img').src = _prevDataUrl;
-    document.getElementById('preview-view').style.display = 'flex';
+    processImage(ev.target.result);
   };
   r.readAsDataURL(f);
   e.target.value = '';
@@ -149,9 +148,7 @@ const _stored = sessionStorage.getItem('camImg') || sessionStorage.getItem('galI
 if(_stored){
   const _key = sessionStorage.getItem('camImg') ? 'camImg' : 'galImg';
   sessionStorage.removeItem(_key);
-  _prevDataUrl = _stored;
-  document.getElementById('prev-img').src = _stored;
-  document.getElementById('preview-view').style.display = 'flex';
+  processImage(_stored);
 } else {
   if(new URLSearchParams(location.search).get('gal')){
     _triggerEl = 'inp-gal';
@@ -165,6 +162,24 @@ if(_stored){
 function retake(){
   document.getElementById('result-view').style.display = 'none';
   document.getElementById('cam-trigger').style.display = 'flex';
+}
+
+function rotateResult(){
+  const el = document.getElementById('res-img');
+  if(!el.src) return;
+  const img = new Image();
+  img.onload = ()=>{
+    const c = document.createElement('canvas');
+    c.width = img.height; c.height = img.width;
+    const ctx = c.getContext('2d');
+    ctx.translate(c.width/2, c.height/2);
+    ctx.rotate(90 * Math.PI / 180);
+    ctx.drawImage(img, -img.width/2, -img.height/2);
+    const rotated = c.toDataURL('image/jpeg', 0.9);
+    el.src = rotated;
+    captured = rotated;
+  };
+  img.src = el.src;
 }
 
 function showErr(msg){
