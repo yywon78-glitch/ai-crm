@@ -16,6 +16,8 @@ html,body{height:100%;margin:0;}
 .fab-col{position:absolute;right:12px;bottom:16px;z-index:900;display:flex;flex-direction:column;gap:8px;}
 .fab{width:46px;height:46px;border-radius:50%;border:none;box-shadow:0 2px 10px rgba(0,0,0,.22);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;touch-action:manipulation;}
 .fab-me{background:#2563eb;}
+.fab-layer{background:#fff;}
+.fab-layer small{font-size:9px;font-weight:700;color:#374151;display:block;line-height:1.1;margin-top:1px;}
 .fab-kk{background:#fee500;}
 .fab-kk small{font-size:9px;font-weight:800;color:#3c1e1e;display:block;line-height:1;}
 
@@ -48,6 +50,9 @@ html,body{height:100%;margin:0;}
     <!-- 우측 하단 버튼 -->
     <div class="fab-col">
       <button class="fab fab-me" onclick="locateMe()" title="내 위치">📍</button>
+      <button class="fab fab-layer" id="fab-layer" onclick="toggleLayer()" title="지도 전환">
+        <div><span id="layer-ic" style="font-size:17px;">🛰️</span><small id="layer-lbl">위성</small></div>
+      </button>
       <button class="fab fab-kk" onclick="openKakao()" title="카카오맵">
         <div><span style="font-size:18px;">🟡</span><small>카카오맵</small></div>
       </button>
@@ -61,12 +66,41 @@ html,body{height:100%;margin:0;}
 <script src="data.js"></script>
 <script src="nav.js"></script>
 <script>
+/* ── 타일 레이어 정의 ── */
+const LAYERS = {
+  street: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom:19
+  }),
+  satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
+    attribution:'© Esri, Maxar, Earthstar Geographics',
+    maxZoom:19
+  }),
+  hybrid: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
+    attribution:'© Esri, Maxar, Earthstar Geographics',
+    maxZoom:19
+  })
+};
+
 /* ── 지도 초기화 ── */
 const map = L.map('map', {zoomControl:true}).setView([37.5665, 126.9780], 11);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-  attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-  maxZoom:19
-}).addTo(map);
+LAYERS.street.addTo(map);
+
+let _curLayer = 'street';
+const LAYER_CYCLE = ['street','satellite'];
+const LAYER_INFO = {
+  street:    {ic:'🛰️', lbl:'위성'},
+  satellite: {ic:'🗺️', lbl:'일반'}
+};
+
+function toggleLayer(){
+  const next = _curLayer==='street' ? 'satellite' : 'street';
+  map.removeLayer(LAYERS[_curLayer]);
+  LAYERS[next].addTo(map);
+  _curLayer = next;
+  document.getElementById('layer-ic').textContent  = LAYER_INFO[next].ic;
+  document.getElementById('layer-lbl').textContent = LAYER_INFO[next].lbl;
+}
 
 let _myMarker = null, _myLat = null, _myLng = null;
 const GEO_KEY = 'crm_geocache_v1';
