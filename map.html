@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>거래처 지도</title>
 <link rel="stylesheet" href="shared.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 html,body{height:100%;margin:0;}
 .page{height:100%;display:flex;flex-direction:column;}
@@ -12,28 +13,24 @@ html,body{height:100%;margin:0;}
 #map{width:100%;height:100%;}
 
 /* 우측 FAB */
-.fab-col{position:absolute;right:10px;bottom:14px;z-index:5;display:flex;flex-direction:column;gap:8px;}
+.fab-col{position:absolute;right:10px;bottom:14px;z-index:900;display:flex;flex-direction:column;gap:8px;}
 .fab{width:44px;height:44px;border-radius:50%;border:none;
-     box-shadow:0 2px 8px rgba(0,0,0,.25);cursor:pointer;
+     box-shadow:0 2px 8px rgba(0,0,0,.22);cursor:pointer;background:#fff;
      display:flex;flex-direction:column;align-items:center;justify-content:center;
-     font-size:18px;touch-action:manipulation;background:#fff;}
-.fab.active{background:#2563eb;color:#fff;}
-.fab small{font-size:9px;font-weight:700;line-height:1.2;margin-top:1px;color:inherit;}
-.fab-me{background:#2563eb;color:#fff;}
+     font-size:17px;touch-action:manipulation;color:#111;}
+.fab.blue{background:#2563eb;color:#fff;}
+.fab.red {background:#dc2626;color:#fff;}
+.fab small{font-size:9px;font-weight:700;display:block;line-height:1.1;margin-top:1px;}
 
-/* 상태 토스트 */
+/* 상태 메시지 */
 .map-msg{position:absolute;top:10px;left:50%;transform:translateX(-50%);
-         z-index:10;background:rgba(0,0,0,.72);color:#fff;font-size:12px;
-         padding:6px 18px;border-radius:20px;white-space:nowrap;
-         pointer-events:none;display:none;max-width:90vw;white-space:normal;text-align:center;}
+         z-index:900;background:rgba(0,0,0,.72);color:#fff;font-size:12px;
+         padding:5px 16px;border-radius:20px;white-space:normal;text-align:center;
+         pointer-events:none;display:none;max-width:88vw;line-height:1.5;}
 .map-msg.on{display:block;}
 
-/* 미설정 안내 */
-.map-setup{position:absolute;inset:0;z-index:20;background:var(--bg);
-           display:flex;flex-direction:column;align-items:center;justify-content:center;
-           padding:24px;text-align:center;}
-.map-setup h3{font-size:17px;font-weight:700;margin-bottom:8px;}
-.map-setup p{font-size:13px;color:var(--t2);line-height:1.7;margin-bottom:20px;}
+/* Leaflet 줌 위치 */
+.leaflet-top.leaflet-left{top:8px;left:8px;}
 </style>
 </head>
 <body>
@@ -46,221 +43,171 @@ html,body{height:100%;margin:0;}
     <div id="map"></div>
     <div class="map-msg" id="map-msg"></div>
 
-    <!-- API 키 미설정 안내 -->
-    <div class="map-setup" id="map-setup" style="display:none;">
-      <div style="font-size:48px;margin-bottom:12px;">🗺️</div>
-      <h3>카카오맵 API 키 필요</h3>
-      <p>설정에서 카카오맵 JavaScript API 키를<br>입력하면 지도가 활성화됩니다.<br><br>
-      <b>developers.kakao.com</b>에서<br>무료로 발급받을 수 있습니다.</p>
-      <button onclick="location.href='settings.html'"
-        style="padding:12px 28px;background:var(--blue);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;">
-        ⚙️ 설정으로 이동
+    <div class="fab-col">
+      <button class="fab blue" onclick="locateMe()">📍<small>내위치</small></button>
+      <button class="fab" id="fab-layer" onclick="toggleLayer()">
+        <span id="layer-ic">🛰️</span><small id="layer-lbl">위성</small>
       </button>
-    </div>
-
-    <!-- 우측 FAB -->
-    <div class="fab-col" id="fab-col" style="display:none;">
-      <button class="fab fab-me" onclick="locateMe()">📍<small>내위치</small></button>
-      <button class="fab" id="fab-dist" onclick="toggleMeasure()">📏<small>거리재기</small></button>
+      <button class="fab" id="fab-dist" onclick="toggleMeasure()">
+        📏<small>거리재기</small>
+      </button>
     </div>
   </div>
 
   <nav class="tabbar" id="tabbar" style="flex-shrink:0;"></nav>
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="data.js"></script>
 <script src="nav.js"></script>
 <script>
-renderTabBar('map');
+/* ── 타일 레이어 ── */
+const T = {
+  street: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'© OpenStreetMap', maxZoom:19
+  }),
+  sat: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
+    attribution:'© Esri World Imagery', maxZoom:19
+  })
+};
 
-const kakaoKey = DB.getKakaoKey();
-if(!kakaoKey){
-  document.getElementById('map-setup').style.display = 'flex';
-} else {
-  loadKakaoMap(kakaoKey);
-}
+const map = L.map('map',{zoomControl:true}).setView([37.5665,126.9780],11);
+T.street.addTo(map);
+let _curTile = 'street';
 
-function loadKakaoMap(key){
-  const s = document.createElement('script');
-  s.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${key}&autoload=false&libraries=services,geometry`;
-  s.onerror = () => {
-    document.getElementById('map-setup').innerHTML =
-      '<div style="padding:32px;text-align:center;"><p style="color:#dc2626;font-weight:700;">API 키 오류<br>키를 확인해주세요</p>' +
-      '<button onclick="location.href=\'settings.html\'" style="margin-top:12px;padding:10px 20px;background:var(--blue);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">설정으로 이동</button></div>';
-    document.getElementById('map-setup').style.display = 'flex';
-  };
-  s.onload = () => kakao.maps.load(initMap);
-  document.head.appendChild(s);
+function toggleLayer(){
+  const next = _curTile==='street' ? 'sat' : 'street';
+  map.removeLayer(T[_curTile]);
+  T[next].addTo(map);
+  _curTile = next;
+  document.getElementById('layer-ic').textContent = next==='sat' ? '🗺️' : '🛰️';
+  document.getElementById('layer-lbl').textContent = next==='sat' ? '일반' : '위성';
 }
 
 /* ── 상태 메시지 ── */
-let _msgTimer;
-function msg(txt, dur=3000){
-  const el = document.getElementById('map-msg');
-  el.textContent = txt; el.classList.add('on');
-  clearTimeout(_msgTimer);
-  if(dur > 0) _msgTimer = setTimeout(()=>el.classList.remove('on'), dur);
+let _mt;
+function msg(txt,dur=3000){
+  const el=document.getElementById('map-msg');
+  el.textContent=txt; el.classList.add('on');
+  clearTimeout(_mt);
+  if(dur>0) _mt=setTimeout(()=>el.classList.remove('on'),dur);
 }
 function msgHide(){ document.getElementById('map-msg').classList.remove('on'); }
 
-/* ── 지도 초기화 ── */
-let _map, _myMarker;
-let _measuring = false, _measureLine = null, _measurePts = [], _measureOverlays = [];
-
-function initMap(){
-  const container = document.getElementById('map');
-  _map = new kakao.maps.Map(container, {
-    center: new kakao.maps.LatLng(37.5665, 126.9780),
-    level: 6
-  });
-
-  /* 컨트롤 */
-  _map.addControl(new kakao.maps.MapTypeControl(), kakao.maps.ControlPosition.TOPRIGHT);
-  _map.addControl(new kakao.maps.ZoomControl(),    kakao.maps.ControlPosition.RIGHT);
-
-  document.getElementById('fab-col').style.display = 'flex';
-
-  /* 지도 클릭 → 거리재기 */
-  kakao.maps.event.addListener(_map, 'click', function(e){
-    if(!_measuring) return;
-    _measurePts.push(e.latLng);
-    drawMeasure();
-  });
-
-  loadCos();
-}
-
-/* ── 현재 위치 ── */
+/* ── 내 위치 ── */
+let _myMk=null;
 function locateMe(){
-  msg('위치 확인 중...', 0);
+  msg('위치 확인 중...',0);
   if(!navigator.geolocation){ msg('위치 기능을 지원하지 않습니다'); return; }
   navigator.geolocation.getCurrentPosition(
-    pos => {
-      const lat = pos.coords.latitude, lng = pos.coords.longitude;
-      const latlng = new kakao.maps.LatLng(lat, lng);
-      if(_myMarker) _myMarker.setMap(null);
-      _myMarker = new kakao.maps.CustomOverlay({
-        position: latlng,
-        content: '<div style="width:16px;height:16px;background:#2563eb;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 6px rgba(37,99,235,.2);"></div>',
-        zIndex: 10
-      });
-      _myMarker.setMap(_map);
-      _map.setCenter(latlng);
-      _map.setLevel(4);
+    pos=>{
+      const {latitude:lat,longitude:lng}=pos.coords;
+      if(_myMk) map.removeLayer(_myMk);
+      _myMk=L.circleMarker([lat,lng],{radius:9,fillColor:'#2563eb',color:'#fff',weight:2.5,fillOpacity:1})
+        .addTo(map).bindTooltip('📍 현재 위치');
+      map.setView([lat,lng],14);
       msgHide();
     },
-    err => {
-      const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
-      if(err.code === 1){
-        const guide = isIOS
+    err=>{
+      if(err.code===1){
+        const ios=/iPhone|iPad|iPod/.test(navigator.userAgent);
+        msg(ios
           ? '⚠️ 설정 → 개인정보보호 → 위치서비스 → Safari → "앱 사용 중" 선택'
-          : '⚠️ 주소창 왼쪽 자물쇠 아이콘 → 위치 → 허용 선택';
-        msg(guide, 7000);
-      } else {
-        msg('위치를 가져올 수 없습니다');
-      }
+          : '⚠️ 주소창 🔒 아이콘 → 위치 → 허용 선택',
+          7000);
+      } else { msg('위치를 가져올 수 없습니다'); }
     },
-    {enableHighAccuracy:true, timeout:10000}
+    {enableHighAccuracy:true,timeout:10000}
   );
 }
 
 /* ── 거리재기 ── */
+let _measuring=false, _pts=[], _line=null, _lbls=[];
 function toggleMeasure(){
-  _measuring = !_measuring;
-  document.getElementById('fab-dist').classList.toggle('active', _measuring);
+  _measuring=!_measuring;
+  const btn=document.getElementById('fab-dist');
+  btn.classList.toggle('red',_measuring);
   if(!_measuring){
-    if(_measureLine) _measureLine.setMap(null);
-    _measureOverlays.forEach(o=>o.setMap(null));
-    _measurePts = []; _measureLine = null; _measureOverlays = [];
+    if(_line) map.removeLayer(_line);
+    _lbls.forEach(l=>map.removeLayer(l));
+    _pts=[]; _line=null; _lbls=[];
     msgHide();
-  } else {
-    msg('지도를 탭하여 거리를 측정하세요', 3000);
+  } else { msg('지도를 탭해서 거리를 재세요  ·  다시 누르면 종료',4000); }
+}
+map.on('click',e=>{
+  if(!_measuring) return;
+  _pts.push(e.latlng);
+  if(_line) map.removeLayer(_line);
+  _line=L.polyline(_pts,{color:'#dc2626',weight:3,opacity:.9}).addTo(map);
+  if(_pts.length>1){
+    let d=0;
+    for(let i=1;i<_pts.length;i++) d+=_pts[i-1].distanceTo(_pts[i]);
+    const lbl=d>=1000?`${(d/1000).toFixed(2)}km`:`${Math.round(d)}m`;
+    const ov=L.marker(_pts[_pts.length-1],{
+      icon:L.divIcon({html:`<div style="background:#dc2626;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;white-space:nowrap;">${lbl}</div>`,className:'',iconAnchor:[0,20]})
+    }).addTo(map);
+    _lbls.push(ov);
+    msg(`📏 총 ${lbl}`,0);
   }
+});
+
+/* ── Nominatim 캐시 ── */
+const GK='crm_geo2';
+function gCache(){try{return JSON.parse(localStorage.getItem(GK)||'{}')}catch(e){return{}}}
+function gSave(a,v){try{const c=gCache();c[a]=v;localStorage.setItem(GK,JSON.stringify(c))}catch(e){}}
+
+async function geocode(addr){
+  if(!addr) return null;
+  const c=gCache(); if(c[addr]) return c[addr];
+  try{
+    const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addr)}&format=json&limit=1&countrycodes=kr`,
+      {headers:{'Accept-Language':'ko','User-Agent':'CRM-Map/1.0'}});
+    const d=await r.json();
+    if(d.length){const v={lat:+d[0].lat,lng:+d[0].lon};gSave(addr,v);return v;}
+  }catch(e){}
+  return null;
 }
 
-function drawMeasure(){
-  if(_measureLine) _measureLine.setMap(null);
-  _measureLine = new kakao.maps.Polyline({
-    map: _map,
-    path: _measurePts,
-    strokeWeight: 3,
-    strokeColor: '#dc2626',
-    strokeOpacity: 0.9,
-    strokeStyle: 'solid'
+/* ── 마커 아이콘 ── */
+const SC={active:'#2563eb',potential:'#d97706',dormant:'#9ca3af'};
+function mkIcon(color){
+  return L.divIcon({
+    html:`<div style="width:34px;height:34px;border-radius:50%;background:${color};border:2.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;font-size:15px;">🏢</div>`,
+    className:'',iconSize:[34,34],iconAnchor:[17,34],popupAnchor:[0,-36]
   });
-  if(_measurePts.length > 1){
-    const dist = kakao.maps.geometry.spherical.computeLength(_measurePts);
-    const label = dist >= 1000 ? `${(dist/1000).toFixed(2)}km` : `${Math.round(dist)}m`;
-    msg(`📏 총 ${label}`, 0);
-    const ov = new kakao.maps.CustomOverlay({
-      position: _measurePts[_measurePts.length-1],
-      content: `<div style="background:#dc2626;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;">${label}</div>`,
-      yAnchor: 2, zIndex: 5
-    });
-    ov.setMap(_map);
-    _measureOverlays.push(ov);
+}
+
+/* ── 거래처 로드 ── */
+async function loadCos(){
+  const cos=DB.getCos().filter(c=>c.addr);
+  if(!cos.length){msg('주소가 있는 거래처가 없습니다');return;}
+  msg(`거래처 ${cos.length}곳 위치 검색 중...`,0);
+  const bounds=[];
+  for(let i=0;i<cos.length;i++){
+    const co=cos[i];
+    const pos=await geocode(co.addr);
+    if(pos){
+      const m=L.marker([pos.lat,pos.lng],{icon:mkIcon(SC[co.st]||'#2563eb')}).addTo(map);
+      m.bindTooltip(co.nm,{permanent:true,direction:'top',offset:[0,-36],opacity:1});
+      m.bindPopup(`
+        <div style="font-size:14px;font-weight:700;margin-bottom:3px;">${co.nm}</div>
+        <div style="font-size:11px;color:#666;margin-bottom:10px;">${co.addr}</div>
+        <button onclick="location.href='co.html?id=${co.id}'"
+          style="display:block;width:100%;padding:8px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">
+          거래처 상세 →
+        </button>`);
+      bounds.push([pos.lat,pos.lng]);
+    }
+    msg(`위치 검색 중... (${i+1}/${cos.length})`,0);
+    if(i<cos.length-1) await new Promise(r=>setTimeout(r,1100));
   }
+  msgHide();
+  if(bounds.length>1) map.fitBounds(bounds,{padding:[50,50]});
+  else if(bounds.length===1) map.setView(bounds[0],14);
 }
 
-/* ── 거래처 마커 ── */
-const ST_COLOR = {active:'#2563eb', potential:'#d97706', dormant:'#9ca3af'};
-
-function loadCos(){
-  const cos = DB.getCos().filter(c=>c.addr);
-  if(!cos.length) return;
-  msg(`거래처 ${cos.length}곳 위치 검색 중...`, 0);
-  const geocoder = new kakao.maps.services.Geocoder();
-  const bounds = new kakao.maps.LatLngBounds();
-  let done = 0;
-
-  cos.forEach(co => {
-    geocoder.addressSearch(co.addr, function(result, status){
-      done++;
-      if(status === kakao.maps.services.Status.OK){
-        const latlng = new kakao.maps.LatLng(result[0].y, result[0].x);
-        bounds.extend(latlng);
-        placeMarker(co, latlng);
-      }
-      if(done === cos.length){
-        msgHide();
-        try{ _map.setBounds(bounds, 50); }catch(e){}
-      }
-    });
-  });
-}
-
-function placeMarker(co, latlng){
-  const color = ST_COLOR[co.st] || '#2563eb';
-  const marker = new kakao.maps.Marker({
-    position: latlng,
-    map: _map,
-    title: co.nm
-  });
-
-  /* 회사명 라벨 */
-  const label = new kakao.maps.CustomOverlay({
-    position: latlng,
-    content: `<div style="background:rgba(0,0,0,.72);color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;white-space:nowrap;margin-bottom:4px;">${co.nm}</div>`,
-    yAnchor: 3.2, zIndex: 3
-  });
-  label.setMap(_map);
-
-  /* 인포윈도우 */
-  const iw = new kakao.maps.InfoWindow({
-    content: `<div style="padding:10px 14px;min-width:160px;">
-      <div style="font-size:14px;font-weight:700;margin-bottom:3px;">${co.nm}</div>
-      <div style="font-size:11px;color:#666;margin-bottom:10px;">${co.addr||''}</div>
-      <button onclick="location.href='co.html?id=${co.id}'"
-        style="display:block;width:100%;padding:8px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">
-        거래처 상세 →
-      </button></div>`,
-    removable: true
-  });
-
-  kakao.maps.event.addListener(marker, 'click', function(){
-    iw.open(_map, marker);
-  });
-}
+renderTabBar('map');
+loadCos();
 </script>
 </body>
 </html>
