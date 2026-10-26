@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>거래처 상세</title>
 <link rel="stylesheet" href="shared.css">
+<style>
+.back-bar{position:fixed;bottom:0;left:0;right:0;padding:10px 14px env(safe-area-inset-bottom,16px);background:var(--bg);border-top:1px solid var(--bdr);z-index:50;}
+.back-bar-btn{display:block;width:100%;padding:14px;border-radius:12px;background:var(--card);border:1.5px solid var(--bdr);font-size:16px;font-weight:700;cursor:pointer;touch-action:manipulation;color:var(--t1);}
+</style>
 </head>
 <body>
 <div class="page">
@@ -27,8 +31,12 @@
     <div class="sec-hdr"><h3>방문 이력</h3><a onclick="openVisitModal()">+ 기록</a></div>
     <div class="tl" id="co-visits"></div>
     <button class="action-btn" onclick="openVisitModal()">📝 방문 기록 추가</button>
-    <div style="height:20px;"></div>
+    <div style="height:88px;"></div>
   </div>
+</div>
+
+<div class="back-bar">
+  <button class="back-bar-btn" onclick="history.length>1?history.back():location.href='cos.html'">← 뒤로가기</button>
 </div>
 
 <!-- 방문 기록 모달 -->
