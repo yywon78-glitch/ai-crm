@@ -53,7 +53,7 @@
     <div class="home-banner">
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <div class="home-logo">BUSINESS CARD CRM</div>
-        <div style="font-size:11px;font-weight:700;background:rgba(255,255,255,.2);padding:3px 10px;border-radius:20px;">v7.9</div>
+        <div style="font-size:11px;font-weight:700;background:rgba(255,255,255,.2);padding:3px 10px;border-radius:20px;">v8.0</div>
       </div>
       <div class="home-title">명함 관리 시스템</div>
       <div class="home-date" id="today-date"></div>
@@ -68,23 +68,23 @@
     <div class="menu-section">
       <div class="menu-section-title">명함 관리</div>
 
-      <div class="menu-card" onclick="document.getElementById('inp-cam').click()">
+      <label class="menu-card" for="inp-cam" style="cursor:pointer;">
         <div class="menu-ic ic-blue">📷</div>
         <div class="menu-txt">
           <div class="menu-nm">명함 스캔</div>
           <div class="menu-desc">카메라로 명함을 촬영하고 자동 저장</div>
         </div>
         <div class="menu-arrow">›</div>
-      </div>
+      </label>
 
-      <div class="menu-card" onclick="document.getElementById('inp-gal').click()">
+      <label class="menu-card" for="inp-gal" style="cursor:pointer;">
         <div class="menu-ic ic-blue">🖼️</div>
         <div class="menu-txt">
           <div class="menu-nm">갤러리 스캔</div>
           <div class="menu-desc">사진첩에서 명함 사진을 선택해 저장</div>
         </div>
         <div class="menu-arrow">›</div>
-      </div>
+      </label>
 
       <div class="menu-card" onclick="location.href='cards.html'">
         <div class="menu-ic ic-blue">🪪</div>
@@ -150,8 +150,8 @@
   <nav class="tabbar" id="tabbar"></nav>
 </div>
 
-<input type="file" id="inp-cam" accept="image/*" capture="environment" style="display:none">
-<input type="file" id="inp-gal" accept="image/*" style="display:none">
+<input type="file" id="inp-cam" accept="image/*" capture="environment" style="position:fixed;top:-200px;left:-200px;width:1px;height:1px;opacity:0;">
+<input type="file" id="inp-gal" accept="image/*" style="position:fixed;top:-200px;left:-200px;width:1px;height:1px;opacity:0;">
 <script src="data.js"></script>
 <script src="nav.js"></script>
 <script>
