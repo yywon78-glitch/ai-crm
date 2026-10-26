@@ -54,37 +54,45 @@
     <button class="hdr-btn" onclick="openAddModal()">+ 기록</button>
   </header>
 
-  <!-- 달력 -->
-  <div class="cal-wrap">
-    <div class="cal-nav">
-      <button class="cal-nb" onclick="prevMonth()">‹</button>
-      <span class="cal-title" id="cal-title"></span>
-      <button class="cal-nb" onclick="nextMonth()">›</button>
-    </div>
-    <div class="cal-dow">
-      <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
-    </div>
-    <div class="cal-grid" id="cal-grid"></div>
-  </div>
-  <div class="cal-legend">
-    <span><span class="dot dot-v"></span>방문 완료</span>
-    <span><span class="dot dot-p"></span>방문 예정</span>
-  </div>
+  <!-- 중간 영역: 달력 + 목록 (flex:1, min-height:0 필수) -->
+  <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0;">
 
-  <!-- 날짜 선택 표시 / 필터 -->
-  <div class="date-bar" id="date-bar" style="display:none;">
-    <span class="date-bar-lbl" id="date-bar-lbl"></span>
-    <span class="date-bar-clr" onclick="clearSel()">전체 보기</span>
-  </div>
-  <div class="pills" id="filter-pills" style="flex-shrink:0;">
-    <div class="pill on" onclick="setFilter('all',this)">전체</div>
-    <div class="pill"    onclick="setFilter('month',this)">이번달</div>
-    <div class="pill"    onclick="setFilter('상담',this)">💬 상담</div>
-    <div class="pill"    onclick="setFilter('견적',this)">📄 견적</div>
-    <div class="pill"    onclick="setFilter('인사',this)">🤝 인사</div>
-  </div>
+    <!-- 달력 섹션 (고정) -->
+    <div style="flex-shrink:0;">
+      <div class="cal-wrap">
+        <div class="cal-nav">
+          <button class="cal-nb" onclick="prevMonth()">‹</button>
+          <span class="cal-title" id="cal-title"></span>
+          <button class="cal-nb" onclick="nextMonth()">›</button>
+        </div>
+        <div class="cal-dow">
+          <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+      <div class="cal-legend">
+        <span><span class="dot dot-v"></span>방문 완료</span>
+        <span><span class="dot dot-p"></span>방문 예정</span>
+      </div>
+      <div class="date-bar" id="date-bar" style="display:none;">
+        <span class="date-bar-lbl" id="date-bar-lbl"></span>
+        <span class="date-bar-clr" onclick="clearSel()">전체 보기</span>
+      </div>
+      <div class="pills" id="filter-pills">
+        <div class="pill on" onclick="setFilter('all',this)">전체</div>
+        <div class="pill"    onclick="setFilter('month',this)">이번달</div>
+        <div class="pill"    onclick="setFilter('상담',this)">💬 상담</div>
+        <div class="pill"    onclick="setFilter('견적',this)">📄 견적</div>
+        <div class="pill"    onclick="setFilter('인사',this)">🤝 인사</div>
+      </div>
+    </div>
 
-  <div class="body"><div class="tl" id="list" style="padding:14px;"></div></div>
+    <!-- 목록 영역 (스크롤) -->
+    <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0;">
+      <div class="tl" id="list" style="padding:14px;"></div>
+    </div>
+
+  </div>
   <nav class="tabbar" id="tabbar" style="flex-shrink:0;"></nav>
 </div>
 
