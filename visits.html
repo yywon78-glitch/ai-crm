@@ -38,9 +38,10 @@
 .cal-day.has-sun .cal-dn{color:#ef4444;}
 .cal-day.has-sat .cal-dn{color:#3b82f6;}
 /* 날짜 안 회사명 — 크게 진하게 */
-.cal-co{font-size:10px;font-weight:700;line-height:1.25;padding:1.5px 4px;border-radius:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:2px;width:100%;margin-top:2px;box-sizing:border-box;}
-.cal-co-nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;}
+.cal-co{font-size:10px;font-weight:700;line-height:1.25;padding:1.5px 4px;border-radius:4px;overflow:hidden;display:flex;align-items:center;gap:2px;width:100%;margin-top:2px;box-sizing:border-box;}
+.cal-co-nm{overflow:hidden;text-overflow:clip;white-space:nowrap;flex:1;min-width:0;}
 .cal-co-time{font-size:8px;font-weight:400;flex-shrink:0;opacity:.8;}
+.cal-co-tp{font-size:10px;flex-shrink:0;}
 .cal-co-v{background:rgba(37,99,235,.13);color:#1d4ed8;}
 .cal-co-p{background:rgba(245,158,11,.18);color:#92400e;}
 .dot{width:6px;height:6px;border-radius:50%;}
@@ -121,11 +122,9 @@
 
   <!-- 달력 필터 pills -->
   <div class="pills" style="flex-shrink:0;">
-    <div class="pill on" id="cpill-all"   onclick="setCalFilter('all',this)">전체</div>
-    <div class="pill"    id="cpill-month" onclick="setCalFilter('month',this)">이번달</div>
-    <div class="pill"                     onclick="setCalFilter('상담',this)">💬 상담</div>
-    <div class="pill"                     onclick="setCalFilter('견적',this)">📄 견적</div>
-    <div class="pill"                     onclick="setCalFilter('인사',this)">🤝 인사</div>
+    <div class="pill on" id="cpill-all" onclick="setCalFilter('all',this)">전체</div>
+    <div class="pill pill-co"           onclick="openCoSelectorForCal()">🏢 거래처별</div>
+    <div class="pill" id="cpill-co-nm" style="display:none;background:var(--grn-lt);color:var(--grn);border:1.5px solid var(--grn);" onclick="clearCalCo()">— × 전체</div>
   </div>
 
   <!-- 달력 섹션 (상하 드래그로 크기 조절) -->
@@ -280,9 +279,23 @@ function openCoSelector(){
   document.getElementById('modal-co').classList.add('show');
 }
 function closeCoSelector(){document.getElementById('modal-co').classList.remove('show');}
+let _calCoMode = false;
+
 function selectCo(coId){
-  _selCo=coId;
   closeCoSelector();
+  if(_calCoMode){
+    // 달력 모드: 달력 거래처 필터만 변경
+    _calCoMode=false;
+    _calCo=coId;
+    const nm=coId?DB.getCos().find(c=>c.id===coId)?.nm||'':'';
+    const nmPill=document.getElementById('cpill-co-nm');
+    if(coId){ nmPill.textContent='🏢 '+nm+' ×'; nmPill.style.display=''; }
+    else     { nmPill.style.display='none'; }
+    document.getElementById('cal-ov-title').textContent=coId?('🏢 '+nm):'방문 달력';
+    renderCalendar();
+    return;
+  }
+  _selCo=coId;
   const bar=document.getElementById('co-bar');
   if(coId){
     const co=DB.getCos().find(c=>c.id===coId);
@@ -336,12 +349,27 @@ function closeCalendar(){document.getElementById('cal-overlay').classList.remove
 })();
 
 /* ── 달력 필터 ── */
+let _calCo = null; // 달력 전용 거래처 필터
+
 function setCalFilter(f,el){
   _calFilter=f;
-  document.querySelectorAll('#cal-overlay .pills .pill').forEach(p=>p.classList.remove('on'));
-  el.classList.add('on');
+  document.getElementById('cpill-all').classList.toggle('on', f==='all');
   renderCalendar();
 }
+
+function openCoSelectorForCal(){
+  // 거래처 선택 시트를 열되, 선택 시 달력 필터 적용
+  _calCoMode = true;
+  openCoSelector();
+}
+
+function clearCalCo(){
+  _calCo=null;
+  document.getElementById('cpill-co-nm').style.display='none';
+  document.getElementById('cal-ov-title').textContent='방문 달력';
+  renderCalendar();
+}
+
 function prevMonth(){if(_mo===0){_mo=11;_yr--;}else _mo--;renderCalendar();}
 function nextMonth(){if(_mo===11){_mo=0;_yr++;}else _mo++;renderCalendar();}
 
@@ -351,7 +379,8 @@ function renderCalendar(){
   document.getElementById('cal-title').textContent=`${_yr}년 ${_mo+1}월`;
   const ym=`${_yr}-${pad(_mo+1)}`;
   let src=DB.getVisits();
-  if(_selCo) src=src.filter(v=>v.coId===_selCo);
+  const _co=_calCo||_selCo; // 달력 전용 거래처 우선, 없으면 메인 거래처
+  if(_co) src=src.filter(v=>v.coId===_co);
   if(_calFilter==='month'){const now=new Date();const tym=`${now.getFullYear()}-${pad(now.getMonth()+1)}`;src=src.filter(v=>v.dt.startsWith(tym));}
   else if(_calFilter!=='all') src=src.filter(v=>v.tp.includes(_calFilter));
 
@@ -377,13 +406,13 @@ function renderCalendar(){
     const m=vMap[ds]; const dow=(first+d-1)%7;
     const hasAny=m&&(m.v.length||m.p.length);
     const cls=['cal-day',ds===TODAY?'today':'',dow===0?'has-sun':'',dow===6?'has-sat':'',hasAny?'has-v':''].filter(Boolean).join(' ');
-    // 방문완료: 방문구분 아이콘 + 회사명 + 시간 (전부 표시)
+    // 방문완료: 거래처 → 시간 → 목적 순 (전부 표시, ... 없음)
     const vHtml=(m?.v||[]).map(({co,tp,time})=>
-      `<span class="cal-co cal-co-v"><span style="flex-shrink:0;">${tp.split(' ')[0]}</span><span class="cal-co-nm">${co}</span>${time?`<span class="cal-co-time">${time}</span>`:''}</span>`
+      `<span class="cal-co cal-co-v"><span class="cal-co-nm">${co}</span>${time?`<span class="cal-co-time">${time}</span>`:''}<span class="cal-co-tp">${tp.split(' ')[0]}</span></span>`
     ).join('');
-    // 방문예정: 전부 표시
+    // 방문예정: 거래처 → 예정 → 목적
     const pHtml=(m?.p||[]).map(({co,tp})=>
-      `<span class="cal-co cal-co-p"><span style="flex-shrink:0;">${tp.split(' ')[0]}</span><span class="cal-co-nm">${co}</span><span class="cal-co-time">예정</span></span>`
+      `<span class="cal-co cal-co-p"><span class="cal-co-nm">${co}</span><span class="cal-co-time">예정</span><span class="cal-co-tp">${tp.split(' ')[0]}</span></span>`
     ).join('');
     html+=`<div class="${cls}" onclick="selectDate('${ds}')"><span class="cal-dn">${d}</span>${vHtml}${pHtml}</div>`;
   }
@@ -393,7 +422,8 @@ function renderCalendar(){
 /* ── 일자 클릭 팝업 ── */
 function selectDate(ds){
   let src=DB.getVisits();
-  if(_selCo) src=src.filter(v=>v.coId===_selCo);
+  const _co=_calCo||_selCo;
+  if(_co) src=src.filter(v=>v.coId===_co);
   if(_calFilter==='month'){const now=new Date();const ym=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;src=src.filter(v=>v.dt.startsWith(ym));}
   else if(_calFilter!=='all') src=src.filter(v=>v.tp.includes(_calFilter));
   // 해당 날짜: 방문 완료 + 오늘 이후 예정
