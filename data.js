@@ -95,6 +95,18 @@ const _VISITS = [
   {id:'v610',co:'네이버(주)',coId:'co6',tp:'🤝 인사',dt:'2026-10-28',time:'11:00',targets:['송미래'],targetExtra:'홍두표 PM',ourTargets:'세종대왕 부장',content:'연말 파트너십 성과 공유 미팅. 올해 공동 성과 리뷰. 내년 로드맵 방향 합의.',memo:'연말 성과 공유.',next:null},
 ];
 
+/* ── 샘플 데이터 버전 자동 갱신 ── */
+(function(){
+  const raw = localStorage.getItem('crm_visits');
+  if(raw){
+    const v = JSON.parse(raw);
+    // ourTargets 필드 없는 구 버전이면 리셋
+    if(v.length && v[0].ourTargets === undefined){
+      localStorage.removeItem('crm_visits');
+    }
+  }
+})();
+
 /* ── DB 레이어 ── */
 const DB = {
   getKey:       ()=> localStorage.getItem('crm_key')||'',
