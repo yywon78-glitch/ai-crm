@@ -35,6 +35,8 @@ const DB = {
   setKey:       k => localStorage.setItem('crm_key', k),
   getWorkspace: ()=> localStorage.getItem('crm_workspace')||'',
   setWorkspace: k => localStorage.setItem('crm_workspace', k),
+  getKakaoKey:  ()=> localStorage.getItem('crm_kakao_key')||'',
+  setKakaoKey:  k => localStorage.setItem('crm_kakao_key', k),
 
   getCards:  ()=> JSON.parse(localStorage.getItem('crm_cards')||'null') || [..._CARDS],
   setCards:  d => localStorage.setItem('crm_cards', JSON.stringify(d)),
