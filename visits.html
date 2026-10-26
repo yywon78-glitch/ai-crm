@@ -19,31 +19,39 @@
 .cal-ov-title{flex:1;font-size:16px;font-weight:700;}
 
 /* ── 달력 공통 ── */
-.cal-wrap{background:var(--card);border-bottom:1px solid var(--bdr);}
-.cal-nav{display:flex;align-items:center;justify-content:space-between;padding:10px 14px 4px;}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;padding:10px 14px 4px;flex-shrink:0;}
 .cal-title{font-size:16px;font-weight:800;}
 .cal-nb{width:34px;height:34px;border:1.5px solid var(--bdr);border-radius:50%;background:var(--bg);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;}
-.cal-dow{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:10px;font-weight:700;color:var(--t3);padding:4px 10px 0;}
+.cal-legend{display:flex;gap:14px;padding:3px 14px 5px;font-size:11px;color:var(--t2);flex-shrink:0;}
+.cal-legend span{display:flex;align-items:center;gap:4px;}
+.cal-dow{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:10px;font-weight:700;color:var(--t3);padding:4px 6px 2px;flex-shrink:0;}
 .cal-dow span:first-child{color:#ef4444;}
 .cal-dow span:last-child{color:#3b82f6;}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);padding:2px 10px 8px;gap:1px;}
-.cal-day{min-height:44px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:2px 0;}
+/* 달력 그리드 — 남은 공간 채움 */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:1fr;flex:1;min-height:0;padding:0 6px 6px;gap:2px;}
+.cal-day{border-radius:8px;display:flex;flex-direction:column;align-items:center;cursor:pointer;padding:4px 2px 3px;overflow:hidden;touch-action:manipulation;}
 .cal-day.empty{pointer-events:none;}
 .cal-day:active{background:var(--card2);}
-.cal-day.sel{background:var(--blue-lt);}
-.cal-dn{font-size:13px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:50%;}
+.cal-day.has-v{background:rgba(37,99,235,.05);}
+.cal-dn{font-size:13px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0;}
 .cal-day.today .cal-dn{background:var(--blue);color:#fff;font-weight:800;}
 .cal-day.has-sun .cal-dn{color:#ef4444;}
 .cal-day.has-sat .cal-dn{color:#3b82f6;}
-.cal-dots{display:flex;gap:2px;margin-top:2px;min-height:6px;}
+/* 날짜 안 회사명 */
+.cal-co{font-size:8.5px;line-height:1.2;padding:1px 3px;border-radius:3px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;width:100%;text-align:center;margin-top:1px;}
+.cal-co-v{background:rgba(37,99,235,.15);color:#1d4ed8;}
+.cal-co-p{background:rgba(245,158,11,.18);color:#92400e;}
 .dot{width:6px;height:6px;border-radius:50%;}
 .dot-v{background:var(--blue);}
 .dot-p{background:#f59e0b;}
-.cal-legend{display:flex;gap:14px;padding:4px 14px 8px;font-size:11px;color:var(--t2);flex-shrink:0;}
-.cal-legend span{display:flex;align-items:center;gap:4px;}
-.cal-date-bar{padding:8px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bdr);flex-shrink:0;}
-.cal-date-lbl{font-size:14px;font-weight:700;color:var(--blue);}
-.cal-date-x{font-size:12px;color:var(--t3);cursor:pointer;padding:4px 8px;background:var(--bg);border:1px solid var(--bdr);border-radius:8px;}
+/* 일자 클릭 팝업 */
+#modal-day{position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:20px;}
+#modal-day.open{display:flex;}
+.day-pop{background:var(--card);border-radius:18px;width:100%;max-width:420px;max-height:72vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.25);}
+.day-pop-hdr{padding:16px 18px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bdr);flex-shrink:0;}
+.day-pop-title{font-size:16px;font-weight:800;}
+.day-pop-x{width:32px;height:32px;border-radius:50%;background:var(--bg);border:none;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.day-pop-body{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;}
 
 /* ── 방문 카드 담당자 배지 ── */
 .v-who{display:flex;gap:5px;margin:4px 0;flex-wrap:wrap;}
@@ -106,7 +114,7 @@
     <span class="cal-ov-title" id="cal-ov-title">방문 달력</span>
   </div>
 
-  <!-- 달력 오버레이 pills -->
+  <!-- 달력 필터 pills -->
   <div class="pills" style="flex-shrink:0;">
     <div class="pill on" id="cpill-all"   onclick="setCalFilter('all',this)">전체</div>
     <div class="pill"    id="cpill-month" onclick="setCalFilter('month',this)">이번달</div>
@@ -115,32 +123,34 @@
     <div class="pill"                     onclick="setCalFilter('인사',this)">🤝 인사</div>
   </div>
 
-  <!-- 달력 고정 섹션 -->
-  <div style="flex-shrink:0;">
-    <div class="cal-wrap">
-      <div class="cal-nav">
-        <button class="cal-nb" onclick="prevMonth()">‹</button>
-        <span class="cal-title" id="cal-title"></span>
-        <button class="cal-nb" onclick="nextMonth()">›</button>
-      </div>
-      <div class="cal-dow">
-        <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
-      </div>
-      <div class="cal-grid" id="cal-grid"></div>
+  <!-- 달력: 전체 남은 공간 채움 -->
+  <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--card);">
+    <div class="cal-nav">
+      <button class="cal-nb" onclick="prevMonth()">‹</button>
+      <span class="cal-title" id="cal-title"></span>
+      <button class="cal-nb" onclick="nextMonth()">›</button>
     </div>
     <div class="cal-legend">
       <span><span class="dot dot-v"></span>방문 완료</span>
-      <span><span class="dot dot-p"></span>방문 예정</span>
+      <span><span class="dot dot-p"></span>방문 예정(오늘~)</span>
     </div>
-    <div class="cal-date-bar" id="cal-date-bar" style="display:none;">
-      <span class="cal-date-lbl" id="cal-date-lbl"></span>
-      <span class="cal-date-x" onclick="clearCalSel()">날짜 해제</span>
+    <div class="cal-dow">
+      <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
     </div>
+    <div class="cal-grid" id="cal-grid"></div>
   </div>
+</div>
 
-  <!-- 달력 선택 날짜 목록 -->
-  <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0;">
-    <div class="tl" id="cal-list" style="padding:14px;"></div>
+<!-- ━━━━ 일자 클릭 팝업 ━━━━ -->
+<div id="modal-day" onclick="if(event.target===this)closeDayModal()">
+  <div class="day-pop">
+    <div class="day-pop-hdr">
+      <span class="day-pop-title" id="day-pop-title"></span>
+      <button class="day-pop-x" onclick="closeDayModal()">✕</button>
+    </div>
+    <div class="day-pop-body">
+      <div class="tl" id="day-list" style="padding:12px 14px;"></div>
+    </div>
   </div>
 </div>
 
@@ -274,12 +284,9 @@ function clearCo(){selectCo(null);}
 
 /* ── 달력 열기/닫기 ── */
 function openCalendar(){
-  _calSel=null;
   document.getElementById('cal-ov-title').textContent=
     _selCo ? '🏢 '+(DB.getCos().find(c=>c.id===_selCo)?.nm||'') : '방문 달력';
-  syncCalDateBar();
   renderCalendar();
-  renderCalList();
   document.getElementById('cal-overlay').classList.add('open');
 }
 function closeCalendar(){document.getElementById('cal-overlay').classList.remove('open');}
@@ -289,23 +296,12 @@ function setCalFilter(f,el){
   _calFilter=f;
   document.querySelectorAll('#cal-overlay .pills .pill').forEach(p=>p.classList.remove('on'));
   el.classList.add('on');
-  renderCalendar(); renderCalList();
+  renderCalendar();
 }
-function prevMonth(){if(_mo===0){_mo=11;_yr--;}else _mo--;_calSel=null;syncCalDateBar();renderCalendar();renderCalList();}
-function nextMonth(){if(_mo===11){_mo=0;_yr++;}else _mo++;_calSel=null;syncCalDateBar();renderCalendar();renderCalList();}
-function selectDate(ds){_calSel=_calSel===ds?null:ds;syncCalDateBar();renderCalendar();renderCalList();}
-function clearCalSel(){_calSel=null;syncCalDateBar();renderCalendar();renderCalList();}
-function syncCalDateBar(){
-  const bar=document.getElementById('cal-date-bar');
-  if(_calSel){
-    const d=new Date(_calSel+'T00:00');
-    const days=['일','월','화','수','목','금','토'];
-    document.getElementById('cal-date-lbl').textContent=`${d.getMonth()+1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
-    bar.style.display='flex';
-  } else {bar.style.display='none';}
-}
+function prevMonth(){if(_mo===0){_mo=11;_yr--;}else _mo--;renderCalendar();}
+function nextMonth(){if(_mo===11){_mo=0;_yr++;}else _mo++;renderCalendar();}
 
-/* ── 달력 렌더 ── */
+/* ── 달력 렌더 (회사명 셀 표시, 과거 예정일 제외) ── */
 function renderCalendar(){
   const pad=n=>String(n).padStart(2,'0');
   document.getElementById('cal-title').textContent=`${_yr}년 ${_mo+1}월`;
@@ -314,11 +310,21 @@ function renderCalendar(){
   if(_selCo) src=src.filter(v=>v.coId===_selCo);
   if(_calFilter==='month'){const now=new Date();const tym=`${now.getFullYear()}-${pad(now.getMonth()+1)}`;src=src.filter(v=>v.dt.startsWith(tym));}
   else if(_calFilter!=='all') src=src.filter(v=>v.tp.includes(_calFilter));
-  const vMap={};
+
+  // 날짜별 방문 회사 목록 수집
+  const vMap={}; // ds → {v:[co,...], p:[co,...]}
   src.forEach(v=>{
-    if(v.dt&&v.dt.startsWith(ym)){vMap[v.dt]=vMap[v.dt]||{v:0,p:0};vMap[v.dt].v++;}
-    if(v.next&&v.next.startsWith(ym)){vMap[v.next]=vMap[v.next]||{v:0,p:0};vMap[v.next].p++;}
+    if(v.dt&&v.dt.startsWith(ym)){
+      if(!vMap[v.dt]) vMap[v.dt]={v:[],p:[]};
+      if(!vMap[v.dt].v.includes(v.co)) vMap[v.dt].v.push(v.co);
+    }
+    // 방문예정일: 오늘 이후만
+    if(v.next&&v.next.startsWith(ym)&&v.next>=TODAY){
+      if(!vMap[v.next]) vMap[v.next]={v:[],p:[]};
+      if(!vMap[v.next].p.includes(v.co)) vMap[v.next].p.push(v.co);
+    }
   });
+
   const first=new Date(_yr,_mo,1).getDay();
   const days=new Date(_yr,_mo+1,0).getDate();
   let html='';
@@ -326,27 +332,39 @@ function renderCalendar(){
   for(let d=1;d<=days;d++){
     const ds=`${_yr}-${pad(_mo+1)}-${pad(d)}`;
     const m=vMap[ds]; const dow=(first+d-1)%7;
-    const cls=['cal-day',ds===TODAY?'today':'',ds===_calSel?'sel':'',dow===0?'has-sun':'',dow===6?'has-sat':''].filter(Boolean).join(' ');
-    html+=`<div class="${cls}" onclick="selectDate('${ds}')"><span class="cal-dn">${d}</span><div class="cal-dots">${m&&m.v?'<span class="dot dot-v"></span>':''}${m&&m.p?'<span class="dot dot-p"></span>':''}</div></div>`;
+    const hasV=m&&m.v.length>0, hasP=m&&m.p.length>0;
+    const cls=['cal-day',
+      ds===TODAY?'today':'',
+      dow===0?'has-sun':'',dow===6?'has-sat':'',
+      hasV||hasP?'has-v':''
+    ].filter(Boolean).join(' ');
+    // 회사명 (최대 2개씩)
+    const vNms=(m?.v||[]).slice(0,2).map(nm=>`<span class="cal-co cal-co-v">${nm}</span>`).join('');
+    const pNms=(m?.p||[]).slice(0,hasV?1:2).map(nm=>`<span class="cal-co cal-co-p">${nm}</span>`).join('');
+    html+=`<div class="${cls}" onclick="selectDate('${ds}')"><span class="cal-dn">${d}</span>${vNms}${pNms}</div>`;
   }
   document.getElementById('cal-grid').innerHTML=html;
 }
 
-/* ── 달력 선택 날짜 목록 ── */
-function renderCalList(){
+/* ── 일자 클릭 팝업 ── */
+function selectDate(ds){
   let src=DB.getVisits();
   if(_selCo) src=src.filter(v=>v.coId===_selCo);
   if(_calFilter==='month'){const now=new Date();const ym=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;src=src.filter(v=>v.dt.startsWith(ym));}
   else if(_calFilter!=='all') src=src.filter(v=>v.tp.includes(_calFilter));
-  if(_calSel) src=src.filter(v=>v.dt===_calSel||v.next===_calSel);
-  src=src.sort((a,b)=>(b.dt+(b.time||''))>(a.dt+(a.time||''))?1:-1);
-  const el=document.getElementById('cal-list');
-  if(!src.length){el.innerHTML=`<div class="empty" style="padding:32px 18px;"><div class="empty-ic">${_calSel?'📭':'📋'}</div><div class="empty-t">${_calSel?'이 날 방문기록이 없습니다':'방문기록이 없습니다</div>'}</div>`;return;}
-  el.innerHTML=src.map(v=>{
-    const isPlan=_calSel&&v.next===_calSel&&v.dt!==_calSel;
-    return _visitItemHtml(v,isPlan);
-  }).join('');
+  // 해당 날짜: 방문 완료 + 오늘 이후 예정
+  const list=src.filter(v=>v.dt===ds||(v.next===ds&&ds>=TODAY))
+    .sort((a,b)=>(b.dt+(b.time||''))>(a.dt+(a.time||''))?1:-1);
+  const d=new Date(ds+'T00:00');
+  const days=['일','월','화','수','목','금','토'];
+  document.getElementById('day-pop-title').textContent=`${d.getMonth()+1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
+  const el=document.getElementById('day-list');
+  el.innerHTML=list.length
+    ? list.map(v=>_visitItemHtml(v,v.next===ds&&v.dt!==ds)).join('')
+    : '<div style="padding:24px;text-align:center;color:var(--t3);">📭 방문기록이 없습니다</div>';
+  document.getElementById('modal-day').classList.add('open');
 }
+function closeDayModal(){document.getElementById('modal-day').classList.remove('open');}
 
 /* ── 방문 아이템 HTML ── */
 function _visitItemHtml(v,isPlan){
@@ -431,7 +449,7 @@ function saveVisitNew(){
   DB.setVisits(visits);
   closeAddModal();
   renderList();
-  if(document.getElementById('cal-overlay').classList.contains('open')){renderCalendar();renderCalList();}
+  if(document.getElementById('cal-overlay').classList.contains('open')) renderCalendar();
   toast('방문기록이 저장됐습니다 ✓');
 }
 
