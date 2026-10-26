@@ -128,7 +128,7 @@
   </div>
 
   <!-- 달력 섹션 (상하 드래그로 크기 조절) -->
-  <div id="cal-section" style="flex:1;display:flex;flex-direction:column;background:var(--card);overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;min-height:0;">
+  <div id="cal-section" style="flex:none;height:360px;display:flex;flex-direction:column;background:var(--card);overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;">
     <div class="cal-nav">
       <button class="cal-nb" onclick="prevMonth()">‹</button>
       <span class="cal-title" id="cal-title"></span>
@@ -317,24 +317,25 @@ function openCalendar(){
 }
 function closeCalendar(){document.getElementById('cal-overlay').classList.remove('open');}
 
-/* ── 드래그 리사이즈 — 셀 min-height 직접 제어 ── */
+/* ── 드래그 리사이즈 — 달력 섹션 높이 직접 조절 ── */
 (function(){
   const handle=document.getElementById('cal-resize-h');
-  let sy=0, baseH=52; // 기본 셀 높이 px
-  function getRowH(){ return parseInt(getComputedStyle(document.documentElement).getPropertyValue('--cal-row-h'))||baseH; }
-  function setRowH(h){ document.documentElement.style.setProperty('--cal-row-h', Math.max(32,Math.min(140,h))+'px'); }
+  const calSec=document.getElementById('cal-section');
+  let sy=0, baseH=360;
+  function getH(){ return calSec.offsetHeight; }
+  function setH(h){ calSec.style.height=Math.max(150,Math.min(window.innerHeight-200,h))+'px'; }
 
   handle.addEventListener('touchstart',e=>{
-    sy=e.touches[0].clientY; baseH=getRowH(); e.preventDefault();
+    sy=e.touches[0].clientY; baseH=getH(); e.preventDefault();
   },{passive:false});
   handle.addEventListener('touchmove',e=>{
     const dy=e.touches[0].clientY-sy;
-    setRowH(baseH+dy/1.5); // 1.5 감속 → 세밀 조정
+    setH(baseH+dy);
     e.preventDefault();
   },{passive:false});
   handle.addEventListener('mousedown',e=>{
-    sy=e.clientY; baseH=getRowH();
-    const mm=ev=>setRowH(baseH+(ev.clientY-sy)/1.5);
+    sy=e.clientY; baseH=getH();
+    const mm=ev=>setH(baseH+(ev.clientY-sy));
     const mu=()=>{document.removeEventListener('mousemove',mm);document.removeEventListener('mouseup',mu);};
     document.addEventListener('mousemove',mm);
     document.addEventListener('mouseup',mu);
