@@ -209,20 +209,22 @@ function startOCR(){
   processImage(_imgData);
 }
 
-function resizeForOCR(dataUrl, maxW=1600){
+function resizeImage(dataUrl, maxW, quality){
   return new Promise(resolve=>{
     const img = new Image();
     img.onload = ()=>{
-      const sw = img.naturalWidth||img.width, sh = img.naturalHeight||img.height;
-      const scale = Math.min(1, maxW/Math.max(sw,sh));
-      const c = document.createElement('canvas');
-      c.width = Math.round(sw*scale); c.height = Math.round(sh*scale);
+      const sw=img.naturalWidth||img.width, sh=img.naturalHeight||img.height;
+      const scale=Math.min(1, maxW/Math.max(sw,sh));
+      const c=document.createElement('canvas');
+      c.width=Math.round(sw*scale); c.height=Math.round(sh*scale);
       c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-      resolve(c.toDataURL('image/jpeg',0.9));
+      resolve(c.toDataURL('image/jpeg',quality));
     };
-    img.src = dataUrl;
+    img.src=dataUrl;
   });
 }
+function resizeForOCR(dataUrl){ return resizeImage(dataUrl,1600,0.9); }
+function resizeForStore(dataUrl){ return resizeImage(dataUrl,700,0.72); }
 
 async function processImage(dataUrl){
   const ldMsg = document.getElementById('ld-msg');
@@ -237,9 +239,9 @@ async function processImage(dataUrl){
 
   try{
     ldMsg.textContent = '이미지 준비 중...';
-    const resized = await resizeForOCR(dataUrl);
-    _captured = resized;
-    const base64 = resized.split(',')[1];
+    const [forOCR, forStore] = await Promise.all([resizeForOCR(dataUrl), resizeForStore(dataUrl)]);
+    _captured = forStore;
+    const base64 = forOCR.split(',')[1];
     ldMsg.textContent = 'AI 명함 인식 중...';
 
     const res = await fetch('https://api.anthropic.com/v1/messages',{
@@ -355,7 +357,7 @@ function saveCard(){
     dup.ph=document.getElementById('f-ph').value.trim();
     dup.em=document.getElementById('f-em').value.trim();
     dup.addr=document.getElementById('f-addr').value.trim();
-    if(_captured) dup.img=_captured;
+    if(_captured && !dup.img) dup.img=_captured;
     try{ DB.setCards(cards); }catch(e){ dup.img=null; DB.setCards(cards); }
     toast('업데이트됐습니다 ✓');
     _goAfterSave('card.html?id='+dup.id);
