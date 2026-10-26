@@ -324,9 +324,9 @@ function closeCalendar(){document.getElementById('cal-overlay').classList.remove
   let sy=0, baseH=360;
   function getH(){ return calSec.offsetHeight; }
   function setH(h){
-    const clamped=Math.max(150,Math.min(window.innerHeight-150,h));
+    const maxH=window.innerHeight-130; // 헤더+pills+핸들 제외
+    const clamped=Math.max(150,Math.min(maxH,h));
     calSec.style.height=clamped+'px';
-    // 네비+범례+요일헤더 약 110px, 남은 높이를 6행으로 나눠 셀 높이 결정
     const rowH=Math.max(28,Math.floor((clamped-110)/6));
     document.documentElement.style.setProperty('--cal-row-h',rowH+'px');
   }
@@ -346,8 +346,8 @@ function closeCalendar(){document.getElementById('cal-overlay').classList.remove
     document.addEventListener('mouseup',mu);
     e.preventDefault();
   });
-  // 초기 셀 높이 맞추기
-  setH(360);
+  // 초기: 화면 꽉 차게
+  setH(window.innerHeight);
 })();
 
 /* ── 달력 필터 ── */
