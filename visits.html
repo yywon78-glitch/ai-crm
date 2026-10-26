@@ -6,32 +6,86 @@
 <title>방문기록</title>
 <link rel="stylesheet" href="shared.css">
 <style>
-.v-who{display:flex;gap:6px;margin:4px 0;flex-wrap:wrap;}
+/* ── 달력 ── */
+.cal-wrap{background:var(--card);border-bottom:1px solid var(--bdr);flex-shrink:0;}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;padding:10px 14px 4px;}
+.cal-title{font-size:16px;font-weight:800;}
+.cal-nb{width:34px;height:34px;border:1.5px solid var(--bdr);border-radius:50%;background:var(--bg);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;}
+.cal-dow{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:10px;font-weight:700;color:var(--t3);padding:4px 10px 0;}
+.cal-dow span:first-child{color:#ef4444;}
+.cal-dow span:last-child{color:#3b82f6;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);padding:2px 10px 8px;gap:1px;}
+.cal-day{min-height:46px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:2px 0;}
+.cal-day.empty{pointer-events:none;}
+.cal-day:active{background:var(--card2);}
+.cal-day.sel{background:var(--blue-lt);}
+.cal-dn{font-size:13px;font-weight:500;line-height:1;width:26px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:50%;}
+.cal-day.today .cal-dn{background:var(--blue);color:#fff;font-weight:800;}
+.cal-day.has-sun .cal-dn{color:#ef4444;}
+.cal-day.has-sat .cal-dn{color:#3b82f6;}
+.cal-dots{display:flex;gap:2px;margin-top:2px;min-height:7px;}
+.dot{width:6px;height:6px;border-radius:50%;}
+.dot-v{background:var(--blue);}
+.dot-p{background:#f59e0b;}
+.cal-legend{display:flex;gap:14px;padding:4px 14px 8px;font-size:11px;color:var(--t2);flex-shrink:0;}
+.cal-legend span{display:flex;align-items:center;gap:4px;}
+
+/* ── 선택 날짜 바 ── */
+.date-bar{padding:8px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bdr);flex-shrink:0;}
+.date-bar-lbl{font-size:14px;font-weight:700;color:var(--blue);}
+.date-bar-clr{font-size:12px;color:var(--t3);cursor:pointer;padding:4px 8px;background:var(--bg);border:1px solid var(--bdr);border-radius:8px;}
+
+/* ── 방문기록 카드 ── */
+.v-who{display:flex;gap:5px;margin:4px 0;flex-wrap:wrap;}
 .v-side{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;}
 .v-our{background:#dbeafe;color:#1d4ed8;}
 .v-tgt{background:#dcfce7;color:#15803d;}
 .target-chip{display:inline-flex;align-items:center;gap:3px;padding:5px 10px;
              background:var(--bg);border:1.5px solid var(--bdr);border-radius:20px;
-             font-size:12px;cursor:pointer;margin:3px 3px 3px 0;transition:all .1s;}
+             font-size:12px;cursor:pointer;margin:3px 3px 3px 0;}
 .target-chip.on{background:var(--grn-lt);border-color:var(--grn);color:var(--grn);}
 .side-lbl{font-size:11px;font-weight:700;color:var(--t3);margin-bottom:4px;}
 </style>
 </head>
 <body>
 <div class="page">
-  <header class="hdr">
+  <header class="hdr" style="flex-shrink:0;">
     <span class="hdr-t">방문기록</span>
     <button class="hdr-btn" onclick="openAddModal()">+ 기록</button>
   </header>
-  <div class="pills">
+
+  <!-- 달력 -->
+  <div class="cal-wrap">
+    <div class="cal-nav">
+      <button class="cal-nb" onclick="prevMonth()">‹</button>
+      <span class="cal-title" id="cal-title"></span>
+      <button class="cal-nb" onclick="nextMonth()">›</button>
+    </div>
+    <div class="cal-dow">
+      <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+  </div>
+  <div class="cal-legend">
+    <span><span class="dot dot-v"></span>방문 완료</span>
+    <span><span class="dot dot-p"></span>방문 예정</span>
+  </div>
+
+  <!-- 날짜 선택 표시 / 필터 -->
+  <div class="date-bar" id="date-bar" style="display:none;">
+    <span class="date-bar-lbl" id="date-bar-lbl"></span>
+    <span class="date-bar-clr" onclick="clearSel()">전체 보기</span>
+  </div>
+  <div class="pills" id="filter-pills" style="flex-shrink:0;">
     <div class="pill on" onclick="setFilter('all',this)">전체</div>
     <div class="pill"    onclick="setFilter('month',this)">이번달</div>
     <div class="pill"    onclick="setFilter('상담',this)">💬 상담</div>
     <div class="pill"    onclick="setFilter('견적',this)">📄 견적</div>
     <div class="pill"    onclick="setFilter('인사',this)">🤝 인사</div>
   </div>
+
   <div class="body"><div class="tl" id="list" style="padding:14px;"></div></div>
-  <nav class="tabbar" id="tabbar"></nav>
+  <nav class="tabbar" id="tabbar" style="flex-shrink:0;"></nav>
 </div>
 
 <!-- 거래처 오버레이 -->
@@ -43,49 +97,33 @@
     <div class="m-handle"></div>
     <div class="m-title">방문기록 추가</div>
     <div class="m-body">
-
-      <!-- 거래처 -->
       <div>
         <div class="flb">거래처 *</div>
         <select class="finp" id="a-co" onchange="onCoChange()" style="appearance:none;-webkit-appearance:none;"></select>
       </div>
-
-      <!-- 상대측 담당자 -->
       <div>
         <div class="flb">상대측 담당자</div>
         <div class="side-lbl">거래처 명함에서 선택</div>
         <div id="target-chips" style="min-height:28px;"></div>
         <input class="finp" id="a-target-extra" placeholder="직접 입력 (선택 외 추가 시)" style="margin-top:6px;">
       </div>
-
-      <!-- 우리측 담당자 -->
       <div>
         <div class="flb">우리측 담당자</div>
         <input class="finp" id="a-our" placeholder="예) 홍길동 과장, 이순신 대리">
       </div>
-
-      <!-- 방문 유형 -->
       <div>
         <div class="flb">방문 유형</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;" id="a-type-grid"></div>
       </div>
-
-      <!-- 날짜 + 시각 -->
       <div style="display:flex;gap:8px;">
         <div style="flex:1;"><div class="flb">방문 날짜 *</div><input class="finp" type="date" id="a-dt"></div>
         <div style="width:108px;"><div class="flb">방문 시각</div><input class="finp" type="time" id="a-time"></div>
       </div>
-
-      <!-- 방문 내용 -->
       <div>
         <div class="flb">방문 내용</div>
-        <textarea class="finp" id="a-content" rows="4" style="resize:none;"
-          placeholder="미팅 내용, 논의 사항, 결과, 특이사항 등을 기록하세요..."></textarea>
+        <textarea class="finp" id="a-content" rows="4" style="resize:none;" placeholder="미팅 내용, 논의 사항, 결과, 특이사항 등을 기록하세요..."></textarea>
       </div>
-
-      <!-- 다음 일정 -->
-      <div><div class="flb">다음 일정</div><input class="finp" type="date" id="a-next"></div>
-
+      <div><div class="flb">다음 방문 예정일</div><input class="finp" type="date" id="a-next"></div>
       <button class="m-btn" onclick="saveVisitNew()">저장</button>
     </div>
   </div>
@@ -98,10 +136,7 @@
     <div class="m-title">방문기록 추가</div>
     <div class="m-body">
       <div style="font-size:13px;font-weight:600;color:var(--blue);padding:2px 0;" id="v-co-lbl"></div>
-      <div>
-        <div class="flb">방문 유형</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;" id="type-grid"></div>
-      </div>
+      <div><div class="flb">방문 유형</div><div style="display:flex;gap:8px;flex-wrap:wrap;" id="type-grid"></div></div>
       <div><div class="flb">방문 날짜</div><input class="finp" type="date" id="v-dt"></div>
       <div><div class="flb">메모</div><textarea class="finp" id="v-memo" rows="3" style="resize:none;" placeholder="미팅 내용 입력..."></textarea></div>
       <div><div class="flb">다음 일정</div><input class="finp" type="date" id="v-next"></div>
@@ -114,62 +149,146 @@
 <script src="nav.js"></script>
 <script>
 const VTYPES = ['🤝 인사','💬 상담','📄 견적','🔧 AS','🍽 식사','📞 전화'];
+const TODAY = new Date().toISOString().split('T')[0];
+let _now = new Date();
+let _yr = _now.getFullYear(), _mo = _now.getMonth();
+let _sel = null;   // 선택된 날짜 YYYY-MM-DD
 let _filter = 'all';
 
-function setFilter(f, el){
-  _filter=f;
-  document.querySelectorAll('.pills .pill').forEach(p=>p.classList.remove('on'));
-  el.classList.add('on');
-  render();
+/* ── 달력 ── */
+function renderCalendar(){
+  const label = `${_yr}년 ${_mo+1}월`;
+  document.getElementById('cal-title').textContent = label;
+
+  const visits = DB.getVisits();
+  const vMap = {}; // dateStr → {v:count, p:count}
+  const pad = n => String(n).padStart(2,'0');
+  const ym = `${_yr}-${pad(_mo+1)}`;
+  visits.forEach(v=>{
+    if(v.dt && v.dt.startsWith(ym)){
+      vMap[v.dt] = vMap[v.dt]||{v:0,p:0};
+      vMap[v.dt].v++;
+    }
+    if(v.next && v.next.startsWith(ym)){
+      vMap[v.next] = vMap[v.next]||{v:0,p:0};
+      vMap[v.next].p++;
+    }
+  });
+
+  const first = new Date(_yr, _mo, 1).getDay();
+  const days  = new Date(_yr, _mo+1, 0).getDate();
+  let html = '';
+  for(let i=0;i<first;i++) html += '<div class="cal-day empty"></div>';
+  for(let d=1;d<=days;d++){
+    const ds = `${_yr}-${pad(_mo+1)}-${pad(d)}`;
+    const m  = vMap[ds];
+    const dow = (first+d-1)%7; // 0=Sun,6=Sat
+    const cls = [
+      'cal-day',
+      ds===TODAY  ? 'today':'',
+      ds===_sel   ? 'sel':'',
+      dow===0     ? 'has-sun':'',
+      dow===6     ? 'has-sat':'',
+    ].filter(Boolean).join(' ');
+    html += `<div class="${cls}" onclick="selectDate('${ds}')">
+      <span class="cal-dn">${d}</span>
+      <div class="cal-dots">
+        ${m&&m.v ? '<span class="dot dot-v"></span>':''}
+        ${m&&m.p ? '<span class="dot dot-p"></span>':''}
+      </div>
+    </div>`;
+  }
+  document.getElementById('cal-grid').innerHTML = html;
+}
+
+function prevMonth(){ if(_mo===0){_mo=11;_yr--;}else _mo--; _sel=null; syncSel(); renderCalendar(); renderList(); }
+function nextMonth(){ if(_mo===11){_mo=0;_yr++;}else _mo++; _sel=null; syncSel(); renderCalendar(); renderList(); }
+
+function selectDate(ds){
+  _sel = _sel===ds ? null : ds;
+  if(_sel){
+    // 달력 월을 선택 날짜에 맞추기
+    const d=new Date(ds+'T00:00');
+    _yr=d.getFullYear(); _mo=d.getMonth();
+  }
+  syncSel();
+  renderCalendar();
+  renderList();
+}
+
+function clearSel(){ _sel=null; syncSel(); renderCalendar(); renderList(); }
+
+function syncSel(){
+  const bar=document.getElementById('date-bar');
+  const pills=document.getElementById('filter-pills');
+  if(_sel){
+    const d=new Date(_sel+'T00:00');
+    const days=['일','월','화','수','목','금','토'];
+    document.getElementById('date-bar-lbl').textContent=
+      `${d.getMonth()+1}월 ${d.getDate()}일 (${days[d.getDay()]}) 방문기록`;
+    bar.style.display='flex'; pills.style.display='none';
+  } else {
+    bar.style.display='none'; pills.style.display='';
+  }
 }
 
 /* ── 목록 렌더 ── */
-function render(){
+function setFilter(f,el){
+  _filter=f; _sel=null; syncSel();
+  document.querySelectorAll('.pills .pill').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  renderCalendar(); renderList();
+}
+
+function renderList(){
   const now=new Date(), ym=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
   let list=DB.getVisits();
-  if(_filter==='month') list=list.filter(v=>v.dt.startsWith(ym));
-  else if(_filter!=='all') list=list.filter(v=>v.tp.includes(_filter));
+
+  if(_sel){
+    list=list.filter(v=>v.dt===_sel||v.next===_sel);
+  } else if(_filter==='month'){
+    list=list.filter(v=>v.dt.startsWith(ym));
+  } else if(_filter!=='all'){
+    list=list.filter(v=>v.tp.includes(_filter));
+  }
 
   const el=document.getElementById('list');
   if(!list.length){
-    el.innerHTML=`<div class="empty"><div class="empty-ic">📋</div><div class="empty-t">방문기록이 없습니다</div></div>`;
+    el.innerHTML=`<div class="empty"><div class="empty-ic">📋</div><div class="empty-t">${_sel?'이 날 방문기록이 없습니다':'방문기록이 없습니다'}</div></div>`;
     return;
   }
   el.innerHTML=list.map(v=>{
-    const tgtArr  = v.targets||[];
-    const tgtText = [...tgtArr, v.targetExtra||''].filter(Boolean).join(', ');
-    const ourText = v.ourTargets||'';
-    const content = v.content||v.memo||'';
-    const timeStr = v.time ? ` ${v.time}` : '';
-    return `<div class="tl-item" onclick="openCoOverlay('${v.coId}')">
+    const tgt=[...(v.targets||[]),v.targetExtra||''].filter(Boolean).join(', ');
+    const our=v.ourTargets||'';
+    const content=v.content||v.memo||'';
+    const timeStr=v.time?` ${v.time}`:'';
+    const isPlan=_sel&&v.next===_sel&&v.dt!==_sel;
+    return `<div class="tl-item${isPlan?' ':''}" onclick="openCoOverlay('${v.coId}')" style="${isPlan?'border-left:3px solid #f59e0b;':''}">
       <div class="tl-dot">${v.tp.split(' ')[0]}</div>
       <div class="tl-body">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;">
-          <div class="tl-tp">${v.tp}</div>
-          <div style="font-size:11px;color:var(--t3);flex-shrink:0;">${v.dt}${timeStr}</div>
+          <div class="tl-tp">${v.tp}${isPlan?'<span style="margin-left:6px;font-size:10px;background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:8px;">예정</span>':''}</div>
+          <div style="font-size:11px;color:var(--t3);flex-shrink:0;">${isPlan?v.next:v.dt}${timeStr}</div>
         </div>
         <div style="font-size:13px;font-weight:700;color:var(--blue);margin:3px 0;">${v.co}</div>
         <div class="v-who">
-          ${ourText ? `<span class="v-side v-our">우리: ${ourText}</span>` : ''}
-          ${tgtText ? `<span class="v-side v-tgt">상대: ${tgtText}</span>` : ''}
+          ${our?`<span class="v-side v-our">우리: ${our}</span>`:''}
+          ${tgt?`<span class="v-side v-tgt">상대: ${tgt}</span>`:''}
         </div>
-        ${content ? `<div class="tl-memo" style="margin-top:4px;">${content}</div>` : ''}
-        ${v.next ? `<div class="tl-next">📅 다음 일정: ${v.next}</div>` : ''}
+        ${content?`<div class="tl-memo" style="margin-top:4px;">${content}</div>`:''}
+        ${v.next&&!isPlan?`<div class="tl-next">📅 다음 예정: ${v.next}</div>`:''}
       </div>
     </div>`;
   }).join('');
 }
 
 /* ── 추가 모달 ── */
-let _selTargets = new Set();
-
+let _selTargets=new Set();
 function openAddModal(){
-  _selTargets = new Set();
+  _selTargets=new Set();
   const cos=DB.getCos();
-  document.getElementById('a-co').innerHTML =
-    `<option value="">— 거래처 선택 —</option>`+
-    cos.map(c=>`<option value="${c.id}">${c.nm}</option>`).join('');
-  document.getElementById('a-dt').value=new Date().toISOString().split('T')[0];
+  document.getElementById('a-co').innerHTML=`<option value="">— 거래처 선택 —</option>`+cos.map(c=>`<option value="${c.id}">${c.nm}</option>`).join('');
+  document.getElementById('a-dt').value=_sel||TODAY;
   document.getElementById('a-time').value='';
   document.getElementById('a-content').value='';
   document.getElementById('a-next').value='';
@@ -181,16 +300,11 @@ function openAddModal(){
   _selType(g.children[0]);
   document.getElementById('modal-add').classList.add('show');
 }
-
-function closeAddModal(){
-  document.getElementById('modal-add').classList.remove('show');
-}
-
+function closeAddModal(){ document.getElementById('modal-add').classList.remove('show'); }
 function _selType(el){
   document.querySelectorAll('#a-type-grid .bx').forEach(b=>{b.style.background='';b.style.border='';b.style.color='';delete b.dataset.on;});
   el.style.background='var(--grn-lt)';el.style.border='1.5px solid var(--grn)';el.style.color='var(--grn)';el.dataset.on='1';
 }
-
 function onCoChange(){
   const coId=document.getElementById('a-co').value;
   if(!coId){document.getElementById('target-chips').innerHTML='';return;}
@@ -199,17 +313,13 @@ function onCoChange(){
   _selTargets=new Set();
   const wrap=document.getElementById('target-chips');
   if(!cards.length){wrap.innerHTML='<span style="font-size:12px;color:var(--t3);">등록된 명함 없음</span>';return;}
-  wrap.innerHTML=cards.map(c=>
-    `<span class="target-chip" data-nm="${c.nm}" onclick="_toggleTarget(this)">${c.nm}<span style="font-size:10px;opacity:.6;margin-left:3px;">${c.tl||''}</span></span>`
-  ).join('');
+  wrap.innerHTML=cards.map(c=>`<span class="target-chip" data-nm="${c.nm}" onclick="_toggleTarget(this)">${c.nm}<span style="font-size:10px;opacity:.6;margin-left:3px;">${c.tl||''}</span></span>`).join('');
 }
-
 function _toggleTarget(el){
   const nm=el.dataset.nm;
   if(_selTargets.has(nm)){_selTargets.delete(nm);el.classList.remove('on');}
   else{_selTargets.add(nm);el.classList.add('on');}
 }
-
 function saveVisitNew(){
   const coId=document.getElementById('a-co').value;
   if(!coId){toast('거래처를 선택해주세요');return;}
@@ -224,21 +334,18 @@ function saveVisitNew(){
   const time=document.getElementById('a-time').value;
   const content=document.getElementById('a-content').value.trim();
   const next=document.getElementById('a-next').value||null;
-
   const visits=DB.getVisits();
-  visits.unshift({
-    id:'v'+Date.now(), co:co?.nm||'', coId, tp, dt, time,
-    targets, targetExtra, ourTargets,
-    content, memo:content, next
-  });
+  visits.unshift({id:'v'+Date.now(),co:co?.nm||'',coId,tp,dt,time,targets,targetExtra,ourTargets,content,memo:content,next});
   DB.setVisits(visits);
   closeAddModal();
-  render();
+  renderCalendar();
+  renderList();
   toast('방문기록이 저장됐습니다 ✓');
 }
 
 renderTabBar('visits');
-render();
+renderCalendar();
+renderList();
 </script>
 </body>
 </html>
