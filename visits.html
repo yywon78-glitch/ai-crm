@@ -409,12 +409,11 @@ function renderCalendar(){
     const hasAny=m&&(m.v.length||m.p.length);
     const cls=['cal-day',ds===TODAY?'today':'',dow===0?'has-sun':'',dow===6?'has-sat':'',hasAny?'has-v':''].filter(Boolean).join(' ');
     // 방문완료: 거래처 → 시간 → 목적 순 (전부 표시, ... 없음)
-    const vHtml=(m?.v||[]).map(({co,tp,time})=>
-      `<span class="cal-co cal-co-v"><span class="cal-co-nm">${co}</span>${time?`<span class="cal-co-time">${time}</span>`:''}<span class="cal-co-tp">${tp.split(' ')[0]}</span></span>`
+    const vHtml=(m?.v||[]).map(({co})=>
+      `<span class="cal-co cal-co-v"><span class="cal-co-nm">${co}</span></span>`
     ).join('');
-    // 방문예정: 거래처 → 예정 → 목적
-    const pHtml=(m?.p||[]).map(({co,tp})=>
-      `<span class="cal-co cal-co-p"><span class="cal-co-nm">${co}</span><span class="cal-co-time">예정</span><span class="cal-co-tp">${tp.split(' ')[0]}</span></span>`
+    const pHtml=(m?.p||[]).map(({co})=>
+      `<span class="cal-co cal-co-p"><span class="cal-co-nm">${co}</span></span>`
     ).join('');
     html+=`<div class="${cls}" onclick="selectDate('${ds}')"><span class="cal-dn">${d}</span>${vHtml}${pHtml}</div>`;
   }
