@@ -317,20 +317,25 @@ function openCalendar(){
 }
 function closeCalendar(){document.getElementById('cal-overlay').classList.remove('open');}
 
-/* ── 드래그 리사이즈 — 달력 섹션 높이 직접 조절 ── */
+/* ── 드래그 리사이즈 — 섹션 높이 + 달력 셀 높이 동시 조절 ── */
 (function(){
   const handle=document.getElementById('cal-resize-h');
   const calSec=document.getElementById('cal-section');
   let sy=0, baseH=360;
   function getH(){ return calSec.offsetHeight; }
-  function setH(h){ calSec.style.height=Math.max(150,Math.min(window.innerHeight-200,h))+'px'; }
+  function setH(h){
+    const clamped=Math.max(150,Math.min(window.innerHeight-150,h));
+    calSec.style.height=clamped+'px';
+    // 네비+범례+요일헤더 약 110px, 남은 높이를 6행으로 나눠 셀 높이 결정
+    const rowH=Math.max(28,Math.floor((clamped-110)/6));
+    document.documentElement.style.setProperty('--cal-row-h',rowH+'px');
+  }
 
   handle.addEventListener('touchstart',e=>{
     sy=e.touches[0].clientY; baseH=getH(); e.preventDefault();
   },{passive:false});
   handle.addEventListener('touchmove',e=>{
-    const dy=e.touches[0].clientY-sy;
-    setH(baseH+dy);
+    setH(baseH+(e.touches[0].clientY-sy));
     e.preventDefault();
   },{passive:false});
   handle.addEventListener('mousedown',e=>{
@@ -341,6 +346,8 @@ function closeCalendar(){document.getElementById('cal-overlay').classList.remove
     document.addEventListener('mouseup',mu);
     e.preventDefault();
   });
+  // 초기 셀 높이 맞추기
+  setH(360);
 })();
 
 /* ── 달력 필터 ── */
