@@ -3,120 +3,172 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>지도</title>
+<title>거래처 지도</title>
 <link rel="stylesheet" href="shared.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
-.loc-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--card);border-bottom:1px solid var(--bdr);}
-.loc-addr{flex:1;font-size:13px;color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.loc-btn{padding:8px 14px;border-radius:10px;background:var(--blue);color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;touch-action:manipulation;}
-.loc-btn.s{background:var(--bg);color:var(--t1);border:1.5px solid var(--bdr);}
-.co-row{display:flex;align-items:center;gap:12px;padding:14px;background:var(--card);border:1.5px solid var(--bdr);border-radius:14px;margin-bottom:9px;}
-.co-av{width:44px;height:44px;border-radius:12px;background:var(--blue-lt);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
-.co-info{flex:1;min-width:0;}
-.co-nm{font-size:15px;font-weight:700;margin-bottom:2px;}
-.co-addr{font-size:12px;color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.map-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 12px;border-radius:10px;background:#fee500;border:none;cursor:pointer;flex-shrink:0;touch-action:manipulation;}
-.map-btn span{font-size:18px;line-height:1;}
-.map-btn small{font-size:10px;font-weight:700;color:#3c1e1e;}
-.empty-map{padding:48px 20px;text-align:center;}
-.empty-map .ic{font-size:48px;margin-bottom:12px;}
-.empty-map p{font-size:14px;color:var(--t2);}
-.sec-info{padding:8px 14px;font-size:12px;color:var(--t3);}
+html,body{height:100%;margin:0;}
+.page{height:100%;display:flex;flex-direction:column;}
+#map-wrap{flex:1;position:relative;overflow:hidden;}
+#map{width:100%;height:100%;}
+
+/* 우측 FAB */
+.fab-col{position:absolute;right:12px;bottom:16px;z-index:900;display:flex;flex-direction:column;gap:8px;}
+.fab{width:46px;height:46px;border-radius:50%;border:none;box-shadow:0 2px 10px rgba(0,0,0,.22);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;touch-action:manipulation;}
+.fab-me{background:#2563eb;}
+.fab-kk{background:#fee500;}
+.fab-kk small{font-size:9px;font-weight:800;color:#3c1e1e;display:block;line-height:1;}
+
+/* 상태 토스트 */
+.map-msg{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:900;background:rgba(0,0,0,.68);color:#fff;font-size:12px;padding:5px 16px;border-radius:20px;white-space:nowrap;pointer-events:none;display:none;}
+.map-msg.on{display:block;}
+
+/* 팝업 커스텀 */
+.leaflet-popup-content{margin:10px 14px;min-width:160px;}
+.pop-nm{font-size:15px;font-weight:700;margin-bottom:3px;}
+.pop-addr{font-size:11px;color:#666;margin-bottom:10px;line-height:1.4;}
+.pop-go{display:block;width:100%;padding:8px;background:#2563eb;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;text-align:center;}
+
+/* Leaflet 줌컨트롤 위치 조정 */
+.leaflet-top.leaflet-left{top:8px;left:8px;}
 </style>
 </head>
 <body>
 <div class="page">
-  <header class="hdr">
+  <header class="hdr" style="flex-shrink:0;">
     <span class="hdr-t">거래처 지도</span>
   </header>
 
-  <!-- 현재 위치 바 -->
-  <div class="loc-bar">
-    <span class="loc-addr" id="loc-txt">위치 정보 없음</span>
-    <button class="loc-btn s" id="loc-btn" onclick="getLocation()">📍 내 위치</button>
-    <button class="loc-btn" onclick="openKakaoNear()" id="near-btn" style="display:none;">주변 검색</button>
+  <div id="map-wrap">
+    <div id="map"></div>
+
+    <!-- 상태 메시지 -->
+    <div class="map-msg" id="map-msg"></div>
+
+    <!-- 우측 하단 버튼 -->
+    <div class="fab-col">
+      <button class="fab fab-me" onclick="locateMe()" title="내 위치">📍</button>
+      <button class="fab fab-kk" onclick="openKakao()" title="카카오맵">
+        <div><span style="font-size:18px;">🟡</span><small>카카오맵</small></div>
+      </button>
+    </div>
   </div>
 
-  <div class="body">
-    <div class="sec-info" id="sec-info">저장된 거래처 — 🟡 탭하면 카카오맵으로 이동</div>
-    <div id="co-list"></div>
-  </div>
-
-  <nav class="tabbar" id="tabbar"></nav>
+  <nav class="tabbar" id="tabbar" style="flex-shrink:0;"></nav>
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="data.js"></script>
 <script src="nav.js"></script>
 <script>
-let _lat = null, _lng = null;
+/* ── 지도 초기화 ── */
+const map = L.map('map', {zoomControl:true}).setView([37.5665, 126.9780], 11);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+  attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  maxZoom:19
+}).addTo(map);
 
-function render() {
-  const cos = DB.getCos();
-  const el = document.getElementById('co-list');
-  if(!cos.length){
-    el.innerHTML = `<div class="empty-map"><div class="ic">🗺️</div><p>저장된 거래처가 없습니다.<br>거래처를 등록하면 여기에 표시됩니다.</p></div>`;
-    return;
+let _myMarker = null, _myLat = null, _myLng = null;
+const GEO_KEY = 'crm_geocache_v1';
+
+/* ── 상태 메시지 ── */
+function msg(txt, dur=2500){
+  const el = document.getElementById('map-msg');
+  el.textContent = txt; el.classList.add('on');
+  clearTimeout(el._t);
+  if(dur > 0) el._t = setTimeout(()=>el.classList.remove('on'), dur);
+}
+function msgHide(){ document.getElementById('map-msg').classList.remove('on'); }
+
+/* ── 현재 위치 ── */
+function locateMe(){
+  msg('위치 확인 중...', 0);
+  if(!navigator.geolocation){ msg('위치 기능 미지원'); return; }
+  navigator.geolocation.getCurrentPosition(pos=>{
+    _myLat = pos.coords.latitude; _myLng = pos.coords.longitude;
+    if(_myMarker) map.removeLayer(_myMarker);
+    _myMarker = L.circleMarker([_myLat,_myLng],{
+      radius:9, fillColor:'#2563eb', color:'#fff', weight:2.5, fillOpacity:1
+    }).addTo(map).bindTooltip('📍 현재 위치',{permanent:false});
+    map.setView([_myLat,_myLng], 14);
+    msgHide();
+  }, ()=>msg('위치 권한이 필요합니다'), {enableHighAccuracy:true,timeout:8000});
+}
+
+/* ── 카카오맵 열기 ── */
+function openKakao(){
+  const url = _myLat
+    ? `https://map.kakao.com/?map_type=TYPE_MAP&q=거래처&center=${_myLng},${_myLat}`
+    : 'https://map.kakao.com/';
+  window.open(url,'_blank');
+}
+
+/* ── Geocode 캐시 ── */
+function geoCache(){ try{return JSON.parse(localStorage.getItem(GEO_KEY)||'{}')}catch(e){return{}} }
+function geoSave(addr,pos){ try{const c=geoCache();c[addr]=pos;localStorage.setItem(GEO_KEY,JSON.stringify(c))}catch(e){} }
+
+/* ── Nominatim 주소→좌표 ── */
+async function geocode(addr){
+  if(!addr) return null;
+  const c = geoCache();
+  if(c[addr]) return c[addr];
+  try{
+    const r = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addr)}&format=json&limit=1&countrycodes=kr`,
+      {headers:{'Accept-Language':'ko','User-Agent':'CRM-Map/1.0'}}
+    );
+    const d = await r.json();
+    if(d.length){
+      const pos={lat:parseFloat(d[0].lat),lng:parseFloat(d[0].lon)};
+      geoSave(addr,pos); return pos;
+    }
+  }catch(e){}
+  return null;
+}
+
+/* ── 마커 아이콘 ── */
+function makeIcon(color){
+  return L.divIcon({
+    html:`<div style="width:36px;height:36px;border-radius:50%;background:${color};border:2.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;font-size:16px;">🏢</div>`,
+    className:'', iconSize:[36,36], iconAnchor:[18,36], popupAnchor:[0,-38]
+  });
+}
+const ST_COLOR={active:'#2563eb', potential:'#d97706', dormant:'#9ca3af'};
+
+/* ── 거래처 로드 ── */
+async function loadCos(){
+  const cos = DB.getCos().filter(c=>c.addr);
+  if(!cos.length){ msg('주소가 있는 거래처가 없습니다'); return; }
+  msg(`거래처 ${cos.length}곳 로딩 중...`,0);
+  const bounds=[];
+  for(let i=0;i<cos.length;i++){
+    const co=cos[i];
+    const pos=await geocode(co.addr);
+    if(pos){
+      const color=ST_COLOR[co.st]||'#2563eb';
+      const m=L.marker([pos.lat,pos.lng],{icon:makeIcon(color)}).addTo(map);
+      /* 회사명 항상 표시 */
+      m.bindTooltip(co.nm,{permanent:true,direction:'top',offset:[0,-38],
+        className:'',opacity:1});
+      /* 팝업 */
+      m.bindPopup(`
+        <div class="pop-nm">${co.nm}</div>
+        <div class="pop-addr">${co.addr}</div>
+        <button class="pop-go" onclick="location.href='co.html?id=${co.id}'">거래처 상세 →</button>
+      `);
+      bounds.push([pos.lat,pos.lng]);
+    }
+    msg(`위치 로딩... (${i+1}/${cos.length})`,0);
+    if(i<cos.length-1) await new Promise(r=>setTimeout(r,1100)); /* Nominatim 1req/s */
   }
-  const stLbl={active:'활성',potential:'잠재',dormant:'휴면'};
-  const stCls ={active:'b-gn',potential:'b-am',dormant:'b-rd'};
-  el.innerHTML = cos.map(c=>`
-    <div class="co-row">
-      <div class="co-av">🏢</div>
-      <div class="co-info" onclick="openCoDetail('${c.id}')" style="cursor:pointer;">
-        <div class="co-nm">${c.nm} <span class="bx ${stCls[c.st]||'b-bl'}" style="font-size:10px;">${stLbl[c.st]||c.st}</span></div>
-        <div class="co-addr">${c.addr||'주소 없음'}</div>
-      </div>
-      ${c.addr
-        ? `<button class="map-btn" onclick="openKakao('${encodeURIComponent(c.addr)}','${c.nm.replace(/'/g,'').replace(/"/g,'')}')"><span>🟡</span><small>카카오맵</small></button>`
-        : `<button class="map-btn" style="background:var(--bg);opacity:.4;" disabled><span>🗺️</span><small>주소없음</small></button>`}
-    </div>`).join('');
-}
-
-function openKakao(addr, nm) {
-  const url = 'https://map.kakao.com/?q=' + addr;
-  window.open(url, '_blank');
-}
-
-function openKakaoNear() {
-  if(_lat && _lng){
-    const url = `https://map.kakao.com/?map_type=TYPE_MAP&target=&q=거래처&center=${_lng},${_lat}`;
-    window.open(url, '_blank');
-  } else {
-    window.open('https://map.kakao.com/', '_blank');
-  }
-}
-
-function openCoDetail(id) {
-  location.href = 'co.html?id=' + id;
-}
-
-function getLocation() {
-  const btn = document.getElementById('loc-btn');
-  btn.textContent = '위치 찾는 중...';
-  btn.disabled = true;
-  if(!navigator.geolocation){
-    document.getElementById('loc-txt').textContent = '위치 기능을 지원하지 않습니다';
-    btn.textContent = '📍 내 위치'; btn.disabled = false;
-    return;
-  }
-  navigator.geolocation.getCurrentPosition(
-    pos => {
-      _lat = pos.coords.latitude;
-      _lng = pos.coords.longitude;
-      document.getElementById('loc-txt').textContent = `현재 위치 확인됨 (${_lat.toFixed(4)}, ${_lng.toFixed(4)})`;
-      btn.textContent = '📍 새로고침'; btn.disabled = false;
-      document.getElementById('near-btn').style.display = '';
-    },
-    err => {
-      document.getElementById('loc-txt').textContent = '위치 권한이 필요합니다';
-      btn.textContent = '📍 내 위치'; btn.disabled = false;
-    },
-    {enableHighAccuracy:true, timeout:8000}
-  );
+  msgHide();
+  if(bounds.length>1) map.fitBounds(bounds,{padding:[50,50]});
+  else if(bounds.length===1) map.setView(bounds[0],14);
+  if(bounds.length<cos.length) msg(`${bounds.length}/${cos.length}개 위치 표시 완료`);
 }
 
 renderTabBar('map');
-render();
+loadCos();
 </script>
 </body>
 </html>
