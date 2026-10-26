@@ -47,7 +47,7 @@
 <div id="rotate-view">
   <header class="hdr" style="flex-shrink:0;background:#111;border-bottom:1px solid #333;">
     <div class="hdr-back" onclick="backToCamera()" style="color:#fff;">←</div>
-    <span class="hdr-t" style="color:#fff;">회전 조정 후 인식</span>
+    <span class="hdr-t" style="color:#fff;" id="rv-title">회전 조정 후 인식</span>
   </header>
   <div class="rv-img-wrap">
     <img id="rv-img" src="">
@@ -115,15 +115,18 @@
 <script src="data.js"></script>
 <script src="nav.js"></script>
 <script>
-let _imgData   = null;   // 현재 이미지 dataURL
-let _captured  = null;   // OCR용 이미지 (resized)
-let _fromIndex = false;  // index.html에서 진입 여부
+let _imgData   = null;
+let _captured  = null;
+let _fromIndex = false;
+let _queue     = [];
 const COLORS   = ['#2563eb','#16a34a','#d97706','#7c3aed','#dc2626','#0891b2'];
 
 /* ── 유틸 ── */
 function showRotate(dataUrl){
   _imgData = dataUrl;
   document.getElementById('rv-img').src = dataUrl;
+  document.getElementById('rv-title').textContent =
+    _queue.length > 0 ? `회전 조정 후 인식 (이후 ${_queue.length}장)` : '회전 조정 후 인식';
   document.getElementById('rotate-view').classList.add('show');
 }
 function hideRotate(){
@@ -186,6 +189,8 @@ document.getElementById('inp-gal').onchange = onFile;
 
 /* ── 진입 경로 결정 ── */
 const _pending = sessionStorage.getItem('scan_data');
+_queue = JSON.parse(sessionStorage.getItem('scan_queue')||'[]');
+sessionStorage.removeItem('scan_queue');
 if(_pending){
   _fromIndex = true;
   sessionStorage.removeItem('scan_data');
@@ -328,16 +333,23 @@ function saveMulti(){
     const nm=(info.nm||'').trim(); if(!nm) return;
     const co=(info.co||'').trim();
     const dup=saved.find(c=>c.nm===nm&&c.co===co);
-    if(dup){ Object.assign(dup,{tl:info.tl||'',mob:info.mob||'',ph:info.ph||'',em:info.em||'',addr:info.addr||''}); updated++; }
-    else { saved.unshift({id:'c'+Date.now()+Math.random(),nm,co,tl:info.tl||'',mob:info.mob||'',ph:info.ph||'',em:info.em||'',addr:info.addr||'',tag:'고객',cl:COLORS[Math.floor(Math.random()*COLORS.length)],fav:false,img:null}); added++; }
+    if(dup){ Object.assign(dup,{tl:info.tl||'',mob:info.mob||'',ph:info.ph||'',em:info.em||'',addr:info.addr||''}); if(_captured&&!dup.img) dup.img=_captured; updated++; }
+    else { saved.unshift({id:'c'+Date.now()+Math.random(),nm,co,tl:info.tl||'',mob:info.mob||'',ph:info.ph||'',em:info.em||'',addr:info.addr||'',tag:'고객',cl:COLORS[Math.floor(Math.random()*COLORS.length)],fav:false,img:_captured||null}); added++; }
   });
-  DB.setCards(saved);
+  try{ DB.setCards(saved); }catch(e){ saved.forEach(c=>{ if(c.img) c.img=null; }); DB.setCards(saved); }
   document.getElementById('multi-box').classList.remove('show');
   toast(`저장 ${added}장, 업데이트 ${updated}장 ✓`);
-  setTimeout(()=>location.href='index.html',1200);
+  setTimeout(()=>_goAfterSave('index.html'),1200);
 }
 
 function _goAfterSave(dest){
+  if(_queue.length > 0){
+    const next = _queue.shift();
+    sessionStorage.setItem('scan_data', next);
+    if(_queue.length > 0) sessionStorage.setItem('scan_queue', JSON.stringify(_queue));
+    location.href = 'scan.html';
+    return;
+  }
   const back=sessionStorage.getItem('scan_back')||'cards.html';
   sessionStorage.removeItem('scan_back');
   history.replaceState(null,'',back);

@@ -53,7 +53,7 @@
     <div class="home-banner">
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <div class="home-logo">BUSINESS CARD CRM</div>
-        <div style="font-size:11px;font-weight:700;background:rgba(255,255,255,.2);padding:3px 10px;border-radius:20px;">v8.8</div>
+        <div style="font-size:11px;font-weight:700;background:rgba(255,255,255,.2);padding:3px 10px;border-radius:20px;">v8.9</div>
       </div>
       <div class="home-title">명함 관리 시스템</div>
       <div class="home-date" id="today-date"></div>
@@ -151,35 +151,51 @@
 </div>
 
 <input type="file" id="inp-cam" accept="image/*" capture="environment" style="position:fixed;top:-200px;left:-200px;width:1px;height:1px;opacity:0;">
-<input type="file" id="inp-gal" accept="image/*" style="position:fixed;top:-200px;left:-200px;width:1px;height:1px;opacity:0;">
+<input type="file" id="inp-gal" accept="image/*" multiple style="position:fixed;top:-200px;left:-200px;width:1px;height:1px;opacity:0;">
 <script src="data.js"></script>
 <script src="nav.js"></script>
 <script>
 (function(){
-  function onScanFile(e, mode){
-    const f = e.target.files[0];
-    if(!f) return;
-    const r = new FileReader();
-    r.onload = ev => {
-      const img = new Image();
-      img.onload = () => {
-        const maxW = 1600;
-        const scale = Math.min(1, maxW / Math.max(img.width, img.height));
-        const c = document.createElement('canvas');
-        c.width = Math.round(img.width * scale);
-        c.height = Math.round(img.height * scale);
-        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-        sessionStorage.setItem('scan_data', c.toDataURL('image/jpeg', 0.9));
-        sessionStorage.setItem('scan_back', 'cards.html');
-        location.href = 'scan.html';
+  function fileToDataUrl(file){
+    return new Promise(resolve=>{
+      const r=new FileReader();
+      r.onload=ev=>{
+        const img=new Image();
+        img.onload=()=>{
+          const maxW=1600, scale=Math.min(1,maxW/Math.max(img.width,img.height));
+          const c=document.createElement('canvas');
+          c.width=Math.round(img.width*scale); c.height=Math.round(img.height*scale);
+          c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+          resolve(c.toDataURL('image/jpeg',0.9));
+        };
+        img.src=ev.target.result;
       };
-      img.src = ev.target.result;
-    };
-    r.readAsDataURL(f);
-    e.target.value = '';
+      r.readAsDataURL(file);
+    });
   }
-  document.getElementById('inp-cam').onchange = e => onScanFile(e, 'cam');
-  document.getElementById('inp-gal').onchange = e => onScanFile(e, 'gal');
+  function onCamFile(e){
+    const f=e.target.files[0]; if(!f) return;
+    e.target.value='';
+    fileToDataUrl(f).then(data=>{
+      sessionStorage.removeItem('scan_queue');
+      sessionStorage.setItem('scan_data', data);
+      sessionStorage.setItem('scan_back','cards.html');
+      location.href='scan.html';
+    });
+  }
+  function onGalFile(e){
+    const files=[...e.target.files]; if(!files.length) return;
+    e.target.value='';
+    Promise.all(files.map(fileToDataUrl)).then(dataUrls=>{
+      sessionStorage.setItem('scan_data', dataUrls[0]);
+      sessionStorage.setItem('scan_back','cards.html');
+      if(dataUrls.length>1) sessionStorage.setItem('scan_queue',JSON.stringify(dataUrls.slice(1)));
+      else sessionStorage.removeItem('scan_queue');
+      location.href='scan.html';
+    });
+  }
+  document.getElementById('inp-cam').onchange = onCamFile;
+  document.getElementById('inp-gal').onchange = onGalFile;
 })();
 function load(){
   const cards=DB.getCards(), cos=DB.getCos(), visits=DB.getVisits();
