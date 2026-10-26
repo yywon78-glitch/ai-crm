@@ -105,16 +105,7 @@ function renderVisits(){
   const visits = DB.getVisits().filter(v=>v.coId && card && DB.getCos().find(c=>c.id===v.coId&&c.nm===card.co));
   const el = document.getElementById('visit-tl');
   if(!visits.length){ el.innerHTML='<div style="padding:16px;font-size:13px;color:var(--t3);text-align:center;">방문 기록이 없습니다</div>'; return; }
-  el.innerHTML = visits.map(v=>`
-    <div class="tl-item">
-      <div class="tl-dot">${v.tp.split(' ')[0]}</div>
-      <div class="tl-body">
-        <div class="tl-tp">${v.tp}</div>
-        <div class="tl-dt">${v.dt}</div>
-        <div class="tl-memo">${v.memo||''}</div>
-        ${v.next?`<div class="tl-next">📅 다음 일정: ${v.next}</div>`:''}
-      </div>
-    </div>`).join('');
+  el.innerHTML = visits.map(v=>_visitHtml(v)).join('');
 }
 
 function toggleFav(){

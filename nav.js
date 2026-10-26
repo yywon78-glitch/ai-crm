@@ -214,6 +214,29 @@ function deleteCo(coId) {
   if(typeof render==='function') render();
 }
 
+/* ── 방문이력 아이템 렌더 (공통) ── */
+function _visitHtml(v){
+  const tgt=[...(v.targets||[]),v.targetExtra||''].filter(Boolean).join(', ');
+  const our=v.ourTargets||'';
+  const content=v.content||v.memo||'';
+  const timeStr=v.time?' '+v.time:'';
+  return `<div class="tl-item">
+    <div class="tl-dot">${v.tp.split(' ')[0]}</div>
+    <div class="tl-body">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;">
+        <div class="tl-tp">${v.tp}</div>
+        <div class="tl-dt" style="flex-shrink:0;">${v.dt}${timeStr}</div>
+      </div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin:4px 0;">
+        ${our?`<span style="font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;background:#dbeafe;color:#1d4ed8;">우리: ${our}</span>`:''}
+        ${tgt?`<span style="font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;background:#dcfce7;color:#15803d;">상대: ${tgt}</span>`:''}
+      </div>
+      ${content?`<div style="font-size:13px;line-height:1.65;color:var(--t1);margin-top:2px;">${content}</div>`:''}
+      ${v.next?`<div class="tl-next">📅 다음 예정: ${v.next}</div>`:''}
+    </div>
+  </div>`;
+}
+
 /* ── 공통 헬퍼 ── */
 function _removeModal(id) {
   const el = document.getElementById(id);
@@ -267,15 +290,7 @@ function openCoOverlay(coId) {
       </div>
       <div class="sec-hdr"><h3>방문 이력 (${visits.length})</h3><a onclick="openVisitModal('${coId}','${co.nm}')">+ 기록</a></div>
       <div class="tl" id="co-visit-tl">
-        ${visits.length ? visits.map(v=>`
-          <div class="tl-item">
-            <div class="tl-dot">${v.tp.split(' ')[0]}</div>
-            <div class="tl-body">
-              <div style="display:flex;justify-content:space-between;"><div class="tl-tp">${v.tp}</div><div class="tl-dt">${v.dt}</div></div>
-              <div class="tl-memo">${v.memo||''}</div>
-              ${v.next?`<div class="tl-next">📅 다음 일정: ${v.next}</div>`:''}
-            </div>
-          </div>`).join('') : '<div style="padding:16px;font-size:13px;color:var(--t3);text-align:center;">방문 기록이 없습니다</div>'}
+        ${visits.length ? visits.map(v=>_visitHtml(v)).join('') : '<div style="padding:16px;font-size:13px;color:var(--t3);text-align:center;">방문 기록이 없습니다</div>'}
       </div>
       <button class="action-btn" onclick="openVisitModal('${coId}','${co.nm}')">📝 방문 기록 추가</button>
       <div style="height:20px;"></div>
@@ -296,15 +311,7 @@ function refreshCoVisits(coId) {
   const visits = DB.getVisits().filter(v=>v.coId===coId);
   const tl = document.getElementById('co-visit-tl');
   if(!tl) return;
-  tl.innerHTML = visits.length ? visits.map(v=>`
-    <div class="tl-item">
-      <div class="tl-dot">${v.tp.split(' ')[0]}</div>
-      <div class="tl-body">
-        <div style="display:flex;justify-content:space-between;"><div class="tl-tp">${v.tp}</div><div class="tl-dt">${v.dt}</div></div>
-        <div class="tl-memo">${v.memo||''}</div>
-        ${v.next?`<div class="tl-next">📅 다음 일정: ${v.next}</div>`:''}
-      </div>
-    </div>`).join('') : '<div style="padding:16px;font-size:13px;color:var(--t3);text-align:center;">방문 기록이 없습니다</div>';
+  tl.innerHTML = visits.length ? visits.map(v=>_visitHtml(v)).join('') : '<div style="padding:16px;font-size:13px;color:var(--t3);text-align:center;">방문 기록이 없습니다</div>';
 }
 
 /* ══════════════════════════════════════════
