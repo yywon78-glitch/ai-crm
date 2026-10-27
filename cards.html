@@ -95,10 +95,8 @@
 let mode = 'name';
 const chkSet = new Set();
 const tagCls = {고객:'b-bl',VIP:'b-gn',잠재:'b-am',휴면:'b-rd'};
-let _driveShared = []; /* CRM_공용에서 로드한 공유 명함 */
-
 async function refreshSharedCards(){
-  _driveShared = await SharedDriveDB.load();
+  await SharedDriveDB.load(); /* 로드 후 DB.setDriveShared()에 자동 캐싱 */
   render();
 }
 
@@ -114,7 +112,7 @@ function render() {
   const personal = DB.getCards();
   const personalIds = new Set(personal.map(c=>c.id));
   /* 다른 계정이 공유한 명함 (내 목록에 없는 것만 추가) */
-  const otherShared = _driveShared.filter(c=>!personalIds.has(c.id));
+  const otherShared = DB.getDriveShared().filter(c=>!personalIds.has(c.id));
   const cards = [...personal, ...otherShared];
   const tot=cards.length, vip=cards.filter(c=>c.tag==='VIP').length, fav=cards.filter(c=>c.fav).length;
   const sharedCnt = cards.filter(c=>c.shared).length;
@@ -215,7 +213,7 @@ async function loadThumbs(list){
 
 /* 개인 + 공유 통합 카드 조회 */
 function findCard(id){
-  return DB.getCards().find(c=>c.id===id) || _driveShared.find(c=>c.id===id);
+  return DB.getCards().find(c=>c.id===id) || DB.getDriveShared().find(c=>c.id===id);
 }
 
 /* ── 명함 상세 오버레이 ── */

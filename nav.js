@@ -278,12 +278,21 @@ let _visitCtx = {coId:'', coNm:''};
 
 function openCoOverlay(coId) {
   const cos = DB.getCos();
-  const co = cos.find(c=>c.id===coId);
+  let co = cos.find(c=>c.id===coId);
+  /* 개인 DB에 없으면 공유 카드에서 파생된 거래처 */
+  if(!co){
+    const sc = DB.getDriveShared().filter(c=>c.co && '_sc_'+c.co===coId);
+    if(sc.length) co = {id:coId, nm:sc[0].co, addr:'', ind:'', st:'active', cnt:sc.length, last:'-'};
+  }
   if(!co) return;
   const stLbl={active:'활성',potential:'잠재',dormant:'휴면'};
   const stCls ={active:'b-gn',potential:'b-am',dormant:'b-rd'};
   const tagCls={고객:'b-bl',VIP:'b-gn',잠재:'b-am',휴면:'b-rd'};
-  const cards  = DB.getCards().filter(c=>c.co===co.nm);
+  /* 개인 명함 + 공유 명함 (중복 제거) */
+  const personalCards = DB.getCards().filter(c=>c.co===co.nm);
+  const personalIds   = new Set(personalCards.map(c=>c.id));
+  const sharedCards   = DB.getDriveShared().filter(c=>c.co===co.nm && !personalIds.has(c.id));
+  const cards  = [...personalCards, ...sharedCards];
   const visits = DB.getVisits().filter(v=>v.coId===coId);
 
   const el = document.getElementById('overlay-co');

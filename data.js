@@ -170,6 +170,10 @@ const DB = {
 
   getGoogleClientId: ()=> localStorage.getItem('crm_google_client_id')||'649878765858-vs311q5tkgos3v1tp61eaflu0bgiap44.apps.googleusercontent.com',
   setGoogleClientId: id=> localStorage.setItem('crm_google_client_id', id),
+
+  /* 공유 명함 캐시 — 모든 페이지에서 접근 */
+  getDriveShared: ()=> JSON.parse(localStorage.getItem('crm_drive_shared')||'[]'),
+  setDriveShared: d => localStorage.setItem('crm_drive_shared', JSON.stringify(d)),
 };
 
 /* ══════════════════════════════════════════
@@ -446,7 +450,9 @@ const SharedDriveDB = (function(){
         if(!eid) return [];
         const r = await _api(`https://www.googleapis.com/drive/v3/files/${eid}?alt=media`);
         const data = await r.json();
-        return Array.isArray(data) ? data : [];
+        const arr = Array.isArray(data) ? data : [];
+        DB.setDriveShared(arr); /* 모든 페이지에서 접근 가능하도록 캐시 */
+        return arr;
       } catch(e){ console.error('SharedDriveDB.load', e); return []; }
     },
     getFolderUrl(){ return `https://drive.google.com/drive/folders/${FOLDER_ID}`; }
