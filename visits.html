@@ -285,7 +285,10 @@ function saveSharedVisits(){
 /* ── 방문 목록 필터 헬퍼 ── */
 function _applyFilter(list, filter, coId){
   const now=new Date(), ym=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-  if(coId) list=list.filter(v=>v.coId===coId);
+  if(coId){
+    if(coId.startsWith('_nm_')) list=list.filter(v=>v.co===coId.slice(4));
+    else list=list.filter(v=>v.coId===coId);
+  }
   if(filter==='month') list=list.filter(v=>v.dt.startsWith(ym));
   else if(filter!=='all') list=list.filter(v=>v.tp.includes(filter));
   return list.sort((a,b)=>(b.dt+(b.time||''))>(a.dt+(a.time||''))?1:-1);
@@ -314,16 +317,25 @@ function renderList(){
 
 /* ── 거래처별 ── */
 function openCoSelector(){
-  const visits=DB.getVisits();
-  const cos=DB.getCos();
-  const cnt={};
-  visits.forEach(v=>{if(v.coId) cnt[v.coId]=(cnt[v.coId]||0)+1;});
+  const allVisits = [...DB.getVisits(), ...DB.getDriveSharedVisits().filter(v=>!DB.getVisits().find(x=>x.id===v.id))];
+  /* 방문기록의 실제 거래처명으로 목록 파생 */
+  const coMap = {};
+  allVisits.forEach(v=>{ if(v.co) coMap[v.co] = (coMap[v.co]||0)+1; });
+  const coList = Object.entries(coMap).sort((a,b)=>b[1]-a[1]);
   document.getElementById('co-sel-list').innerHTML=
-    `<div class="co-sel-item" onclick="selectCo(null)"><span class="co-sel-nm">📋 전체 거래처</span><span class="co-sel-cnt">${visits.length}건</span></div>`+
-    cos.map(c=>`<div class="co-sel-item" onclick="selectCo('${c.id}')"><span class="co-sel-nm">🏢 ${c.nm}</span><span class="co-sel-cnt">${cnt[c.id]||0}건</span></div>`).join('');
+    `<div class="co-sel-item" onclick="selectCo(null)"><span class="co-sel-nm">📋 전체 거래처</span><span class="co-sel-cnt">${allVisits.length}건</span></div>`+
+    coList.map(([nm,cnt])=>`<div class="co-sel-item" onclick="selectCoByNm('${nm}')"><span class="co-sel-nm">🏢 ${nm}</span><span class="co-sel-cnt">${cnt}건</span></div>`).join('');
   document.getElementById('modal-co').classList.add('show');
 }
 function closeCoSelector(){document.getElementById('modal-co').classList.remove('show');}
+function selectCoByNm(nm){
+  closeCoSelector();
+  if(_calCoMode){ _calCoMode=false; _calCo='_nm_'+nm; renderCalendar(); return; }
+  _selCo = '_nm_'+nm;
+  document.getElementById('co-bar-nm').textContent='🏢 '+nm;
+  document.getElementById('co-bar').style.display='flex';
+  renderList();
+}
 let _calCoMode = false;
 
 function selectCo(coId){
