@@ -171,9 +171,12 @@ const DB = {
   getGoogleClientId: ()=> localStorage.getItem('crm_google_client_id')||'649878765858-vs311q5tkgos3v1tp61eaflu0bgiap44.apps.googleusercontent.com',
   setGoogleClientId: id=> localStorage.setItem('crm_google_client_id', id),
 
-  /* 공유 명함 캐시 — 모든 페이지에서 접근 */
-  getDriveShared: ()=> JSON.parse(localStorage.getItem('crm_drive_shared')||'[]'),
-  setDriveShared: d => localStorage.setItem('crm_drive_shared', JSON.stringify(d)),
+  /* 공유 명함 캐시 */
+  getDriveShared:       ()=> JSON.parse(localStorage.getItem('crm_drive_shared')||'[]'),
+  setDriveShared:       d => localStorage.setItem('crm_drive_shared', JSON.stringify(d)),
+  /* 공유 방문기록 캐시 */
+  getDriveSharedVisits: ()=> JSON.parse(localStorage.getItem('crm_drive_shared_visits')||'[]'),
+  setDriveSharedVisits: d => localStorage.setItem('crm_drive_shared_visits', JSON.stringify(d)),
 };
 
 /* ══════════════════════════════════════════
@@ -341,7 +344,7 @@ const DriveDB = (function(){
   async function _save(name, data){
     const fid  = await _folder();
     const body = JSON.stringify(data);
-    const eid  = await _fileId(name);
+    const eid  = await _fileId(name); /* _fileId now takes name param */
     const bnd  = 'CRM_BOUNDARY_7x';
     const meta = JSON.stringify(eid ? {} : {name, parents:[fid]});
     const mp   = `--${bnd}\r\nContent-Type: application/json\r\n\r\n${meta}\r\n--${bnd}\r\nContent-Type: application/json\r\n\r\n${body}\r\n--${bnd}--`;
@@ -416,8 +419,8 @@ const SharedDriveDB = (function(){
     return res;
   }
 
-  async function _fileId(){
-    const r = await _api(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`name='${FILE_NAME}' and '${FOLDER_ID}' in parents and trashed=false`)}&fields=files(id)`);
+  async function _fileId(name){
+    const r = await _api(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`name='${name}' and '${FOLDER_ID}' in parents and trashed=false`)}&fields=files(id)`);
     const d = await r.json();
     return d.files?.[0]?.id || null;
   }
@@ -440,18 +443,49 @@ const SharedDriveDB = (function(){
         return true;
       } catch(e){ console.error('SharedDriveDB.sync', e); return false; }
     },
-    /* CRM_공용 → 앱으로 불러오기 */
+    /* CRM_공용 → 공유 명함 불러오기 */
     async load(){
       if(!GoogleAuth.isLoggedIn()) return [];
       try{
-        const eid = await _fileId();
+        const eid = await _fileId(FILE_NAME);
         if(!eid) return [];
         const r = await _api(`https://www.googleapis.com/drive/v3/files/${eid}?alt=media`);
         const data = await r.json();
         const arr = Array.isArray(data) ? data : [];
-        DB.setDriveShared(arr); /* 모든 페이지에서 접근 가능하도록 캐시 */
+        DB.setDriveShared(arr);
         return arr;
       } catch(e){ console.error('SharedDriveDB.load', e); return []; }
+    },
+    /* 공유 방문기록 업로드 */
+    async syncVisits(){
+      if(!GoogleAuth.isLoggedIn()) return false;
+      try{
+        const shared = DB.getVisits().filter(v=>v.shared);
+        const body   = JSON.stringify(shared);
+        const eid    = await _fileId('crm_shared_visits.json');
+        const bnd    = 'CRM_SHARED_V_BNDRY';
+        const meta   = JSON.stringify(eid ? {} : {name:'crm_shared_visits.json', parents:[FOLDER_ID]});
+        const mp     = `--${bnd}\r\nContent-Type: application/json\r\n\r\n${meta}\r\n--${bnd}\r\nContent-Type: application/json\r\n\r\n${body}\r\n--${bnd}--`;
+        const url    = eid
+          ? `https://www.googleapis.com/upload/drive/v3/files/${eid}?uploadType=multipart`
+          : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+        await _api(url, {method:eid?'PATCH':'POST',
+          headers:{'Content-Type':`multipart/related; boundary=${bnd}`}, body:mp});
+        return true;
+      } catch(e){ console.error('SharedDriveDB.syncVisits', e); return false; }
+    },
+    /* CRM_공용 → 공유 방문기록 불러오기 */
+    async loadVisits(){
+      if(!GoogleAuth.isLoggedIn()) return [];
+      try{
+        const eid = await _fileId('crm_shared_visits.json');
+        if(!eid) return [];
+        const r = await _api(`https://www.googleapis.com/drive/v3/files/${eid}?alt=media`);
+        const data = await r.json();
+        const arr = Array.isArray(data) ? data : [];
+        DB.setDriveSharedVisits(arr);
+        return arr;
+      } catch(e){ console.error('SharedDriveDB.loadVisits', e); return []; }
     },
     getFolderUrl(){ return `https://drive.google.com/drive/folders/${FOLDER_ID}`; }
   };
