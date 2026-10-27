@@ -110,7 +110,7 @@ const _SHARED_VISITS = [
   {id:'sv601',co:'네이버(주)',coId:'co6',tp:'💬 상담',dt:'2026-10-05',time:'15:00',targets:['송미래'],targetExtra:'',ourTargets:'이순신 과장, 강감찬 대리',content:'AI 솔루션 파트너십 확대 공유 미팅. 팀 전체 로드맵 공유.',memo:'로드맵 공유.',next:null,shared:true,sharedBy:'yywon78@gmail.com'},
   {id:'sv602',co:'네이버(주)',coId:'co6',tp:'📄 견적',dt:'2026-10-20',time:'10:30',targets:['송미래'],targetExtra:'',ourTargets:'강감찬 대리',content:'2027년 2단계 견적 공유. 팀원 검토 후 의견 수렴.',memo:'견적 공유.',next:'2026-11-01',shared:true,sharedBy:'yywon78@gmail.com'},
 ];
-_SHARED_VISITS.forEach(v=>{ v.isDummy=true; _VISITS.push(v); });
+_SHARED_VISITS.forEach(v=>{ _VISITS.push(v); }); /* 실제 데이터 — isDummy 없음 */
 
 /* ── _VISITS 전체에 isDummy 플래그 일괄 적용 ── */
 _VISITS.forEach(v => { v.isDummy = true; });
