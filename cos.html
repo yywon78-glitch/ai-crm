@@ -78,18 +78,29 @@ function setFilter(f, el) {
 
 function render() {
   const q = document.getElementById('srch').value;
-  const personal = DB.getCos();
-  const personalNms = new Set(personal.map(c=>c.nm));
 
-  /* 공유 카드에서 파생된 거래처 (개인 DB에 없는 것만) */
-  const scMap = {};
-  DB.getDriveShared().forEach(card=>{
-    if(!card.co || personalNms.has(card.co)) return;
-    if(!scMap[card.co]) scMap[card.co]={id:'_sc_'+card.co, nm:card.co, addr:'', ind:'☁️공유', st:'active', cnt:0, last:'-'};
-    scMap[card.co].cnt++;
+  /* 모든 카드(개인+공유)의 회사명으로 거래처 자동 파생 */
+  const allCards = [
+    ...DB.getCards(),
+    ...DB.getDriveShared().filter(sc=>!DB.getCards().find(c=>c.id===sc.id))
+  ];
+  const registered = DB.getCos(); /* 수동 등록 거래처 (추가 정보 보유) */
+  const regMap = Object.fromEntries(registered.map(c=>[c.nm, c]));
+
+  const coMap = {};
+  allCards.forEach(card=>{
+    if(!card.co) return;
+    if(!coMap[card.co]){
+      coMap[card.co] = regMap[card.co]
+        ? {...regMap[card.co], cnt:0}
+        : {id:'_sc_'+card.co, nm:card.co, addr:card.addr||'', ind:'', st:'active', cnt:0, last:'-'};
+    }
+    coMap[card.co].cnt++;
   });
+  /* 카드 없이 수동 등록된 거래처도 포함 */
+  registered.forEach(c=>{ if(!coMap[c.nm]) coMap[c.nm]={...c}; });
 
-  let list = [...personal, ...Object.values(scMap)];
+  let list = Object.values(coMap).sort((a,b)=>a.nm.localeCompare(b.nm,'ko'));
   if(filter!=='all') list=list.filter(c=>c.st===filter);
   if(q) list=list.filter(c=>c.nm.includes(q)||(c.addr||'').includes(q));
 
