@@ -95,6 +95,23 @@ const _VISITS = [
   {id:'v610',co:'네이버(주)',coId:'co6',tp:'🤝 인사',dt:'2026-10-28',time:'11:00',targets:['송미래'],targetExtra:'홍두표 PM',ourTargets:'세종대왕 부장',content:'연말 파트너십 성과 공유 미팅. 올해 공동 성과 리뷰. 내년 로드맵 방향 합의.',memo:'연말 성과 공유.',next:null},
 ];
 
+/* ── 공유 샘플 방문기록 (거래처별 2건씩) ── */
+const _SHARED_VISITS = [
+  {id:'sv101',co:'삼성전자(주)',coId:'co1',tp:'💬 상담',dt:'2026-10-15',time:'10:00',targets:['김철수'],targetExtra:'',ourTargets:'홍길동 차장',content:'Q4 공급 물량 관련 팀 전체 공유 미팅. 주요 일정 및 단가 조건 재확인.',memo:'팀 공유 미팅.',next:'2026-11-05',shared:true,sharedBy:'yywon78@gmail.com'},
+  {id:'sv102',co:'삼성전자(주)',coId:'co1',tp:'📄 견적',dt:'2026-10-22',time:'14:00',targets:['이민아'],targetExtra:'',ourTargets:'이순신 과장',content:'내년 연간 계약 견적서 공유 전달. 팀원 검토 요청.',memo:'연간 견적 공유.',next:null,shared:true,sharedBy:'yywon78@gmail.com'},
+  {id:'sv201',co:'LG화학(주)',coId:'co2',tp:'🤝 인사',dt:'2026-10-10',time:'09:30',targets:['이영희'],targetExtra:'',ourTargets:'세종대왕 부장',content:'신규 담당자 인사 미팅. 팀 전체 공유용 첫 접촉 기록.',memo:'팀 공유 첫 미팅.',next:'2026-10-25',shared:true,sharedBy:'yywon78@gmail.com'},
+  {id:'sv202',co:'LG화학(주)',coId:'co2',tp:'💬 상담',dt:'2026-10-24',time:'15:00',targets:['최진석'],targetExtra:'',ourTargets:'홍길동 차장',content:'소재 공급 계획 공유 협의. Q4 납기 일정 최종 확인.',memo:'납기 확인 공유.',next:null,shared:true,sharedBy:'yywon78@gmail.com'},
+  {id:'sv301',co:'현대모비스(주)',coId:'co3',tp:'📄 견적',dt:'2026-10-08',time:'11:00',targets:['박민준'],targetExtra:'',ourTargets:'강감찬 대리',content:'신규 전장 부품 견적 공유. 팀원 검토 후 의견 취합 예정.',memo:'견적 공유.',next:'2026-10-28',shared:true,sharedBy:'yywon78@gmail.com'},
+  {id:'sv302',co:'현대모비스(주)',coId:'co3',tp:'💬 상담',dt:'2026-10-26',time:'10:00',targets:['박민준'],targetExtra:'',ourTargets:'이순신 과장',content:'시범 공급 결과 공유 미팅. 본계약 방향 팀 전달.',memo:'결과 공유.',next:'2026-11-10',shared:true,sharedBy:'yywon78@gmail.com'},
+  {id:'sv401',co:'SK텔레콤(주)',coId:'co4',tp:'💬 상담',dt:'2026-10-18',time:'14:00',targets:['김도영'],targetExtra:'',ourTargets:'홍길동 차장',content:'IoT 플랫폼 연동 기술 공유 협의. 팀 전체 진행 상황 공유.',memo:'진행 상황 공유.',next:'2026-11-01',shared:true,sharedBy:'yywon78@gmail.com'},
+  {id:'sv402',co:'SK텔레콤(주)',coId:'co4',tp:'🤝 인사',dt:'2026-10-25',time:'09:00',targets:['김도영','최지연'],targetExtra:'',ourTargets:'세종대왕 부장',content:'신규 솔루션 킥오프 미팅 공유. 팀 전체 역할 분담 안내.',memo:'킥오프 공유.',next:null,shared:true,sharedBy:'yywon78@gmail.com'},
+  {id:'sv501',co:'KT(주)',coId:'co5',tp:'🍽 식사',dt:'2026-10-12',time:'12:00',targets:['정현우'],targetExtra:'',ourTargets:'세종대왕 부장',content:'전략 파트너십 오찬. 팀 공유용 주요 내용 기록.',memo:'오찬 공유.',next:'2026-11-05',shared:true,sharedBy:'yywon78@gmail.com'},
+  {id:'sv502',co:'KT(주)',coId:'co5',tp:'📄 견적',dt:'2026-10-20',time:'10:00',targets:['정현우'],targetExtra:'',ourTargets:'이순신 과장',content:'연간 유지보수 견적 공유 전달. 팀 검토 요청.',memo:'견적 공유.',next:'2026-11-01',shared:true,sharedBy:'yywon78@gmail.com'},
+  {id:'sv601',co:'네이버(주)',coId:'co6',tp:'💬 상담',dt:'2026-10-05',time:'15:00',targets:['송미래'],targetExtra:'',ourTargets:'이순신 과장, 강감찬 대리',content:'AI 솔루션 파트너십 확대 공유 미팅. 팀 전체 로드맵 공유.',memo:'로드맵 공유.',next:null,shared:true,sharedBy:'yywon78@gmail.com'},
+  {id:'sv602',co:'네이버(주)',coId:'co6',tp:'📄 견적',dt:'2026-10-20',time:'10:30',targets:['송미래'],targetExtra:'',ourTargets:'강감찬 대리',content:'2027년 2단계 견적 공유. 팀원 검토 후 의견 수렴.',memo:'견적 공유.',next:'2026-11-01',shared:true,sharedBy:'yywon78@gmail.com'},
+];
+_SHARED_VISITS.forEach(v=>{ v.isDummy=true; _VISITS.push(v); });
+
 /* ── _VISITS 전체에 isDummy 플래그 일괄 적용 ── */
 _VISITS.forEach(v => { v.isDummy = true; });
 
