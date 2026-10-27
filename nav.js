@@ -279,10 +279,17 @@ let _visitCtx = {coId:'', coNm:''};
 function openCoOverlay(coId) {
   const cos = DB.getCos();
   let co = cos.find(c=>c.id===coId);
-  /* 개인 DB에 없으면 공유 카드에서 파생된 거래처 */
-  if(!co){
-    const sc = DB.getDriveShared().filter(c=>c.co && '_sc_'+c.co===coId);
-    if(sc.length) co = {id:coId, nm:sc[0].co, addr:'', ind:'', st:'active', cnt:sc.length, last:'-'};
+  /* 파생 거래처(_sc_)면 개인 DB에 자동 등록 후 정식 ID로 교체 */
+  if(!co && coId.startsWith('_sc_')){
+    const nm = coId.slice(4); /* '_sc_' 이후가 회사명 */
+    const sc = DB.getDriveShared().filter(c=>c.co===nm);
+    if(sc.length){
+      co = {id:'co'+Date.now(), nm, addr:sc[0].addr||'', ind:'', st:'active', cnt:sc.length, last:'-'};
+      const updated = DB.getCos();
+      updated.unshift(co);
+      DB.setCos(updated);
+      coId = co.id;
+    }
   }
   if(!co) return;
   const stLbl={active:'활성',potential:'잠재',dormant:'휴면'};
