@@ -94,8 +94,11 @@ function render() {
 }
 
 function cardHTML(c){
+  const thumb = c.img
+    ? `<img src="${c.img}" style="width:42px;height:42px;border-radius:11px;object-fit:cover;flex-shrink:0;" loading="lazy">`
+    : `<div class="av" style="background:${c.cl}18;color:${c.cl}">${c.nm[0]}</div>`;
   return `<div class="li" onclick="openCardOverlay('${c.id}')">
-    <div class="av" style="background:${c.cl}18;color:${c.cl}">${c.nm[0]}</div>
+    ${thumb}
     <div class="li-info">
       <div class="li-name">${c.nm}${c.fav?' ⭐':''}</div>
       <div class="li-sub">${c.tl?c.tl+' · ':''}${c.co||''}</div>

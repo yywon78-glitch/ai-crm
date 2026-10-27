@@ -251,7 +251,7 @@ function resizeImage(dataUrl, maxW, quality){
   });
 }
 function resizeForOCR(dataUrl){ return resizeImage(dataUrl,1600,0.9); }
-function resizeForStore(dataUrl){ return resizeImage(dataUrl,700,0.72); }
+function resizeForStore(dataUrl){ return resizeImage(dataUrl,480,0.60); }
 
 async function processImage(dataUrl){
   const ldMsg = document.getElementById('ld-msg');
@@ -369,7 +369,13 @@ function saveMulti(){
     if(dup){ Object.assign(dup,{tl:info.tl||'',mob:info.mob||'',ph:info.ph||'',em:info.em||'',addr:info.addr||''}); if(_captured&&!dup.img) dup.img=_captured; updated++; }
     else { saved.unshift({id:'c'+Date.now()+Math.random(),nm,co,tl:info.tl||'',mob:info.mob||'',ph:info.ph||'',em:info.em||'',addr:info.addr||'',tag:'고객',cl:COLORS[Math.floor(Math.random()*COLORS.length)],fav:false,img:_captured||null}); added++; }
   });
-  try{ DB.setCards(saved); }catch(e){ saved.forEach(c=>{ if(c.img) c.img=null; }); DB.setCards(saved); }
+  try{
+    DB.setCards(saved);
+  }catch(e){
+    // 새로 추가된 명함의 이미지만 제거 (기존 명함 이미지 보호)
+    saved.slice(0, added).forEach(c=>{ c.img=null; });
+    try{ DB.setCards(saved); }catch(e2){ toast('저장 공간이 부족합니다'); return; }
+  }
   document.getElementById('multi-box').classList.remove('show');
   toast(`저장 ${added}장, 업데이트 ${updated}장 ✓`);
   setTimeout(()=>_goAfterSave('index.html'),1200);
