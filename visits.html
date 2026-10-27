@@ -493,17 +493,20 @@ function _visitItemHtml(v,isPlan){
   const content=v.content||v.memo||'';
   const timeStr=v.time?' '+v.time:'';
   const dt=isPlan?v.next:v.dt;
-  const me=GoogleAuth.getUserEmail();
-  const isMine=v.shared&&(!v.sharedBy||v.sharedBy===me);
-  const shareEl=v.shared
-    ? `<span class="b-shared" style="${isMine?'':'background:#fef3c7;color:#92400e;'}">${isMine?'☁️내공유':'☁️공유'}</span>`
+  const me = GoogleAuth.getUserEmail();
+  const isMine = v.shared && (!v.sharedBy || v.sharedBy === me);
+  const shareEl = v.shared
+    ? `<span class="b-shared" style="${isMine?'':'background:#fef3c7;color:#92400e;border:1px solid #fde68a;'}">${isMine?'☁️내공유':'☁️공유'}</span>`
     : `<span class="share-chk${vChkSet.has(v.id)?' on':''}" data-id="${v.id}" onclick="event.stopPropagation();tickVisit('${v.id}')"></span>`;
   return `<div class="tl-item" onclick="openCoOverlay('${v.coId}')" ${isPlan?'style="border-left:3px solid #f59e0b;"':''}>
     <div class="tl-dot">${v.tp.split(' ')[0]}</div>
     <div class="tl-body">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;">
-        <div class="tl-tp">${shareEl}${v.tp}${isPlan?'<span style="margin-left:5px;font-size:10px;background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:8px;">예정</span>':''}</div>
-        <div style="font-size:11px;color:var(--t3);flex-shrink:0;">${dt}${timeStr}</div>
+        <div class="tl-tp">${v.tp}${isPlan?'<span style="margin-left:5px;font-size:10px;background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:8px;">예정</span>':''}</div>
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+          <span style="font-size:11px;color:var(--t3);">${dt}${timeStr}</span>
+          ${shareEl}
+        </div>
       </div>
       <div style="font-size:13px;font-weight:700;color:var(--blue);margin:3px 0;">${v.co}</div>
       <div class="v-who">
