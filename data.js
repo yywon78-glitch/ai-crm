@@ -189,7 +189,7 @@ const DB = {
 ══════════════════════════════════════════ */
 const GoogleAuth = (function(){
   const SCOPE = 'https://www.googleapis.com/auth/drive.file';
-  let _token = null, _expiry = 0, _client = null;
+  let _token = null, _expiry = 0, _client = null, _refreshTimer = null;
 
   /* 저장된 토큰 복원 */
   (function(){
@@ -199,10 +199,38 @@ const GoogleAuth = (function(){
     } catch(e){}
   })();
 
+  function _saveToken(resp){
+    _token  = resp.access_token;
+    _expiry = Date.now() + resp.expires_in * 1000;
+    localStorage.setItem('crm_gtoken', JSON.stringify({token:_token, expiry:_expiry}));
+  }
+
+  /* 50분마다 자동 갱신 타이머 시작 */
+  function _startRefreshTimer(){
+    if(_refreshTimer) clearInterval(_refreshTimer);
+    _refreshTimer = setInterval(()=> GoogleAuth.silentRefresh(), 50 * 60 * 1000);
+  }
+
   return {
     isLoggedIn()  { return !!_token && _expiry > Date.now(); },
     getToken()    { return _token; },
     getUserEmail(){ return localStorage.getItem('crm_gemail')||''; },
+
+    /* 조용한 자동 갱신 — 사용자 개입 없음 */
+    silentRefresh(){
+      const cid = DB.getGoogleClientId();
+      if(!cid || typeof google==='undefined') return;
+      try{
+        google.accounts.oauth2.initTokenClient({
+          client_id: cid, scope: SCOPE,
+          prompt: '',           /* 빈 문자열 = 팝업 없이 갱신 */
+          callback: resp => {
+            if(resp.error){ console.warn('silentRefresh 실패:', resp.error); return; }
+            _saveToken(resp);
+          }
+        }).requestAccessToken({prompt:''});
+      } catch(e){ console.warn('silentRefresh 오류:', e); }
+    },
 
     login(onDone){
       const cid = DB.getGoogleClientId();
@@ -213,9 +241,8 @@ const GoogleAuth = (function(){
           scope: SCOPE,
           callback: async resp => {
             if(resp.error){ console.error('OAuth:', resp); return; }
-            _token  = resp.access_token;
-            _expiry = Date.now() + resp.expires_in * 1000;
-            localStorage.setItem('crm_gtoken', JSON.stringify({token:_token, expiry:_expiry}));
+            _saveToken(resp);
+            _startRefreshTimer();   /* 로그인 후 자동갱신 시작 */
             /* 이메일 가져오기 */
             try{
               const r = await fetch('https://www.googleapis.com/drive/v3/about?fields=user',

@@ -290,10 +290,12 @@ renderTabBar('home');
 load();
 loadTodayVisits();
 
-/* Drive 연결 표시 + 앱 시작 시 자동 syncDown */
+/* Drive 연결 표시 + 앱 시작 시 자동 syncDown + 자동갱신 시작 */
 (async function(){
   if(GoogleAuth.isLoggedIn()){
     document.getElementById('drive-dot').style.display = 'block';
+    /* 이미 로그인 상태면 자동갱신 타이머 시작 */
+    setTimeout(()=> GoogleAuth.silentRefresh(), 1000);
     const ok = await DriveDB.syncDown();
     if(ok){ load(); loadTodayVisits(); }
   }
