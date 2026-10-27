@@ -163,7 +163,7 @@ const DB = {
   setCards:  d => { localStorage.setItem('crm_cards', JSON.stringify(d)); _scheduleSyncUp(); },
 
   getCos:    ()=> JSON.parse(localStorage.getItem('crm_cos')||'null') || [..._COS],
-  setCos:    d => { localStorage.setItem('crm_cos', JSON.stringify(d)); _scheduleSyncUp(); },
+  setCos:    d => localStorage.setItem('crm_cos', JSON.stringify(d)), /* cos는 Drive 동기화 안 함 — 카드에서 파생 */
 
   getVisits: ()=> JSON.parse(localStorage.getItem('crm_visits')||'null') || [..._VISITS],
   setVisits: d => { localStorage.setItem('crm_visits', JSON.stringify(d)); _scheduleSyncUp(); },
@@ -364,12 +364,11 @@ const DriveDB = (function(){
     async syncDown(){
       if(!GoogleAuth.isLoggedIn()) return false;
       try{
-        const [cards, visits, cos] = await Promise.all([
-          _load('crm_cards.json'), _load('crm_visits.json'), _load('crm_cos.json')
+        const [cards, visits] = await Promise.all([
+          _load('crm_cards.json'), _load('crm_visits.json')
         ]);
         if(cards)  localStorage.setItem('crm_cards',  JSON.stringify(cards));
         if(visits) localStorage.setItem('crm_visits', JSON.stringify(visits));
-        if(cos)    localStorage.setItem('crm_cos',    JSON.stringify(cos));
         localStorage.setItem('crm_gdrive_lastsync', new Date().toISOString());
         return true;
       } catch(e){ console.error('syncDown', e); return false; }
@@ -382,8 +381,7 @@ const DriveDB = (function(){
       try{
         await Promise.all([
           _save('crm_cards.json',  DB.getCards()),
-          _save('crm_visits.json', DB.getVisits()),
-          _save('crm_cos.json',    DB.getCos())
+          _save('crm_visits.json', DB.getVisits())
         ]);
         localStorage.setItem('crm_gdrive_lastsync', new Date().toISOString());
         _busy = false; return true;
