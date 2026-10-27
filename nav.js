@@ -50,6 +50,19 @@ function qp(name) {
   return new URLSearchParams(location.search).get(name)||'';
 }
 
+/* ── 전 페이지 Drive 자동 동기화 ── */
+window.addEventListener('load', async function(){
+  if(typeof GoogleAuth==='undefined' || !GoogleAuth.isLoggedIn()) return;
+  /* index.html은 자체 처리하므로 제외 */
+  const pg = location.pathname.split('/').pop();
+  if(pg===''||pg==='index.html') return;
+  const ok = await DriveDB.syncDown();
+  if(ok){
+    if(typeof render==='function') render();
+    if(typeof load==='function') load();
+  }
+});
+
 /* ══════════════════════════════════════════
    명함 편집 / 삭제 (동적 모달)
 ══════════════════════════════════════════ */
