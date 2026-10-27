@@ -118,10 +118,9 @@ function render() {
 }
 
 function cardHTML(c){
-  /* 공유 안 된 카드: 체크박스 / 공유된 카드: 공유 라벨(탭하면 해제) */
   const shareEl = c.shared
-    ? `<span class="b-shared" onclick="event.stopPropagation();toggleShare('${c.id}')">☁️공유</span>`
-    : `<span class="share-chk" title="공유 등록" onclick="event.stopPropagation();toggleShare('${c.id}')"></span>`;
+    ? `<span class="b-shared">☁️공유</span>`
+    : `<span class="share-chk" title="공유 등록" onclick="event.stopPropagation();shareCard('${c.id}')"></span>`;
   return `<div class="li" onclick="openCardOverlay('${c.id}')">
     <div class="av card-av" id="av-${c.id}" style="background:${c.cl}18;color:${c.cl}">${c.nm[0]}</div>
     <div class="li-info">
@@ -132,15 +131,15 @@ function cardHTML(c){
   </div>`;
 }
 
-/* 공유 토글 — 카드마다 체크박스/라벨 클릭 시 */
-function toggleShare(id){
+/* 공유 등록 — 단방향, 해제 없음 */
+function shareCard(id){
   const cards = DB.getCards();
   const c = cards.find(x=>x.id===id);
-  if(!c) return;
-  c.shared = !c.shared;
+  if(!c || c.shared) return;
+  c.shared = true;
   DB.setCards(cards);
   if(GoogleAuth.isLoggedIn()) SharedDriveDB.sync();
-  toast(c.shared ? '☁️ 공유 등록됐습니다' : '공유 해제됐습니다');
+  toast('☁️ 공유 등록됐습니다');
   render();
 }
 
