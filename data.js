@@ -438,6 +438,17 @@ const SharedDriveDB = (function(){
         return true;
       } catch(e){ console.error('SharedDriveDB.sync', e); return false; }
     },
+    /* CRM_공용 → 앱으로 불러오기 */
+    async load(){
+      if(!GoogleAuth.isLoggedIn()) return [];
+      try{
+        const eid = await _fileId();
+        if(!eid) return [];
+        const r = await _api(`https://www.googleapis.com/drive/v3/files/${eid}?alt=media`);
+        const data = await r.json();
+        return Array.isArray(data) ? data : [];
+      } catch(e){ console.error('SharedDriveDB.load', e); return []; }
+    },
     getFolderUrl(){ return `https://drive.google.com/drive/folders/${FOLDER_ID}`; }
   };
 })();

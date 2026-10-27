@@ -93,8 +93,14 @@
 <script src="nav.js"></script>
 <script>
 let mode = 'name';
-const chkSet = new Set(); /* 체크됐지만 아직 저장 안 된 카드 ID */
+const chkSet = new Set();
 const tagCls = {고객:'b-bl',VIP:'b-gn',잠재:'b-am',휴면:'b-rd'};
+let _driveShared = []; /* CRM_공용에서 로드한 공유 명함 */
+
+async function refreshSharedCards(){
+  _driveShared = await SharedDriveDB.load();
+  render();
+}
 
 function setMode(m, el) {
   mode = m;
@@ -105,7 +111,11 @@ function setMode(m, el) {
 
 function render() {
   const q = document.getElementById('srch').value;
-  const cards = DB.getCards();
+  const personal = DB.getCards();
+  const personalIds = new Set(personal.map(c=>c.id));
+  /* 다른 계정이 공유한 명함 (내 목록에 없는 것만 추가) */
+  const otherShared = _driveShared.filter(c=>!personalIds.has(c.id));
+  const cards = [...personal, ...otherShared];
   const tot=cards.length, vip=cards.filter(c=>c.tag==='VIP').length, fav=cards.filter(c=>c.fav).length;
   const sharedCnt = cards.filter(c=>c.shared).length;
   document.getElementById('stat-pills').innerHTML =
@@ -298,6 +308,7 @@ function openVisitFromCard(cardId) {
 
 renderTabBar('cards');
 render();
+if(GoogleAuth.isLoggedIn()) refreshSharedCards();
 window.addEventListener('pageshow', e => { if(e.persisted) render(); });
 document.addEventListener('visibilitychange', () => { if(!document.hidden) render(); });
 </script>
