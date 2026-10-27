@@ -188,7 +188,7 @@ const DB = {
    GoogleAuth — OAuth 토큰 관리
 ══════════════════════════════════════════ */
 const GoogleAuth = (function(){
-  const SCOPE = 'https://www.googleapis.com/auth/drive.file';
+  const SCOPE = 'https://www.googleapis.com/auth/drive';
   let _token = null, _expiry = 0, _client = null, _refreshTimer = null;
 
   /* 저장된 토큰 복원 */
@@ -395,6 +395,50 @@ const DriveDB = (function(){
 
     getLastSync(){ return localStorage.getItem('crm_gdrive_lastsync')||null; },
     getFolderUrl(){ return _fid ? `https://drive.google.com/drive/folders/${_fid}` : null; }
+  };
+})();
+
+/* ══════════════════════════════════════════
+   SharedDriveDB — CRM_공용 폴더 공유 명함 관리
+══════════════════════════════════════════ */
+const SharedDriveDB = (function(){
+  const FOLDER_ID = '1vsNVDH17zJZWUYZSNeUAVPrP1WApAFDg';
+  const FILE_NAME = 'crm_shared_cards.json';
+
+  async function _api(url, opts={}){
+    const res = await fetch(url, {
+      ...opts,
+      headers:{'Authorization':'Bearer '+GoogleAuth.getToken(), ...(opts.headers||{})}
+    });
+    if(!res.ok){ const e=await res.json().catch(()=>({})); throw new Error(e.error?.message||'SharedDriveAPI '+res.status); }
+    return res;
+  }
+
+  async function _fileId(){
+    const r = await _api(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`name='${FILE_NAME}' and '${FOLDER_ID}' in parents and trashed=false`)}&fields=files(id)`);
+    const d = await r.json();
+    return d.files?.[0]?.id || null;
+  }
+
+  return {
+    async sync(){
+      if(!GoogleAuth.isLoggedIn()) return false;
+      try{
+        const shared = DB.getCards().filter(c=>c.shared);
+        const body   = JSON.stringify(shared);
+        const eid    = await _fileId();
+        const bnd    = 'CRM_SHARED_BNDRY';
+        const meta   = JSON.stringify(eid ? {} : {name:FILE_NAME, parents:[FOLDER_ID]});
+        const mp     = `--${bnd}\r\nContent-Type: application/json\r\n\r\n${meta}\r\n--${bnd}\r\nContent-Type: application/json\r\n\r\n${body}\r\n--${bnd}--`;
+        const url    = eid
+          ? `https://www.googleapis.com/upload/drive/v3/files/${eid}?uploadType=multipart`
+          : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+        await _api(url, {method:eid?'PATCH':'POST',
+          headers:{'Content-Type':`multipart/related; boundary=${bnd}`}, body:mp});
+        return true;
+      } catch(e){ console.error('SharedDriveDB.sync', e); return false; }
+    },
+    getFolderUrl(){ return `https://drive.google.com/drive/folders/${FOLDER_ID}`; }
   };
 })();
 

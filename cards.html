@@ -5,15 +5,50 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>명함</title>
 <link rel="stylesheet" href="shared.css">
+<style>
+/* ── 선택 모드 ── */
+.sel-chk {
+  width:24px;height:24px;border-radius:50%;border:2px solid #cbd5e1;
+  flex-shrink:0;margin-right:4px;transition:all .15s;background:#fff;
+}
+.sel-chk.on {
+  background:#2563eb;border-color:#2563eb;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z' fill='%23fff'/%3E%3C/svg%3E");
+  background-size:16px;background-position:center;background-repeat:no-repeat;
+}
+.li.sel-on { background:var(--blue-lt) !important; }
+/* ── 공유 배지 ── */
+.b-shared {
+  font-size:10px;background:#dbeafe;color:#1d4ed8;border-radius:6px;
+  padding:2px 5px;font-weight:700;margin-right:4px;flex-shrink:0;
+}
+/* ── 하단 선택 액션바 ── */
+#sel-bar {
+  display:none;position:fixed;bottom:72px;left:0;right:0;
+  padding:10px 16px;z-index:500;
+}
+#sel-bar .sel-bar-inner {
+  display:flex;gap:10px;background:var(--card);border-radius:16px;
+  padding:12px;box-shadow:0 4px 20px rgba(0,0,0,.2);
+}
+</style>
 </head>
 <body>
 <!-- ① 메인 목록 -->
 <div class="page">
-  <header class="hdr">
+  <!-- 일반 헤더 -->
+  <header class="hdr" id="hdr-normal">
     <span class="hdr-t">명함</span>
+    <div class="hdr-icon" onclick="enterSelMode()" title="선택">☑</div>
     <div class="hdr-icon" onclick="location.href='settings.html'">⚙️</div>
     <div class="hdr-icon" onclick="location.href='scan.html'">📷</div>
   </header>
+  <!-- 선택 모드 헤더 -->
+  <header class="hdr" id="hdr-sel" style="display:none;">
+    <div class="hdr-back" onclick="exitSelMode()">취소</div>
+    <span class="hdr-t" id="sel-count">선택 모드</span>
+  </header>
+
   <div class="srch-wrap">
     <input class="srch" id="srch" placeholder="🔍  이름, 회사, 전화번호 검색" oninput="render()">
   </div>
@@ -22,10 +57,25 @@
     <div class="segtab"    id="seg-co"     onclick="setMode('co',this)">거래처순</div>
     <div class="segtab"    id="seg-fav"    onclick="setMode('fav',this)">즐겨찾기</div>
     <div class="segtab"    id="seg-recent" onclick="setMode('recent',this)">최근순</div>
+    <div class="segtab"    id="seg-shared" onclick="setMode('shared',this)">☁️공유</div>
   </div>
   <div class="pills" id="stat-pills"></div>
   <div class="body"><div class="bp" id="list"></div></div>
   <nav class="tabbar" id="tabbar"></nav>
+</div>
+
+<!-- 선택 모드 하단 액션바 -->
+<div id="sel-bar">
+  <div class="sel-bar-inner">
+    <button onclick="applyShare(true)"
+      style="flex:1;padding:14px;border-radius:12px;background:#2563eb;color:#fff;border:none;font-size:14px;font-weight:700;cursor:pointer;">
+      ☁️ 공유 등록
+    </button>
+    <button onclick="applyShare(false)"
+      style="flex:1;padding:14px;border-radius:12px;background:#fee2e2;color:#dc2626;border:1.5px solid #fca5a5;font-size:14px;font-weight:700;cursor:pointer;">
+      ✕ 공유 해제
+    </button>
+  </div>
 </div>
 
 <!-- ② 명함 상세 오버레이 -->
@@ -57,6 +107,8 @@
 <script src="nav.js"></script>
 <script>
 let mode = 'name';
+let selMode = false;
+const selSet = new Set();
 const tagCls = {고객:'b-bl',VIP:'b-gn',잠재:'b-am',휴면:'b-rd'};
 
 function setMode(m, el) {
@@ -70,14 +122,17 @@ function render() {
   const q = document.getElementById('srch').value;
   const cards = DB.getCards();
   const tot=cards.length, vip=cards.filter(c=>c.tag==='VIP').length, fav=cards.filter(c=>c.fav).length;
+  const sharedCnt=cards.filter(c=>c.shared).length;
   document.getElementById('stat-pills').innerHTML =
-    `<div class="pill">🪪 총 ${tot}장</div><div class="pill">⭐ VIP ${vip}명</div><div class="pill">💛 즐겨찾기 ${fav}명</div>`;
+    `<div class="pill">🪪 총 ${tot}장</div><div class="pill">⭐ VIP ${vip}명</div><div class="pill">💛 즐겨찾기 ${fav}명</div>`+
+    (sharedCnt?`<div class="pill">☁️ 공유 ${sharedCnt}명</div>`:'');
 
   let list = cards.filter(c=>!q||c.nm.includes(q)||(c.co||'').includes(q)||(c.mob||'').includes(q));
-  if(mode==='fav') list=list.filter(c=>c.fav);
+  if(mode==='fav')    list=list.filter(c=>c.fav);
+  if(mode==='shared') list=list.filter(c=>c.shared);
 
   const el = document.getElementById('list');
-  if(!list.length){ el.innerHTML=`<div class="empty"><div class="empty-ic">🪪</div><div class="empty-t">명함이 없습니다</div><div class="empty-s">카메라로 스캔해보세요</div></div>`; return; }
+  if(!list.length){ el.innerHTML=`<div class="empty"><div class="empty-ic">🪪</div><div class="empty-t">명함이 없습니다</div><div class="empty-s">${mode==='shared'?'공유 등록된 명함이 없습니다':'카메라로 스캔해보세요'}</div></div>`; return; }
   if(mode==='co'){
     const g={};
     list.forEach(c=>(g[c.co||'미분류']=g[c.co||'미분류']||[]).push(c));
@@ -95,13 +150,18 @@ function render() {
 }
 
 function cardHTML(c){
-  return `<div class="li" onclick="openCardOverlay('${c.id}')">
+  const chkHtml = selMode
+    ? `<div class="sel-chk ${selSet.has(c.id)?'on':''}" data-id="${c.id}"></div>` : '';
+  const sharedBadge = c.shared ? `<span class="b-shared">☁️공유</span>` : '';
+  const clickAct = selMode ? `toggleSel('${c.id}')` : `openCardOverlay('${c.id}')`;
+  return `<div class="li${selSet.has(c.id)?' sel-on':''}" data-id="${c.id}" onclick="${clickAct}">
+    ${chkHtml}
     <div class="av card-av" id="av-${c.id}" style="background:${c.cl}18;color:${c.cl}">${c.nm[0]}</div>
     <div class="li-info">
       <div class="li-name">${c.nm}${c.fav?' ⭐':''}</div>
       <div class="li-sub">${c.tl?c.tl+' · ':''}${c.co||''}</div>
     </div>
-    <div class="li-r"><span class="bx ${tagCls[c.tag]||'b-bl'}">${c.tag}</span><span class="chev">›</span></div>
+    <div class="li-r">${sharedBadge}<span class="bx ${tagCls[c.tag]||'b-bl'}">${c.tag}</span>${selMode?'':'<span class="chev">›</span>'}</div>
   </div>`;
 }
 
@@ -123,8 +183,55 @@ async function loadThumbs(list){
   }
 }
 
+/* ── 선택 모드 ── */
+function enterSelMode(){
+  selMode = true;
+  selSet.clear();
+  document.getElementById('hdr-normal').style.display = 'none';
+  document.getElementById('hdr-sel').style.display    = 'flex';
+  document.getElementById('sel-bar').style.display    = '';
+  document.getElementById('sel-count').textContent    = '선택 모드';
+  render();
+}
+
+function exitSelMode(){
+  selMode = false;
+  selSet.clear();
+  document.getElementById('hdr-normal').style.display = 'flex';
+  document.getElementById('hdr-sel').style.display    = 'none';
+  document.getElementById('sel-bar').style.display    = 'none';
+  render();
+}
+
+function toggleSel(id){
+  if(selSet.has(id)) selSet.delete(id); else selSet.add(id);
+  /* 해당 아이템만 즉시 갱신 */
+  const li  = document.querySelector(`.li[data-id="${id}"]`);
+  const chk = document.querySelector(`.sel-chk[data-id="${id}"]`);
+  if(li)  li.classList.toggle('sel-on', selSet.has(id));
+  if(chk) chk.classList.toggle('on',    selSet.has(id));
+  document.getElementById('sel-count').textContent =
+    selSet.size ? `${selSet.size}개 선택` : '선택 모드';
+}
+
+function applyShare(flag){
+  if(!selSet.size){ toast('선택된 명함이 없습니다'); return; }
+  const cards = DB.getCards();
+  let cnt = 0;
+  selSet.forEach(id=>{
+    const c = cards.find(x=>x.id===id);
+    if(c){ c.shared = flag; cnt++; }
+  });
+  DB.setCards(cards);
+  /* Drive에도 공유 목록 업데이트 */
+  if(GoogleAuth.isLoggedIn()) SharedDriveDB.sync();
+  toast(flag ? `☁️ ${cnt}개 공유 등록됐습니다` : `${cnt}개 공유 해제됐습니다`);
+  exitSelMode();
+}
+
 /* ── 명함 상세 오버레이 ── */
 function openCardOverlay(id) {
+  if(selMode) return;
   const card = DB.getCards().find(c=>c.id===id);
   if(!card) return;
   const rows = [
@@ -149,7 +256,7 @@ function openCardOverlay(id) {
       <div class="det-hero">
         <div class="det-av" style="background:${card.cl}18;color:${card.cl}">${card.nm[0]}</div>
         <div>
-          <div class="det-nm">${card.nm}</div>
+          <div class="det-nm">${card.nm}${card.shared?'<span class="b-shared" style="vertical-align:middle;margin-left:6px;">☁️공유</span>':''}</div>
           <div class="det-tl">${card.tl||''}</div>
           <div class="det-co" onclick="goToCoFromCard('${id}')">${card.co||''}</div>
         </div>
@@ -215,9 +322,6 @@ function openVisitFromCard(cardId) {
   openVisitModal(co?co.id:'', card.co||'');
   document.getElementById('overlay-card')._cardId = cardId;
 }
-
-/* refreshCoVisits 호출 후 카드 방문이력도 갱신 */
-const _origRefresh = typeof refreshCoVisits !== 'undefined' ? refreshCoVisits : null;
 
 renderTabBar('cards');
 render();
