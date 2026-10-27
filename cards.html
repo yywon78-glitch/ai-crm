@@ -6,19 +6,32 @@
 <title>명함</title>
 <link rel="stylesheet" href="shared.css">
 <style>
-/* 공유 체크박스 버튼 */
+/* 체크박스 (미공유 카드) */
 .share-chk {
   width:22px;height:22px;border-radius:5px;border:2px solid #94a3b8;
   display:inline-flex;align-items:center;justify-content:center;
-  flex-shrink:0;cursor:pointer;background:#fff;color:#94a3b8;
-  font-size:12px;font-weight:700;margin-right:4px;
-  transition:border-color .15s;
+  flex-shrink:0;cursor:pointer;background:#fff;transition:all .15s;
+  margin-right:4px;
 }
-.share-chk:active { background:#dbeafe;border-color:#2563eb; }
-/* 공유 라벨 */
+.share-chk.on {
+  background:#2563eb;border-color:#2563eb;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z' fill='%23fff'/%3E%3C/svg%3E");
+  background-size:15px;background-position:center;background-repeat:no-repeat;
+}
+/* 공유 라벨 (공유된 카드) */
 .b-shared {
   font-size:10px;background:#dbeafe;color:#1d4ed8;border-radius:6px;
-  padding:2px 5px;font-weight:700;margin-right:4px;flex-shrink:0;cursor:pointer;
+  padding:2px 5px;font-weight:700;margin-right:4px;flex-shrink:0;
+}
+/* 하단 공유 저장 버튼 */
+#save-bar {
+  display:none;position:fixed;bottom:72px;left:0;right:0;
+  padding:10px 16px;z-index:500;
+}
+#save-bar button {
+  width:100%;padding:16px;border-radius:14px;border:none;
+  background:#2563eb;color:#fff;font-size:16px;font-weight:700;cursor:pointer;
+  box-shadow:0 4px 16px rgba(37,99,235,.4);
 }
 </style>
 </head>
@@ -43,6 +56,11 @@
   <div class="pills" id="stat-pills"></div>
   <div class="body"><div class="bp" id="list"></div></div>
   <nav class="tabbar" id="tabbar"></nav>
+</div>
+
+<!-- 하단 공유 저장 버튼 -->
+<div id="save-bar">
+  <button id="save-btn" onclick="saveShared()">☁️ 공유 저장</button>
 </div>
 
 <!-- ② 명함 상세 오버레이 -->
@@ -74,6 +92,7 @@
 <script src="nav.js"></script>
 <script>
 let mode = 'name';
+const chkSet = new Set(); /* 체크됐지만 아직 저장 안 된 카드 ID */
 const tagCls = {고객:'b-bl',VIP:'b-gn',잠재:'b-am',휴면:'b-rd'};
 
 function setMode(m, el) {
@@ -118,9 +137,11 @@ function render() {
 }
 
 function cardHTML(c){
+  /* 이미 공유된 카드: 라벨만 / 미공유: 체크박스 */
   const shareEl = c.shared
     ? `<span class="b-shared">☁️공유</span>`
-    : `<span class="share-chk" title="공유 등록" onclick="event.stopPropagation();shareCard('${c.id}')"></span>`;
+    : `<span class="share-chk${chkSet.has(c.id)?' on':''}" data-id="${c.id}"
+         onclick="event.stopPropagation();tickCard('${c.id}')"></span>`;
   return `<div class="li" onclick="openCardOverlay('${c.id}')">
     <div class="av card-av" id="av-${c.id}" style="background:${c.cl}18;color:${c.cl}">${c.nm[0]}</div>
     <div class="li-info">
@@ -131,15 +152,34 @@ function cardHTML(c){
   </div>`;
 }
 
-/* 공유 등록 — 단방향, 해제 없음 */
-function shareCard(id){
+/* 체크박스 토글 — 아직 저장 안 함 */
+function tickCard(id){
+  if(chkSet.has(id)) chkSet.delete(id); else chkSet.add(id);
+  /* 해당 체크박스만 갱신 (전체 re-render 없이) */
+  const chk = document.querySelector(`.share-chk[data-id="${id}"]`);
+  if(chk) chk.classList.toggle('on', chkSet.has(id));
+  /* 저장 버튼 표시/숨김 */
+  const bar = document.getElementById('save-bar');
+  bar.style.display = chkSet.size ? '' : 'none';
+  if(chkSet.size){
+    document.getElementById('save-btn').textContent = `☁️ 공유 저장 (${chkSet.size}명)`;
+  }
+}
+
+/* [공유 저장] 버튼 — 체크된 카드 전부 shared = true */
+function saveShared(){
+  if(!chkSet.size) return;
   const cards = DB.getCards();
-  const c = cards.find(x=>x.id===id);
-  if(!c || c.shared) return;
-  c.shared = true;
+  chkSet.forEach(id=>{
+    const c = cards.find(x=>x.id===id);
+    if(c) c.shared = true;
+  });
   DB.setCards(cards);
   if(GoogleAuth.isLoggedIn()) SharedDriveDB.sync();
-  toast('☁️ 공유 등록됐습니다');
+  const cnt = chkSet.size;
+  chkSet.clear();
+  document.getElementById('save-bar').style.display = 'none';
+  toast(`☁️ ${cnt}명 공유 등록됐습니다`);
   render();
 }
 
