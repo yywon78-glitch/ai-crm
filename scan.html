@@ -362,20 +362,25 @@ function saveMulti(){
   const selected=[...document.querySelectorAll('#multi-list input[type=checkbox]:checked')].map(el=>_multiCards[+el.dataset.i]);
   if(!selected.length){ toast('저장할 명함을 선택해주세요'); return; }
   const saved=DB.getCards(); let added=0,updated=0;
+  const newIds=[];
   selected.forEach(info=>{
     const nm=(info.nm||'').trim(); if(!nm) return;
     const co=(info.co||'').trim();
     const dup=saved.find(c=>c.nm===nm&&c.co===co);
-    if(dup){ Object.assign(dup,{tl:info.tl||'',mob:info.mob||'',ph:info.ph||'',em:info.em||'',addr:info.addr||''}); if(_captured&&!dup.img) dup.img=_captured; updated++; }
-    else { saved.unshift({id:'c'+Date.now()+Math.random(),nm,co,tl:info.tl||'',mob:info.mob||'',ph:info.ph||'',em:info.em||'',addr:info.addr||'',tag:'고객',cl:COLORS[Math.floor(Math.random()*COLORS.length)],fav:false,img:_captured||null}); added++; }
+    if(dup){
+      Object.assign(dup,{tl:info.tl||'',mob:info.mob||'',ph:info.ph||'',em:info.em||'',addr:info.addr||''});
+      if(_captured) newIds.push(dup.id);
+      updated++;
+    } else {
+      const id='c'+Date.now()+Math.random();
+      saved.unshift({id,nm,co,tl:info.tl||'',mob:info.mob||'',ph:info.ph||'',em:info.em||'',addr:info.addr||'',tag:'고객',cl:COLORS[Math.floor(Math.random()*COLORS.length)],fav:false,img:null});
+      if(_captured) newIds.push(id);
+      added++;
+    }
   });
-  try{
-    DB.setCards(saved);
-  }catch(e){
-    // 새로 추가된 명함의 이미지만 제거 (기존 명함 이미지 보호)
-    saved.slice(0, added).forEach(c=>{ c.img=null; });
-    try{ DB.setCards(saved); }catch(e2){ toast('저장 공간이 부족합니다'); return; }
-  }
+  DB.setCards(saved);
+  // 이미지는 IndexedDB에 별도 저장 (용량 제한 없음)
+  if(_captured) newIds.forEach(id=>{ ImgDB.set(id, _captured).catch(()=>{}); });
   document.getElementById('multi-box').classList.remove('show');
   toast(`저장 ${added}장, 업데이트 ${updated}장 ✓`);
   setTimeout(()=>_goAfterSave('index.html'),1200);
@@ -408,15 +413,16 @@ function saveCard(){
     dup.ph=document.getElementById('f-ph').value.trim();
     dup.em=document.getElementById('f-em').value.trim();
     dup.addr=document.getElementById('f-addr').value.trim();
-    if(_captured && !dup.img) dup.img=_captured;
-    try{ DB.setCards(cards); }catch(e){ dup.img=null; DB.setCards(cards); }
+    DB.setCards(cards);
+    if(_captured) ImgDB.set(dup.id, _captured).catch(()=>{});
     toast('업데이트됐습니다 ✓');
     _goAfterSave('card.html?id='+dup.id);
     return;
   }
   const newId='c'+Date.now();
-  cards.unshift({id:newId,nm,co,tl:document.getElementById('f-tl').value.trim(),mob:document.getElementById('f-mob').value.trim(),ph:document.getElementById('f-ph').value.trim(),em:document.getElementById('f-em').value.trim(),addr:document.getElementById('f-addr').value.trim(),tag:'고객',cl:COLORS[Math.floor(Math.random()*COLORS.length)],fav:false,img:_captured||null});
-  try{ DB.setCards(cards); }catch(e){ cards[0].img=null; DB.setCards(cards); }
+  cards.unshift({id:newId,nm,co,tl:document.getElementById('f-tl').value.trim(),mob:document.getElementById('f-mob').value.trim(),ph:document.getElementById('f-ph').value.trim(),em:document.getElementById('f-em').value.trim(),addr:document.getElementById('f-addr').value.trim(),tag:'고객',cl:COLORS[Math.floor(Math.random()*COLORS.length)],fav:false,img:null});
+  DB.setCards(cards);
+  if(_captured) ImgDB.set(newId, _captured).catch(()=>{});
   toast('명함이 저장됐습니다 ✓');
   _goAfterSave('card.html?id='+newId);
 }

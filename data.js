@@ -107,6 +107,46 @@ const _VISITS = [
   }
 })();
 
+/* ── 이미지 저장 — IndexedDB (localStorage 용량 제한 우회) ── */
+const ImgDB = (function(){
+  let _db = null;
+  function _open(){
+    return new Promise((res,rej)=>{
+      if(_db) return res(_db);
+      const req = indexedDB.open('crm_imgs', 1);
+      req.onupgradeneeded = e => e.target.result.createObjectStore('imgs');
+      req.onsuccess = e => { _db = e.target.result; res(_db); };
+      req.onerror   = rej;
+    });
+  }
+  return {
+    set: (id, data) => _open().then(db => new Promise((res,rej)=>{
+      const tx = db.transaction('imgs','readwrite');
+      tx.objectStore('imgs').put(data, id);
+      tx.oncomplete = res; tx.onerror = rej;
+    })),
+    get: (id) => _open().then(db => new Promise((res,rej)=>{
+      const req = db.transaction('imgs','readonly').objectStore('imgs').get(id);
+      req.onsuccess = e => res(e.target.result || null); req.onerror = rej;
+    })),
+    del: (id) => _open().then(db => new Promise(res=>{
+      const tx = db.transaction('imgs','readwrite');
+      tx.objectStore('imgs').delete(id); tx.oncomplete = res;
+    })),
+    /* 기존 localStorage img 마이그레이션 */
+    migrate: async (cards) => {
+      let changed = false;
+      for(const c of cards){
+        if(c.img){
+          try{ await ImgDB.set(c.id, c.img); }catch(e){}
+          c.img = null; changed = true;
+        }
+      }
+      return changed;
+    }
+  };
+})();
+
 /* ── DB 레이어 ── */
 const DB = {
   getKey:       ()=> localStorage.getItem('crm_key')||'',
