@@ -23,15 +23,13 @@
   font-size:10px;background:#dbeafe;color:#1d4ed8;border-radius:6px;
   padding:2px 5px;font-weight:700;margin-right:4px;flex-shrink:0;
 }
-/* 하단 공유 저장 버튼 */
-#save-bar {
-  display:none;position:fixed;bottom:72px;left:0;right:0;
-  padding:10px 16px;z-index:500;
+/* 공유체크 버튼 */
+#btn-share-save {
+  padding:5px 12px;border-radius:8px;border:none;font-size:12px;font-weight:700;cursor:pointer;
+  background:#e2e8f0;color:#94a3b8;transition:all .2s;white-space:nowrap;
 }
-#save-bar button {
-  width:100%;padding:16px;border-radius:14px;border:none;
-  background:#2563eb;color:#fff;font-size:16px;font-weight:700;cursor:pointer;
-  box-shadow:0 4px 16px rgba(37,99,235,.4);
+#btn-share-save.active {
+  background:#2563eb;color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.35);
 }
 </style>
 </head>
@@ -53,14 +51,11 @@
     <div class="segtab"    id="seg-recent" onclick="setMode('recent',this)">최근순</div>
     <div class="segtab"    id="seg-shared" onclick="setMode('shared',this)">☁️공유</div>
   </div>
-  <div class="pills" id="stat-pills"></div>
+  <div class="pills" id="stat-pills" style="display:flex;align-items:center;">
+    <button id="btn-share-save" onclick="saveShared()">공유체크</button>
+  </div>
   <div class="body"><div class="bp" id="list"></div></div>
   <nav class="tabbar" id="tabbar"></nav>
-</div>
-
-<!-- 하단 공유 저장 버튼 -->
-<div id="save-bar">
-  <button id="save-btn" onclick="saveShared()">☁️ 공유 저장</button>
 </div>
 
 <!-- ② 명함 상세 오버레이 -->
@@ -107,9 +102,12 @@ function render() {
   const cards = DB.getCards();
   const tot=cards.length, vip=cards.filter(c=>c.tag==='VIP').length, fav=cards.filter(c=>c.fav).length;
   const sharedCnt = cards.filter(c=>c.shared).length;
-  document.getElementById('stat-pills').innerHTML =
+  const pillsEl = document.getElementById('stat-pills');
+  const btn = document.getElementById('btn-share-save');
+  pillsEl.innerHTML =
     `<div class="pill">🪪 총 ${tot}장</div><div class="pill">⭐ VIP ${vip}명</div><div class="pill">💛 즐겨찾기 ${fav}명</div>`+
     (sharedCnt ? `<div class="pill">☁️ 공유 ${sharedCnt}명</div>` : '');
+  pillsEl.appendChild(btn);
 
   let list = cards.filter(c=>!q||c.nm.includes(q)||(c.co||'').includes(q)||(c.mob||'').includes(q));
   if(mode==='fav')    list=list.filter(c=>c.fav);
@@ -158,11 +156,11 @@ function tickCard(id){
   /* 해당 체크박스만 갱신 (전체 re-render 없이) */
   const chk = document.querySelector(`.share-chk[data-id="${id}"]`);
   if(chk) chk.classList.toggle('on', chkSet.has(id));
-  /* 저장 버튼 표시/숨김 */
-  const bar = document.getElementById('save-bar');
-  bar.style.display = chkSet.size ? '' : 'none';
-  if(chkSet.size){
-    document.getElementById('save-btn').textContent = `☁️ 공유 저장 (${chkSet.size}명)`;
+  /* 공유체크 버튼 활성/비활성 */
+  const btn = document.getElementById('btn-share-save');
+  if(btn){
+    btn.classList.toggle('active', chkSet.size > 0);
+    btn.textContent = chkSet.size ? `공유체크 (${chkSet.size})` : '공유체크';
   }
 }
 
@@ -178,7 +176,8 @@ function saveShared(){
   if(GoogleAuth.isLoggedIn()) SharedDriveDB.sync();
   const cnt = chkSet.size;
   chkSet.clear();
-  document.getElementById('save-bar').style.display = 'none';
+  const btn = document.getElementById('btn-share-save');
+  if(btn){ btn.classList.remove('active'); btn.textContent = '공유체크'; }
   toast(`☁️ ${cnt}명 공유 등록됐습니다`);
   render();
 }
