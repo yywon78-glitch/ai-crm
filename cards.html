@@ -122,7 +122,7 @@ function render() {
 
   let list = cards.filter(c=>!q||c.nm.includes(q)||(c.co||'').includes(q)||(c.mob||'').includes(q));
   if(mode==='fav')    list=list.filter(c=>c.fav);
-  if(mode==='shared') list=list.filter(c=>!c.shared);
+  if(mode==='shared') list=personal; /* 내것만 = 내 개인 DB 전체 (공유 올린 것 포함, 남의 공유 제외) */
 
   const el = document.getElementById('list');
   if(!list.length){
