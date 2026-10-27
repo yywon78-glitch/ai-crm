@@ -1,24 +1,24 @@
 /* ── 샘플 데이터 ── */
 const _CARDS = [
-  {id:'c1',nm:'김철수',co:'삼성전자(주)',tl:'B2B영업팀 부장',mob:'010-1234-5678',ph:'02-2255-1100',em:'cskim@samsung.com',addr:'서울 서초구 서초동 1321',tag:'VIP', cl:'#2563eb',fav:true},
-  {id:'c2',nm:'이민아',co:'삼성전자(주)',tl:'구매전략팀 차장',mob:'010-2341-8800',ph:'02-2255-2200',em:'malee@samsung.com',addr:'서울 서초구 서초동 1321',tag:'고객',cl:'#2563eb',fav:false},
-  {id:'c3',nm:'박상현',co:'삼성전자(주)',tl:'파트너십 대리',mob:'010-9988-1234',ph:'02-2255-3300',em:'shpark@samsung.com',addr:'서울 서초구 서초동 1321',tag:'고객',cl:'#2563eb',fav:false},
-  {id:'c4',nm:'이영희',co:'LG화학(주)',  tl:'구매팀 대리',  mob:'010-9876-5432',ph:'02-3777-1000',em:'ylee@lgchem.com',    addr:'서울 영등포구 여의도동', tag:'VIP', cl:'#16a34a',fav:true},
-  {id:'c5',nm:'최진석',co:'LG화학(주)',  tl:'기술영업 과장',mob:'010-3344-7788',ph:'02-3777-2000',em:'jschoi@lgchem.com',  addr:'서울 영등포구 여의도동', tag:'고객',cl:'#16a34a',fav:false},
-  {id:'c6',nm:'박민준',co:'현대모비스(주)',tl:'개발팀 과장', mob:'010-5555-1234',ph:'031-596-0000',em:'mjpark@mobis.co.kr', addr:'경기 성남시 분당구',     tag:'잠재',cl:'#d97706',fav:false},
-  {id:'c7',nm:'김도영',co:'SK텔레콤(주)',tl:'기업영업 팀장',mob:'010-7777-8888',ph:'02-6100-0000',em:'dykim@skt.com',      addr:'서울 중구 을지로',      tag:'고객',cl:'#7c3aed',fav:true},
-  {id:'c8',nm:'최지연',co:'SK텔레콤(주)',tl:'B2B솔루션 대리',mob:'010-8765-4321',ph:'02-6100-1000',em:'jychoi@skt.com',   addr:'서울 중구 을지로',      tag:'고객',cl:'#7c3aed',fav:false},
-  {id:'c9',nm:'정현우',co:'KT(주)',      tl:'B2B사업부 차장',mob:'010-2222-3333',ph:'02-981-0000',em:'hwjung@kt.com',     addr:'서울 종로구 광화문',    tag:'잠재',cl:'#dc2626',fav:false},
-  {id:'c10',nm:'송미래',co:'네이버(주)', tl:'파트너십 PM',  mob:'010-4444-5555',ph:'031-888-0000',em:'mrsong@naver.com',  addr:'경기 성남시 분당구',    tag:'고객',cl:'#16a34a',fav:true},
+  {id:'c1',nm:'김철수',co:'삼성전자(주)',tl:'B2B영업팀 부장',mob:'010-1234-5678',ph:'02-2255-1100',em:'cskim@samsung.com',addr:'서울 서초구 서초동 1321',tag:'VIP', cl:'#2563eb',fav:true, isDummy:true},
+  {id:'c2',nm:'이민아',co:'삼성전자(주)',tl:'구매전략팀 차장',mob:'010-2341-8800',ph:'02-2255-2200',em:'malee@samsung.com',addr:'서울 서초구 서초동 1321',tag:'고객',cl:'#2563eb',fav:false,isDummy:true},
+  {id:'c3',nm:'박상현',co:'삼성전자(주)',tl:'파트너십 대리',mob:'010-9988-1234',ph:'02-2255-3300',em:'shpark@samsung.com',addr:'서울 서초구 서초동 1321',tag:'고객',cl:'#2563eb',fav:false,isDummy:true},
+  {id:'c4',nm:'이영희',co:'LG화학(주)',  tl:'구매팀 대리',  mob:'010-9876-5432',ph:'02-3777-1000',em:'ylee@lgchem.com',    addr:'서울 영등포구 여의도동', tag:'VIP', cl:'#16a34a',fav:true, isDummy:true},
+  {id:'c5',nm:'최진석',co:'LG화학(주)',  tl:'기술영업 과장',mob:'010-3344-7788',ph:'02-3777-2000',em:'jschoi@lgchem.com',  addr:'서울 영등포구 여의도동', tag:'고객',cl:'#16a34a',fav:false,isDummy:true},
+  {id:'c6',nm:'박민준',co:'현대모비스(주)',tl:'개발팀 과장', mob:'010-5555-1234',ph:'031-596-0000',em:'mjpark@mobis.co.kr', addr:'경기 성남시 분당구',     tag:'잠재',cl:'#d97706',fav:false,isDummy:true},
+  {id:'c7',nm:'김도영',co:'SK텔레콤(주)',tl:'기업영업 팀장',mob:'010-7777-8888',ph:'02-6100-0000',em:'dykim@skt.com',      addr:'서울 중구 을지로',      tag:'고객',cl:'#7c3aed',fav:true, isDummy:true},
+  {id:'c8',nm:'최지연',co:'SK텔레콤(주)',tl:'B2B솔루션 대리',mob:'010-8765-4321',ph:'02-6100-1000',em:'jychoi@skt.com',   addr:'서울 중구 을지로',      tag:'고객',cl:'#7c3aed',fav:false,isDummy:true},
+  {id:'c9',nm:'정현우',co:'KT(주)',      tl:'B2B사업부 차장',mob:'010-2222-3333',ph:'02-981-0000',em:'hwjung@kt.com',     addr:'서울 종로구 광화문',    tag:'잠재',cl:'#dc2626',fav:false,isDummy:true},
+  {id:'c10',nm:'송미래',co:'네이버(주)', tl:'파트너십 PM',  mob:'010-4444-5555',ph:'031-888-0000',em:'mrsong@naver.com',  addr:'경기 성남시 분당구',    tag:'고객',cl:'#16a34a',fav:true, isDummy:true},
 ];
 
 const _COS = [
-  {id:'co1',nm:'삼성전자(주)',addr:'서울 서초구 서초동 1321',ind:'전자/IT',   st:'active',  cnt:3,last:'2026-10-20'},
-  {id:'co2',nm:'LG화학(주)',  addr:'서울 영등포구 여의도동', ind:'화학/소재',st:'active',  cnt:2,last:'2026-10-15'},
-  {id:'co3',nm:'현대모비스(주)',addr:'경기 성남시 분당구',   ind:'자동차부품',st:'potential',cnt:1,last:'2026-09-28'},
-  {id:'co4',nm:'SK텔레콤(주)',addr:'서울 중구 을지로',       ind:'통신',      st:'active',  cnt:2,last:'2026-10-18'},
-  {id:'co5',nm:'KT(주)',       addr:'서울 종로구 광화문',    ind:'통신',      st:'potential',cnt:1,last:'2026-09-10'},
-  {id:'co6',nm:'네이버(주)',   addr:'경기 성남시 분당구',    ind:'IT/플랫폼', st:'active',  cnt:1,last:'2026-10-05'},
+  {id:'co1',nm:'삼성전자(주)',addr:'서울 서초구 서초동 1321',ind:'전자/IT',   st:'active',  cnt:3,last:'2026-10-20',isDummy:true},
+  {id:'co2',nm:'LG화학(주)',  addr:'서울 영등포구 여의도동', ind:'화학/소재',st:'active',  cnt:2,last:'2026-10-15',isDummy:true},
+  {id:'co3',nm:'현대모비스(주)',addr:'경기 성남시 분당구',   ind:'자동차부품',st:'potential',cnt:1,last:'2026-09-28',isDummy:true},
+  {id:'co4',nm:'SK텔레콤(주)',addr:'서울 중구 을지로',       ind:'통신',      st:'active',  cnt:2,last:'2026-10-18',isDummy:true},
+  {id:'co5',nm:'KT(주)',       addr:'서울 종로구 광화문',    ind:'통신',      st:'potential',cnt:1,last:'2026-09-10',isDummy:true},
+  {id:'co6',nm:'네이버(주)',   addr:'경기 성남시 분당구',    ind:'IT/플랫폼', st:'active',  cnt:1,last:'2026-10-05',isDummy:true},
 ];
 
 const _VISITS = [
@@ -95,6 +95,9 @@ const _VISITS = [
   {id:'v610',co:'네이버(주)',coId:'co6',tp:'🤝 인사',dt:'2026-10-28',time:'11:00',targets:['송미래'],targetExtra:'홍두표 PM',ourTargets:'세종대왕 부장',content:'연말 파트너십 성과 공유 미팅. 올해 공동 성과 리뷰. 내년 로드맵 방향 합의.',memo:'연말 성과 공유.',next:null},
 ];
 
+/* ── _VISITS 전체에 isDummy 플래그 일괄 적용 ── */
+_VISITS.forEach(v => { v.isDummy = true; });
+
 /* ── 샘플 데이터 버전 자동 갱신 ── */
 (function(){
   const raw = localStorage.getItem('crm_visits');
@@ -157,11 +160,199 @@ const DB = {
   setKakaoKey:  k => localStorage.setItem('crm_kakao_key', k),
 
   getCards:  ()=> JSON.parse(localStorage.getItem('crm_cards')||'null') || [..._CARDS],
-  setCards:  d => localStorage.setItem('crm_cards', JSON.stringify(d)),
+  setCards:  d => { localStorage.setItem('crm_cards', JSON.stringify(d)); _scheduleSyncUp(); },
 
   getCos:    ()=> JSON.parse(localStorage.getItem('crm_cos')||'null') || [..._COS],
-  setCos:    d => localStorage.setItem('crm_cos', JSON.stringify(d)),
+  setCos:    d => { localStorage.setItem('crm_cos', JSON.stringify(d)); _scheduleSyncUp(); },
 
   getVisits: ()=> JSON.parse(localStorage.getItem('crm_visits')||'null') || [..._VISITS],
-  setVisits: d => localStorage.setItem('crm_visits', JSON.stringify(d)),
+  setVisits: d => { localStorage.setItem('crm_visits', JSON.stringify(d)); _scheduleSyncUp(); },
+
+  getGoogleClientId: ()=> localStorage.getItem('crm_google_client_id')||'',
+  setGoogleClientId: id=> localStorage.setItem('crm_google_client_id', id),
 };
+
+/* ══════════════════════════════════════════
+   Google Identity Services 스크립트 동적 로드
+══════════════════════════════════════════ */
+(function(){
+  if(document.getElementById('_gsi_script')) return;
+  const s = document.createElement('script');
+  s.id  = '_gsi_script';
+  s.src = 'https://accounts.google.com/gsi/client';
+  s.async = true; s.defer = true;
+  document.head.appendChild(s);
+})();
+
+/* ══════════════════════════════════════════
+   GoogleAuth — OAuth 토큰 관리
+══════════════════════════════════════════ */
+const GoogleAuth = (function(){
+  const SCOPE = 'https://www.googleapis.com/auth/drive.file';
+  let _token = null, _expiry = 0, _client = null;
+
+  /* 저장된 토큰 복원 */
+  (function(){
+    try {
+      const t = JSON.parse(localStorage.getItem('crm_gtoken')||'null');
+      if(t && t.expiry > Date.now() + 60000){ _token = t.token; _expiry = t.expiry; }
+    } catch(e){}
+  })();
+
+  return {
+    isLoggedIn()  { return !!_token && _expiry > Date.now(); },
+    getToken()    { return _token; },
+    getUserEmail(){ return localStorage.getItem('crm_gemail')||''; },
+
+    login(onDone){
+      const cid = DB.getGoogleClientId();
+      if(!cid){ alert('설정 → Google Drive에서 Client ID를 먼저 입력해주세요.'); return; }
+      const _go = () => {
+        _client = google.accounts.oauth2.initTokenClient({
+          client_id: cid,
+          scope: SCOPE,
+          callback: async resp => {
+            if(resp.error){ console.error('OAuth:', resp); return; }
+            _token  = resp.access_token;
+            _expiry = Date.now() + resp.expires_in * 1000;
+            localStorage.setItem('crm_gtoken', JSON.stringify({token:_token, expiry:_expiry}));
+            /* 이메일 가져오기 */
+            try{
+              const r = await fetch('https://www.googleapis.com/drive/v3/about?fields=user',
+                {headers:{Authorization:'Bearer '+_token}});
+              const d = await r.json();
+              localStorage.setItem('crm_gemail', d.user?.emailAddress||'');
+            } catch(e){}
+            if(typeof onDone==='function') onDone();
+          }
+        });
+        _client.requestAccessToken({prompt:'consent'});
+      };
+      if(typeof google !== 'undefined') _go();
+      else { setTimeout(_go, 1500); }
+    },
+
+    logout(){
+      if(_token) google.accounts.oauth2?.revoke(_token, ()=>{});
+      _token = null; _expiry = 0;
+      localStorage.removeItem('crm_gtoken');
+      localStorage.removeItem('crm_gemail');
+      localStorage.removeItem('crm_gdrive_folder');
+      localStorage.removeItem('crm_gdrive_lastsync');
+    }
+  };
+})();
+
+/* ══════════════════════════════════════════
+   DriveDB — Google Drive 파일 읽기/쓰기
+══════════════════════════════════════════ */
+const DriveDB = (function(){
+  const FOLDER = 'CRM_개인';
+  let _fid = localStorage.getItem('crm_gdrive_folder')||null;
+  let _busy = false;
+
+  async function _api(url, opts={}){
+    const res = await fetch(url, {
+      ...opts,
+      headers:{'Authorization':'Bearer '+GoogleAuth.getToken(), ...(opts.headers||{})}
+    });
+    if(!res.ok){ const e=await res.json().catch(()=>({})); throw new Error(e.error?.message||'DriveAPI '+res.status); }
+    return res;
+  }
+
+  async function _folder(){
+    if(_fid) return _fid;
+    const r = await _api(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`name='${FOLDER}' and mimeType='application/vnd.google-apps.folder' and trashed=false`)}&fields=files(id)`);
+    const d = await r.json();
+    if(d.files?.length){ _fid = d.files[0].id; }
+    else {
+      const c = await _api('https://www.googleapis.com/drive/v3/files',{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({name:FOLDER, mimeType:'application/vnd.google-apps.folder'})
+      });
+      _fid = (await c.json()).id;
+    }
+    localStorage.setItem('crm_gdrive_folder', _fid);
+    return _fid;
+  }
+
+  async function _fileId(name){
+    const fid = await _folder();
+    const r = await _api(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`name='${name}' and '${fid}' in parents and trashed=false`)}&fields=files(id)`);
+    const d = await r.json();
+    return d.files?.[0]?.id || null;
+  }
+
+  async function _save(name, data){
+    const fid  = await _folder();
+    const body = JSON.stringify(data);
+    const eid  = await _fileId(name);
+    const bnd  = 'CRM_BOUNDARY_7x';
+    const meta = JSON.stringify(eid ? {} : {name, parents:[fid]});
+    const mp   = `--${bnd}\r\nContent-Type: application/json\r\n\r\n${meta}\r\n--${bnd}\r\nContent-Type: application/json\r\n\r\n${body}\r\n--${bnd}--`;
+    const url  = eid
+      ? `https://www.googleapis.com/upload/drive/v3/files/${eid}?uploadType=multipart`
+      : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+    await _api(url, {method: eid?'PATCH':'POST',
+      headers:{'Content-Type':`multipart/related; boundary=${bnd}`}, body:mp});
+  }
+
+  async function _load(name){
+    const eid = await _fileId(name);
+    if(!eid) return null;
+    const r = await _api(`https://www.googleapis.com/drive/v3/files/${eid}?alt=media`);
+    return await r.json();
+  }
+
+  return {
+    /* Drive → localStorage */
+    async syncDown(){
+      if(!GoogleAuth.isLoggedIn()) return false;
+      try{
+        const [cards, visits, cos] = await Promise.all([
+          _load('crm_cards.json'), _load('crm_visits.json'), _load('crm_cos.json')
+        ]);
+        if(cards)  localStorage.setItem('crm_cards',  JSON.stringify(cards));
+        if(visits) localStorage.setItem('crm_visits', JSON.stringify(visits));
+        if(cos)    localStorage.setItem('crm_cos',    JSON.stringify(cos));
+        localStorage.setItem('crm_gdrive_lastsync', new Date().toISOString());
+        return true;
+      } catch(e){ console.error('syncDown', e); return false; }
+    },
+
+    /* localStorage → Drive */
+    async syncUp(){
+      if(!GoogleAuth.isLoggedIn() || _busy) return false;
+      _busy = true;
+      try{
+        await Promise.all([
+          _save('crm_cards.json',  DB.getCards()),
+          _save('crm_visits.json', DB.getVisits()),
+          _save('crm_cos.json',    DB.getCos())
+        ]);
+        localStorage.setItem('crm_gdrive_lastsync', new Date().toISOString());
+        _busy = false; return true;
+      } catch(e){ console.error('syncUp', e); _busy = false; return false; }
+    },
+
+    async getStorageInfo(){
+      try{
+        const r = await _api('https://www.googleapis.com/drive/v3/about?fields=storageQuota,user');
+        return await r.json();
+      } catch(e){ return null; }
+    },
+
+    getLastSync(){ return localStorage.getItem('crm_gdrive_lastsync')||null; },
+    getFolderUrl(){ return _fid ? `https://drive.google.com/drive/folders/${_fid}` : null; }
+  };
+})();
+
+/* ══════════════════════════════════════════
+   자동 sync 스케줄러 — 저장 3초 후 Drive 업로드
+══════════════════════════════════════════ */
+let _syncTimer = null;
+function _scheduleSyncUp(){
+  if(!GoogleAuth.isLoggedIn()) return;
+  clearTimeout(_syncTimer);
+  _syncTimer = setTimeout(()=> DriveDB.syncUp(), 3000);
+}

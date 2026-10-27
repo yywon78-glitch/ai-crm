@@ -15,6 +15,49 @@
   <div class="body">
     <div style="height:8px;"></div>
 
+    <!-- ── Google Drive 연동 ── -->
+    <div class="set-grp">
+      <div class="set-lbl">Google Drive 연동</div>
+
+      <!-- 로그인 전 -->
+      <div id="gdrive-login-row" class="set-item" onclick="driveLogin()" style="display:none;">
+        <span class="set-ic">☁️</span>
+        <div class="set-txt">
+          <div class="set-t">Google 계정으로 로그인</div>
+          <div class="set-s">명함·방문기록을 Drive에 자동 저장</div>
+        </div>
+        <span class="set-arrow" style="background:#4285f4;color:#fff;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;">연결</span>
+      </div>
+
+      <!-- 로그인 후 -->
+      <div id="gdrive-status-row" style="display:none;padding:12px 16px;background:var(--blue-lt);border-radius:12px;margin-bottom:2px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <span style="font-size:22px;">☁️</span>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:700;color:#1d4ed8;" id="gdrive-email">연결됨</div>
+            <div style="font-size:11px;color:#3b82f6;" id="gdrive-lastsync">동기화 대기 중</div>
+          </div>
+          <button onclick="driveLogout()" style="background:#fee2e2;color:#dc2626;border:none;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;">연결 해제</button>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="driveSyncDown()" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #93c5fd;background:#fff;color:#1d4ed8;font-size:12px;font-weight:700;cursor:pointer;">⬇ Drive → 기기</button>
+          <button onclick="driveSyncUp()" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #93c5fd;background:#fff;color:#1d4ed8;font-size:12px;font-weight:700;cursor:pointer;">⬆ 기기 → Drive</button>
+          <button onclick="openDriveFolder()" style="padding:10px 14px;border-radius:10px;border:1.5px solid #93c5fd;background:#fff;color:#1d4ed8;font-size:12px;font-weight:700;cursor:pointer;">📁</button>
+        </div>
+        <div id="gdrive-storage" style="margin-top:8px;font-size:11px;color:#3b82f6;"></div>
+      </div>
+
+      <!-- Client ID 설정 -->
+      <div class="set-item" onclick="editClientId()">
+        <span class="set-ic">🔧</span>
+        <div class="set-txt">
+          <div class="set-t">Google Client ID 설정</div>
+          <div class="set-s" id="client-id-status">미설정 — Drive 연동에 필요</div>
+        </div>
+        <span class="set-arrow">›</span>
+      </div>
+    </div>
+
     <div class="set-grp">
       <div class="set-lbl">API 연동</div>
       <div class="set-item" onclick="editKey()">
@@ -35,11 +78,13 @@
     </div>
 
     <div class="set-grp">
-      <div class="set-lbl">데이터</div>
-      <div class="set-item" onclick="confirmReset()">
-        <span class="set-ic">🗑</span>
-        <div class="set-txt"><div class="set-t">데이터 초기화</div><div class="set-s">샘플 데이터로 되돌리기</div></div>
-        <span class="set-arrow">›</span>
+      <div class="set-lbl">데이터 관리</div>
+      <div class="set-item" style="flex-direction:column;align-items:stretch;gap:0;padding:12px 16px;">
+        <div id="data-stat" style="font-size:12px;color:var(--t2);line-height:2;padding-bottom:10px;border-bottom:1px solid var(--bdr);"></div>
+        <div style="display:flex;gap:8px;padding-top:10px;">
+          <button onclick="deleteDummy()" style="flex:1;padding:12px 8px;border-radius:10px;border:1.5px solid #f59e0b;background:#fffbeb;color:#b45309;font-size:13px;font-weight:700;cursor:pointer;">🗑 샘플만 삭제</button>
+          <button onclick="confirmReset()" style="flex:1;padding:12px 8px;border-radius:10px;border:1.5px solid #dc2626;background:#fef2f2;color:#dc2626;font-size:13px;font-weight:700;cursor:pointer;">⚠️ 전체 초기화</button>
+        </div>
       </div>
     </div>
 
@@ -61,8 +106,30 @@
       <div class="set-lbl">앱 정보</div>
       <div class="set-item">
         <span class="set-ic">ℹ️</span>
-        <div class="set-txt"><div class="set-t">버전</div><div class="set-s">v9.5 · 2026-10-27 · 전체 화면 pageshow 갱신 추가</div></div>
+        <div class="set-txt"><div class="set-t">버전</div><div class="set-s">v9.7 · 2026-10-27 · Google Drive 연동</div></div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Google Client ID 모달 -->
+<div class="moverlay" id="modal-clientid" onclick="if(event.target===this)closeClientIdModal()">
+  <div class="msheet">
+    <div class="m-handle"></div>
+    <div class="m-title">Google Client ID</div>
+    <div class="m-body">
+      <div><div class="flb">Client ID</div><input class="finp" id="clientid-inp" placeholder="123456789-xxxx.apps.googleusercontent.com"></div>
+      <div style="font-size:12px;color:var(--t2);line-height:1.8;margin-top:4px;">
+        📋 발급 방법<br>
+        1. <b>console.cloud.google.com</b> → 새 프로젝트<br>
+        2. API 및 서비스 → Google Drive API 사용 설정<br>
+        3. 사용자 인증 정보 → OAuth 2.0 클라이언트 ID 생성<br>
+        4. 유형: <b>웹 애플리케이션</b><br>
+        5. 승인된 JavaScript 원본 추가:<br>
+        &nbsp;&nbsp;&nbsp;<b>https://yywon78-glitch.github.io</b><br>
+        6. 생성된 클라이언트 ID 복사 후 위에 입력
+      </div>
+      <button class="m-btn" onclick="saveClientId()">저장</button>
     </div>
   </div>
 </div>
@@ -119,6 +186,90 @@
 <script src="data.js"></script>
 <script src="nav.js"></script>
 <script>
+/* ── Google Drive ── */
+function loadDriveStatus(){
+  const cid = DB.getGoogleClientId();
+  document.getElementById('client-id-status').textContent =
+    cid ? `설정됨 (${cid.slice(0,20)}...)` : '미설정 — Drive 연동에 필요';
+
+  if(GoogleAuth.isLoggedIn()){
+    document.getElementById('gdrive-login-row').style.display  = 'none';
+    document.getElementById('gdrive-status-row').style.display = 'block';
+    document.getElementById('gdrive-email').textContent = GoogleAuth.getUserEmail() || '연결됨';
+    const ls = DriveDB.getLastSync();
+    document.getElementById('gdrive-lastsync').textContent = ls
+      ? '마지막 동기화: ' + new Date(ls).toLocaleString('ko-KR')
+      : '동기화 전';
+    loadStorageInfo();
+  } else {
+    document.getElementById('gdrive-login-row').style.display  = cid ? 'flex' : 'none';
+    document.getElementById('gdrive-status-row').style.display = 'none';
+  }
+}
+
+async function loadStorageInfo(){
+  const info = await DriveDB.getStorageInfo();
+  if(!info?.storageQuota) return;
+  const q = info.storageQuota;
+  const used = parseInt(q.usage||0);
+  const total= parseInt(q.limit||0);
+  const usedMB = (used/1024/1024).toFixed(0);
+  const totalGB= (total/1024/1024/1024).toFixed(0);
+  const pct = total ? Math.round(used/total*100) : 0;
+  document.getElementById('gdrive-storage').textContent =
+    `Drive 저장용량: ${usedMB}MB / ${totalGB}GB 사용 (${pct}%)`;
+}
+
+function driveLogin(){
+  GoogleAuth.login(()=>{
+    loadDriveStatus();
+    toast('Google Drive 연결됐습니다 ✓');
+    DriveDB.syncDown().then(ok => { if(ok) toast('Drive에서 데이터를 불러왔습니다 ✓'); });
+  });
+}
+
+function driveLogout(){
+  if(!confirm('Google Drive 연결을 해제하시겠습니까?\n(기기 내 데이터는 유지됩니다)')) return;
+  GoogleAuth.logout();
+  loadDriveStatus();
+  toast('연결 해제됐습니다');
+}
+
+async function driveSyncDown(){
+  if(!GoogleAuth.isLoggedIn()){ toast('먼저 Google 로그인이 필요합니다'); return; }
+  toast('Drive에서 불러오는 중...');
+  const ok = await DriveDB.syncDown();
+  toast(ok ? 'Drive → 기기 동기화 완료 ✓' : '동기화 실패. 다시 시도해주세요');
+  if(ok) loadDriveStatus();
+}
+
+async function driveSyncUp(){
+  if(!GoogleAuth.isLoggedIn()){ toast('먼저 Google 로그인이 필요합니다'); return; }
+  toast('Drive에 저장 중...');
+  const ok = await DriveDB.syncUp();
+  toast(ok ? '기기 → Drive 저장 완료 ✓' : '저장 실패. 다시 시도해주세요');
+  if(ok) loadDriveStatus();
+}
+
+function openDriveFolder(){
+  const url = DriveDB.getFolderUrl();
+  if(url) window.open(url, '_blank');
+  else toast('먼저 동기화를 실행해주세요');
+}
+
+function editClientId(){
+  document.getElementById('clientid-inp').value = DB.getGoogleClientId();
+  document.getElementById('modal-clientid').classList.add('show');
+}
+function closeClientIdModal(){ document.getElementById('modal-clientid').classList.remove('show'); }
+function saveClientId(){
+  const v = document.getElementById('clientid-inp').value.trim();
+  DB.setGoogleClientId(v);
+  closeClientIdModal();
+  loadDriveStatus();
+  toast('Client ID가 저장됐습니다 ✓');
+}
+
 function load(){
   const k=DB.getKey();
   document.getElementById('key-status').textContent = k ? `설정됨 (${k.slice(0,12)}...)` : '미설정';
@@ -126,6 +277,22 @@ function load(){
   document.getElementById('ws-status').textContent = w ? `설정됨 (${w.slice(0,16)}...)` : '미설정 (오류 시 필요)';
   const kk=DB.getKakaoKey();
   document.getElementById('kakao-status').textContent = kk ? `설정됨 (${kk.slice(0,8)}...)` : '미설정 — 지도 기능에 필요';
+  loadDataStat();
+}
+
+function loadDataStat(){
+  const cards  = DB.getCards();
+  const cos    = DB.getCos();
+  const visits = DB.getVisits();
+  const realCards  = cards.filter(c=>!c.isDummy).length;
+  const dummyCards = cards.filter(c=> c.isDummy).length;
+  const realCos    = cos.filter(c=>!c.isDummy).length;
+  const dummyCos   = cos.filter(c=> c.isDummy).length;
+  const realVisits = visits.filter(v=>!v.isDummy).length;
+  const dummyVisits= visits.filter(v=> v.isDummy).length;
+  document.getElementById('data-stat').innerHTML =
+    `<span style="color:var(--t1);font-weight:600;">실제 데이터</span> &nbsp;명함 ${realCards}장 · 거래처 ${realCos}개 · 방문기록 ${realVisits}건`+
+    `<br><span style="color:#f59e0b;font-weight:600;">샘플 데이터</span> &nbsp;명함 ${dummyCards}장 · 거래처 ${dummyCos}개 · 방문기록 ${dummyVisits}건`;
 }
 
 function editKakaoKey(){
@@ -190,16 +357,30 @@ function exportCSV(){
   toast('CSV 내보내기 완료 ✓');
 }
 
+function deleteDummy(){
+  const cards  = DB.getCards().filter(c=>!c.isDummy);
+  const cos    = DB.getCos().filter(c=>!c.isDummy);
+  const visits = DB.getVisits().filter(v=>!v.isDummy);
+  if(!confirm(`샘플 데이터를 삭제합니다.\n실제 데이터(명함 ${cards.length}장·거래처 ${cos.length}개·방문기록 ${visits.length}건)는 유지됩니다.\n계속하시겠습니까?`)) return;
+  DB.setCards(cards);
+  DB.setCos(cos);
+  DB.setVisits(visits);
+  loadDataStat();
+  toast('샘플 데이터 삭제 완료 ✓');
+}
+
 function confirmReset(){
-  if(confirm('모든 데이터를 초기화하고 샘플 데이터로 되돌립니다. 계속하시겠습니까?')){
+  if(confirm('⚠️ 전체 초기화\n\n모든 데이터(실제 + 샘플)를 삭제하고\n빈 상태로 시작합니다.\n\n계속하시겠습니까?')){
     localStorage.removeItem('crm_cards');
     localStorage.removeItem('crm_cos');
     localStorage.removeItem('crm_visits');
-    toast('초기화 완료 ✓');
+    loadDataStat();
+    toast('전체 초기화 완료 ✓');
   }
 }
 
 load();
+loadDriveStatus();
 </script>
 </body>
 </html>
