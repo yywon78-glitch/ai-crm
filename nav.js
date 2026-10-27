@@ -50,16 +50,26 @@ function qp(name) {
   return new URLSearchParams(location.search).get(name)||'';
 }
 
-/* ── 전 페이지 Drive 자동 동기화 ── */
+/* ── 전 페이지 Drive 자동 동기화 (세션 자동복구 포함) ── */
 window.addEventListener('load', async function(){
-  if(typeof GoogleAuth==='undefined' || !GoogleAuth.isLoggedIn()) return;
-  /* index.html은 자체 처리하므로 제외 */
+  if(typeof GoogleAuth==='undefined') return;
   const pg = location.pathname.split('/').pop();
-  if(pg===''||pg==='index.html') return;
-  const ok = await DriveDB.syncDown();
-  if(ok){
-    if(typeof render==='function') render();
-    if(typeof load==='function') load();
+  if(pg===''||pg==='index.html') return; /* index.html은 자체 처리 */
+
+  const _doSync = async () => {
+    const ok = await DriveDB.syncDown();
+    if(ok){
+      if(typeof render==='function') render();
+      if(typeof load==='function') load();
+    }
+  };
+
+  if(GoogleAuth.isLoggedIn()){
+    /* 토큰 유효 → 바로 sync */
+    await _doSync();
+  } else {
+    /* 토큰 만료 → 조용히 복구 후 sync */
+    GoogleAuth.tryRestore(async ()=> await _doSync());
   }
 });
 

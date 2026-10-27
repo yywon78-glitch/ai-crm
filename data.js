@@ -232,6 +232,30 @@ const GoogleAuth = (function(){
       } catch(e){ console.warn('silentRefresh 오류:', e); }
     },
 
+    /* 앱 시작 시 조용한 세션 복구 — 팝업 없음 */
+    tryRestore(onSuccess){
+      /* 이전 로그인 흔적이 없으면 스킵 */
+      if(!localStorage.getItem('crm_gemail') && !localStorage.getItem('crm_gtoken')) return;
+      const cid = DB.getGoogleClientId();
+      if(!cid) return;
+      const _go = () => {
+        try{
+          google.accounts.oauth2.initTokenClient({
+            client_id: cid, scope: SCOPE,
+            prompt: '',   /* 빈 문자열 = UI 없이 시도 */
+            callback: resp => {
+              if(resp.error){ console.log('세션 복구 실패(정상):', resp.error); return; }
+              _saveToken(resp);
+              _startRefreshTimer();
+              if(typeof onSuccess==='function') onSuccess();
+            }
+          }).requestAccessToken({prompt:''});
+        } catch(e){ console.warn('tryRestore 오류:', e); }
+      };
+      if(typeof google!=='undefined') _go();
+      else setTimeout(_go, 2000);
+    },
+
     login(onDone){
       const cid = DB.getGoogleClientId();
       if(!cid){ alert('설정 → Google Drive에서 Client ID를 먼저 입력해주세요.'); return; }
