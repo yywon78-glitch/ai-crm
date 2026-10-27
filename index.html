@@ -6,148 +6,211 @@
 <title>명함 CRM</title>
 <link rel="stylesheet" href="shared.css">
 <style>
-.home-banner{background:linear-gradient(135deg,#1d4ed8 0%,#2563eb 60%,#3b82f6 100%);padding:24px 20px 28px;color:#fff;}
-.home-logo{font-size:13px;font-weight:700;opacity:.8;letter-spacing:.5px;margin-bottom:6px;}
-.home-title{font-size:26px;font-weight:800;margin-bottom:4px;}
-.home-date{font-size:13px;opacity:.75;}
-.stat-row{display:flex;gap:10px;margin-top:18px;}
-.stat-chip{flex:1;background:rgba(255,255,255,.18);border-radius:12px;padding:10px 12px;text-align:center;}
-.stat-chip .n{font-size:22px;font-weight:800;line-height:1;}
-.stat-chip .l{font-size:11px;font-weight:600;opacity:.85;margin-top:3px;}
+/* ── 다크 홈 레이아웃 ── */
+.hw-page{position:fixed;inset:0;display:flex;flex-direction:column;background:#0a0f1e;}
 
-.menu-section{padding:16px 14px 8px;}
-.menu-section-title{font-size:11px;font-weight:700;color:var(--t3);letter-spacing:.5px;margin-bottom:8px;}
-.menu-card{background:var(--card);border:1.5px solid var(--bdr);border-radius:14px;padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer;margin-bottom:9px;transition:background .12s;}
-.menu-card:active{background:var(--card2);}
-.menu-ic{width:48px;height:48px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
-.ic-blue{background:rgba(37,99,235,.1);}
-.ic-grn{background:rgba(22,163,74,.1);}
-.ic-amb{background:rgba(217,119,6,.1);}
-.ic-pur{background:rgba(124,58,237,.1);}
-.ic-red{background:rgba(220,38,38,.1);}
-.ic-gray{background:rgba(107,114,128,.1);}
-.menu-txt{flex:1;}
-.menu-nm{font-size:15px;font-weight:700;}
-.menu-desc{font-size:12px;color:var(--t2);margin-top:3px;}
-.menu-badge{font-size:12px;font-weight:700;color:var(--blue);flex-shrink:0;}
-.menu-arrow{color:var(--t3);font-size:17px;flex-shrink:0;}
+/* 헤더 */
+.hw-hdr{height:var(--hdr-h);flex-shrink:0;background:rgba(10,15,30,.95);border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;padding:0 16px;gap:8px;backdrop-filter:blur(12px);}
+.hw-hdr-t{font-size:17px;font-weight:800;flex:1;color:#fff;letter-spacing:-.3px;}
+.hw-hdr-ic{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:17px;cursor:pointer;}
+
+/* 스크롤 영역 */
+.hw-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+
+/* 히어로 섹션 */
+.hw-hero{padding:18px 16px 14px;position:relative;}
+.hw-hero-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.hw-logo{font-size:10px;font-weight:700;color:rgba(255,255,255,.4);letter-spacing:.8px;}
+.hw-ver{font-size:10px;font-weight:700;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);padding:3px 9px;border-radius:20px;color:rgba(255,255,255,.5);}
+.hw-date{font-size:13px;color:rgba(255,255,255,.55);margin-bottom:14px;}
+
+/* 통계 카드 */
+.hw-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.hw-stat{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 10px;text-align:center;position:relative;overflow:hidden;}
+.hw-stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.hw-stat.s-card::before{background:linear-gradient(90deg,#3b82f6,#60a5fa);}
+.hw-stat.s-co::before{background:linear-gradient(90deg,#10b981,#34d399);}
+.hw-stat.s-visit::before{background:linear-gradient(90deg,#f59e0b,#fbbf24);}
+.hw-stat-n{font-size:24px;font-weight:800;color:#fff;line-height:1;}
+.hw-stat-l{font-size:10px;font-weight:600;color:rgba(255,255,255,.4);margin-top:4px;letter-spacing:.3px;}
+
+/* 오늘 방문 예정 */
+.hw-today-wrap{margin:0 16px 4px;}
+.hw-today-item{background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.4);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:6px;}
+.hw-today-ic{font-size:18px;}
+.hw-today-nm{font-size:14px;font-weight:700;color:#fca5a5;}
+.hw-today-sub{font-size:11px;color:rgba(252,165,165,.7);margin-top:1px;}
+
+/* 구조도 영역 */
+.hw-map{padding:0 16px 16px;}
+
+/* 구분 레이블 */
+.hw-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:.6px;margin:14px 0 8px;display:flex;align-items:center;gap:8px;}
+.hw-lbl::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08);}
+
+/* 노드 공통 */
+.hw-node{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:18px;cursor:pointer;transition:all .15s;touch-action:manipulation;position:relative;overflow:hidden;}
+.hw-node:active{transform:scale(.97);background:rgba(255,255,255,.08);}
+.hw-node::after{content:'';position:absolute;inset:0;border-radius:18px;opacity:0;background:rgba(255,255,255,.06);transition:opacity .15s;}
+
+/* 스캔 — 가로 2열 */
+.hw-scan-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.hw-scan-node{background:linear-gradient(135deg,rgba(37,99,235,.35),rgba(59,130,246,.2));border:1px solid rgba(59,130,246,.45);border-radius:18px;padding:18px 14px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;touch-action:manipulation;transition:all .15s;position:relative;overflow:hidden;}
+.hw-scan-node:active{transform:scale(.96);}
+.hw-scan-node::before{content:'';position:absolute;top:-20px;right:-20px;width:70px;height:70px;background:rgba(59,130,246,.15);border-radius:50%;}
+.hw-scan-ic{font-size:32px;line-height:1;}
+.hw-scan-t{font-size:13px;font-weight:700;color:#93c5fd;}
+.hw-scan-s{font-size:10px;color:rgba(147,197,253,.6);text-align:center;line-height:1.4;}
+
+/* 흐름 화살표 */
+.hw-arrow{text-align:center;font-size:11px;font-weight:700;color:rgba(255,255,255,.2);letter-spacing:.5px;margin:4px 0;display:flex;align-items:center;justify-content:center;gap:6px;}
+.hw-arrow::before,.hw-arrow::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08);}
+
+/* 2열 그리드 노드 */
+.hw-grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.hw-tile{padding:16px 14px 14px;display:flex;flex-direction:column;gap:6px;}
+.hw-tile-ic{font-size:28px;line-height:1;}
+.hw-tile-t{font-size:13px;font-weight:700;color:#fff;}
+.hw-tile-s{font-size:10px;color:rgba(255,255,255,.4);line-height:1.4;}
+.hw-tile-badge{position:absolute;top:12px;right:12px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;}
+
+/* 색상 변형 */
+.hw-tile-grn{background:linear-gradient(135deg,rgba(16,185,129,.25),rgba(52,211,153,.12));border-color:rgba(16,185,129,.35)!important;}
+.hw-tile-grn .hw-tile-t{color:#6ee7b7;}
+.hw-tile-grn .hw-tile-badge{background:rgba(16,185,129,.2);color:#34d399;}
+.hw-tile-amb{background:linear-gradient(135deg,rgba(245,158,11,.25),rgba(251,191,36,.12));border-color:rgba(245,158,11,.35)!important;}
+.hw-tile-amb .hw-tile-t{color:#fcd34d;}
+.hw-tile-amb .hw-tile-badge{background:rgba(245,158,11,.2);color:#fbbf24;}
+.hw-tile-pur{background:linear-gradient(135deg,rgba(124,58,237,.25),rgba(167,139,250,.12));border-color:rgba(124,58,237,.35)!important;}
+.hw-tile-pur .hw-tile-t{color:#c4b5fd;}
+.hw-tile-blue{background:linear-gradient(135deg,rgba(37,99,235,.2),rgba(96,165,250,.1));border-color:rgba(37,99,235,.35)!important;}
+.hw-tile-blue .hw-tile-t{color:#93c5fd;}
+.hw-tile-blue .hw-tile-badge{background:rgba(37,99,235,.2);color:#60a5fa;}
+
+/* 설정 — 작은 행 */
+.hw-settings{display:flex;align-items:center;gap:12px;padding:12px 16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;cursor:pointer;touch-action:manipulation;}
+.hw-settings:active{background:rgba(255,255,255,.07);}
+.hw-settings-ic{font-size:20px;}
+.hw-settings-t{font-size:13px;font-weight:600;color:rgba(255,255,255,.5);}
+.hw-settings-arr{margin-left:auto;color:rgba(255,255,255,.2);font-size:15px;}
+
+/* 탭바 다크 */
+.hw-tabbar{height:var(--tab-h);flex-shrink:0;background:rgba(10,15,30,.98);border-top:1px solid rgba(255,255,255,.08);}
+.hw-tabbar .tbi{color:rgba(255,255,255,.3);}
+.hw-tabbar .tbi.on{color:#60a5fa;}
+.hw-tabbar .scan-fab{background:linear-gradient(135deg,#2563eb,#3b82f6);box-shadow:0 4px 16px rgba(37,99,235,.5);}
 </style>
 </head>
 <body>
-<div class="page">
-  <header class="hdr">
-    <span class="hdr-t">명함 CRM</span>
-    <div class="hdr-icon" onclick="location.href='settings.html'">⚙️</div>
-  </header>
-  <div class="body">
+
+<div class="hw-page">
+  <!-- 헤더 -->
+  <div class="hw-hdr">
+    <span class="hw-hdr-t">명함 CRM</span>
+    <div class="hw-hdr-ic" onclick="location.href='settings.html'">⚙️</div>
+  </div>
+
+  <div class="hw-scroll">
+
+    <!-- 히어로: 날짜 + 통계 -->
+    <div class="hw-hero">
+      <div class="hw-hero-top">
+        <span class="hw-logo">BUSINESS CARD CRM</span>
+        <span class="hw-ver">v9.1</span>
+      </div>
+      <div class="hw-date" id="today-date"></div>
+      <div class="hw-stats">
+        <div class="hw-stat s-card" onclick="location.href='cards.html'">
+          <div class="hw-stat-n" id="s-cards">0</div>
+          <div class="hw-stat-l">명함</div>
+        </div>
+        <div class="hw-stat s-co" onclick="location.href='cos.html'">
+          <div class="hw-stat-n" id="s-cos">0</div>
+          <div class="hw-stat-l">거래처</div>
+        </div>
+        <div class="hw-stat s-visit" onclick="location.href='visits.html'">
+          <div class="hw-stat-n" id="s-visits">0</div>
+          <div class="hw-stat-l">방문</div>
+        </div>
+      </div>
+    </div>
 
     <!-- 오늘 방문 예정 -->
     <div id="today-visits-wrap" style="display:none;">
-      <div class="menu-section" style="padding-bottom:0;">
-        <div class="menu-section-title" style="color:var(--red);">📅 오늘 방문 예정</div>
-      </div>
-      <div id="today-visits" style="padding:0 14px 8px;display:flex;flex-direction:column;gap:8px;"></div>
+      <div class="hw-today-wrap" id="today-visits"></div>
     </div>
 
-    <!-- 배너 + 통계 -->
-    <div class="home-banner">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <div class="home-logo">BUSINESS CARD CRM</div>
-        <div style="font-size:11px;font-weight:700;background:rgba(255,255,255,.2);padding:3px 10px;border-radius:20px;">v9.0</div>
-      </div>
-      <div class="home-title">명함 관리 시스템</div>
-      <div class="home-date" id="today-date"></div>
-      <div class="stat-row">
-        <div class="stat-chip"><div class="n" id="s-cards">0</div><div class="l">명함</div></div>
-        <div class="stat-chip"><div class="n" id="s-cos">0</div><div class="l">거래처</div></div>
-        <div class="stat-chip"><div class="n" id="s-visits">0</div><div class="l">방문</div></div>
-      </div>
-    </div>
+    <!-- 구조도 맵 -->
+    <div class="hw-map">
 
-    <!-- 주요 기능 -->
-    <div class="menu-section">
-      <div class="menu-section-title">명함 관리</div>
-
-      <label class="menu-card" for="inp-cam" style="cursor:pointer;">
-        <div class="menu-ic ic-blue">📷</div>
-        <div class="menu-txt">
-          <div class="menu-nm">명함 스캔</div>
-          <div class="menu-desc">카메라로 명함을 촬영하고 자동 저장</div>
-        </div>
-        <div class="menu-arrow">›</div>
-      </label>
-
-      <label class="menu-card" for="inp-gal" style="cursor:pointer;">
-        <div class="menu-ic ic-blue">🖼️</div>
-        <div class="menu-txt">
-          <div class="menu-nm">갤러리 스캔</div>
-          <div class="menu-desc">사진첩에서 명함 사진을 선택해 저장</div>
-        </div>
-        <div class="menu-arrow">›</div>
-      </label>
-
-      <div class="menu-card" onclick="location.href='cards.html'">
-        <div class="menu-ic ic-blue">🪪</div>
-        <div class="menu-txt">
-          <div class="menu-nm">명함 목록</div>
-          <div class="menu-desc">저장된 명함 검색 · 조회 · 즐겨찾기</div>
-        </div>
-        <div class="menu-badge" id="b-cards"></div>
-        <div class="menu-arrow">›</div>
-      </div>
-    </div>
-
-    <!-- 거래처·방문 -->
-    <div class="menu-section">
-      <div class="menu-section-title">영업 관리</div>
-
-      <div class="menu-card" onclick="location.href='cos.html'">
-        <div class="menu-ic ic-grn">🏢</div>
-        <div class="menu-txt">
-          <div class="menu-nm">거래처 관리</div>
-          <div class="menu-desc">회사별 명함·방문이력 통합 관리</div>
-        </div>
-        <div class="menu-badge" id="b-cos"></div>
-        <div class="menu-arrow">›</div>
+      <!-- ① 명함 입력 -->
+      <div class="hw-lbl">명함 입력</div>
+      <div class="hw-scan-row">
+        <label class="hw-scan-node" for="inp-cam">
+          <div class="hw-scan-ic">📷</div>
+          <div class="hw-scan-t">카메라 스캔</div>
+          <div class="hw-scan-s">명함 촬영 후<br>AI 자동 인식</div>
+        </label>
+        <label class="hw-scan-node" for="inp-gal">
+          <div class="hw-scan-ic">🖼️</div>
+          <div class="hw-scan-t">갤러리 스캔</div>
+          <div class="hw-scan-s">사진첩에서<br>여러 장 선택</div>
+        </label>
       </div>
 
-      <div class="menu-card" onclick="location.href='visits.html'">
-        <div class="menu-ic ic-amb">📝</div>
-        <div class="menu-txt">
-          <div class="menu-nm">방문 기록</div>
-          <div class="menu-desc">미팅·상담·견적 방문 이력 관리</div>
+      <!-- ↓ 화살표 -->
+      <div class="hw-arrow">저장 · 관리</div>
+
+      <!-- ② 명함 & 거래처 -->
+      <div class="hw-lbl">관리</div>
+      <div class="hw-grid2">
+        <div class="hw-node hw-tile hw-tile-blue" onclick="location.href='cards.html'">
+          <span class="hw-tile-badge" id="b-cards"></span>
+          <div class="hw-tile-ic">🪪</div>
+          <div class="hw-tile-t">명함 목록</div>
+          <div class="hw-tile-s">이름순·거래처순<br>즐겨찾기·최근순</div>
         </div>
-        <div class="menu-badge" id="b-visits"></div>
-        <div class="menu-arrow">›</div>
+        <div class="hw-node hw-tile hw-tile-grn" onclick="location.href='cos.html'">
+          <span class="hw-tile-badge" id="b-cos"></span>
+          <div class="hw-tile-ic">🏢</div>
+          <div class="hw-tile-t">거래처</div>
+          <div class="hw-tile-s">소속 명함<br>방문 이력 통합</div>
+        </div>
       </div>
 
-      <div class="menu-card" onclick="location.href='map.html'">
-        <div class="menu-ic ic-pur">🗺️</div>
-        <div class="menu-txt">
-          <div class="menu-nm">거래처 지도</div>
-          <div class="menu-desc">주변 거래처 위치 확인</div>
+      <!-- ↓ 화살표 -->
+      <div class="hw-arrow">활용</div>
+
+      <!-- ③ 방문기록 & 지도 -->
+      <div class="hw-lbl">영업 활동</div>
+      <div class="hw-grid2">
+        <div class="hw-node hw-tile hw-tile-amb" onclick="location.href='visits.html'">
+          <span class="hw-tile-badge" id="b-visits"></span>
+          <div class="hw-tile-ic">📋</div>
+          <div class="hw-tile-t">방문기록</div>
+          <div class="hw-tile-s">달력·목록·<br>거래처별</div>
         </div>
-        <div class="menu-arrow">›</div>
-      </div>
-    </div>
-
-    <!-- 설정 -->
-    <div class="menu-section">
-      <div class="menu-section-title">시스템</div>
-
-      <div class="menu-card" onclick="location.href='settings.html'">
-        <div class="menu-ic ic-gray">⚙️</div>
-        <div class="menu-txt">
-          <div class="menu-nm">설정</div>
-          <div class="menu-desc">API 키 · 데이터 초기화</div>
+        <div class="hw-node hw-tile hw-tile-pur" onclick="location.href='map.html'">
+          <div class="hw-tile-ic">🗺️</div>
+          <div class="hw-tile-t">거래처 지도</div>
+          <div class="hw-tile-s">카카오맵<br>주변 거래처</div>
         </div>
-        <div class="menu-arrow">›</div>
       </div>
-    </div>
 
-    <div style="height:16px;"></div>
-  </div>
-  <nav class="tabbar" id="tabbar"></nav>
+      <!-- 설정 -->
+      <div style="margin-top:14px;">
+        <div class="hw-settings" onclick="location.href='settings.html'">
+          <span class="hw-settings-ic">⚙️</span>
+          <span class="hw-settings-t">설정 — API 키 · 데이터 백업</span>
+          <span class="hw-settings-arr">›</span>
+        </div>
+      </div>
+
+    </div><!-- /hw-map -->
+  </div><!-- /hw-scroll -->
+
+  <!-- 탭바 -->
+  <nav class="tabbar hw-tabbar" id="tabbar"></nav>
 </div>
 
 <input type="file" id="inp-cam" accept="image/*" capture="environment" style="position:fixed;top:-200px;left:-200px;width:1px;height:1px;opacity:0;">
@@ -162,9 +225,9 @@
       r.onload=ev=>{
         const img=new Image();
         img.onload=()=>{
-          const maxW=1600, scale=Math.min(1,maxW/Math.max(img.width,img.height));
+          const maxW=1600,scale=Math.min(1,maxW/Math.max(img.width,img.height));
           const c=document.createElement('canvas');
-          c.width=Math.round(img.width*scale); c.height=Math.round(img.height*scale);
+          c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);
           c.getContext('2d').drawImage(img,0,0,c.width,c.height);
           resolve(c.toDataURL('image/jpeg',0.9));
         };
@@ -173,63 +236,57 @@
       r.readAsDataURL(file);
     });
   }
-  function onCamFile(e){
-    const f=e.target.files[0]; if(!f) return;
-    e.target.value='';
+  document.getElementById('inp-cam').onchange=function(e){
+    const f=e.target.files[0];if(!f)return;e.target.value='';
     fileToDataUrl(f).then(data=>{
       sessionStorage.removeItem('scan_queue');
-      sessionStorage.setItem('scan_data', data);
+      sessionStorage.setItem('scan_data',data);
       sessionStorage.setItem('scan_back','cards.html');
       location.href='scan.html';
     });
-  }
-  function onGalFile(e){
-    const files=[...e.target.files]; if(!files.length) return;
-    e.target.value='';
-    Promise.all(files.map(fileToDataUrl)).then(dataUrls=>{
-      sessionStorage.setItem('scan_data', dataUrls[0]);
+  };
+  document.getElementById('inp-gal').onchange=function(e){
+    const files=[...e.target.files];if(!files.length)return;e.target.value='';
+    Promise.all(files.map(fileToDataUrl)).then(urls=>{
+      sessionStorage.setItem('scan_data',urls[0]);
       sessionStorage.setItem('scan_back','cards.html');
-      if(dataUrls.length>1) sessionStorage.setItem('scan_queue',JSON.stringify(dataUrls.slice(1)));
+      if(urls.length>1)sessionStorage.setItem('scan_queue',JSON.stringify(urls.slice(1)));
       else sessionStorage.removeItem('scan_queue');
       location.href='scan.html';
     });
-  }
-  document.getElementById('inp-cam').onchange = onCamFile;
-  document.getElementById('inp-gal').onchange = onGalFile;
+  };
 })();
+
 function load(){
-  const cards=DB.getCards(), cos=DB.getCos(), visits=DB.getVisits();
+  const cards=DB.getCards(),cos=DB.getCos(),visits=DB.getVisits();
   document.getElementById('s-cards').textContent=cards.length;
   document.getElementById('s-cos').textContent=cos.length;
   document.getElementById('s-visits').textContent=visits.length;
   document.getElementById('b-cards').textContent=cards.length+'장';
   document.getElementById('b-cos').textContent=cos.length+'개';
   document.getElementById('b-visits').textContent=visits.length+'건';
-
   const now=new Date();
   const days=['일','월','화','수','목','금','토'];
   document.getElementById('today-date').textContent=
     `${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 (${days[now.getDay()]})`;
 }
-renderTabBar('home');
-load();
 
-function loadTodayVisits() {
-  const today = new Date().toISOString().split('T')[0];
-  const visits = DB.getVisits().filter(v=>v.next===today);
-  const wrap = document.getElementById('today-visits-wrap');
-  const el = document.getElementById('today-visits');
-  if(!visits.length){ wrap.style.display='none'; return; }
+function loadTodayVisits(){
+  const today=new Date().toISOString().split('T')[0];
+  const visits=DB.getVisits().filter(v=>v.next===today);
+  const wrap=document.getElementById('today-visits-wrap');
+  const el=document.getElementById('today-visits');
+  if(!visits.length){wrap.style.display='none';return;}
   wrap.style.display='block';
-  el.innerHTML = visits.map(v=>`
-    <div class="menu-card" onclick="location.href='cos.html'" style="border-color:var(--red);background:#fff5f5;">
-      <div class="menu-ic" style="background:var(--red-lt);">📅</div>
-      <div class="menu-txt">
-        <div class="menu-nm">${v.co}</div>
-        <div class="menu-desc">${v.tp} · 오늘 방문 예정</div>
-      </div>
+  el.innerHTML=visits.map(v=>`
+    <div class="hw-today-item" onclick="location.href='visits.html'">
+      <span class="hw-today-ic">📅</span>
+      <div><div class="hw-today-nm">${v.co}</div><div class="hw-today-sub">${v.tp} · 오늘 방문 예정</div></div>
     </div>`).join('');
 }
+
+renderTabBar('home');
+load();
 loadTodayVisits();
 </script>
 </body>
