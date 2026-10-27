@@ -147,8 +147,10 @@ function render() {
 
 function cardHTML(c){
   /* 이미 공유된 카드: 라벨만 / 미공유: 체크박스 */
+  const me = GoogleAuth.getUserEmail();
+  const isMine = c.shared && (!c.sharedBy || c.sharedBy === me);
   const shareEl = c.shared
-    ? `<span class="b-shared">☁️공유</span>`
+    ? `<span class="b-shared" style="${isMine?'':'background:#fef3c7;color:#92400e;border:1px solid #fde68a;'}">${isMine?'☁️내공유':'☁️공유'}</span>`
     : `<span class="share-chk${chkSet.has(c.id)?' on':''}" data-id="${c.id}"
          onclick="event.stopPropagation();tickCard('${c.id}')"></span>`;
   return `<div class="li" onclick="openCardOverlay('${c.id}')">
@@ -178,10 +180,11 @@ function tickCard(id){
 /* [공유 저장] 버튼 — 체크된 카드 전부 shared = true */
 function saveShared(){
   if(!chkSet.size) return;
+  const me = GoogleAuth.getUserEmail();
   const cards = DB.getCards();
   chkSet.forEach(id=>{
     const c = cards.find(x=>x.id===id);
-    if(c) c.shared = true;
+    if(c){ c.shared = true; c.sharedBy = me; }
   });
   DB.setCards(cards);
   if(GoogleAuth.isLoggedIn()) SharedDriveDB.sync();
