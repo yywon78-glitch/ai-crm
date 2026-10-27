@@ -23,7 +23,7 @@
   font-size:10px;background:#dbeafe;color:#1d4ed8;border-radius:6px;
   padding:2px 5px;font-weight:700;margin-right:4px;flex-shrink:0;
 }
-/* 공유체크 버튼 */
+/* 공유저장 버튼 */
 #btn-share-save {
   padding:5px 12px;border-radius:8px;border:none;font-size:12px;font-weight:700;cursor:pointer;
   background:#e2e8f0;color:#94a3b8;transition:all .2s;white-space:nowrap;
@@ -52,7 +52,7 @@
     <div class="segtab"    id="seg-shared" onclick="setMode('shared',this)">☁️공유</div>
   </div>
   <div class="pills" id="stat-pills" style="display:flex;align-items:center;">
-    <button id="btn-share-save" onclick="saveShared()">공유체크</button>
+    <button id="btn-share-save" onclick="saveShared()">공유저장</button>
   </div>
   <div class="body"><div class="bp" id="list"></div></div>
   <nav class="tabbar" id="tabbar"></nav>
@@ -156,11 +156,11 @@ function tickCard(id){
   /* 해당 체크박스만 갱신 (전체 re-render 없이) */
   const chk = document.querySelector(`.share-chk[data-id="${id}"]`);
   if(chk) chk.classList.toggle('on', chkSet.has(id));
-  /* 공유체크 버튼 활성/비활성 */
+  /* 공유저장 버튼 활성/비활성 */
   const btn = document.getElementById('btn-share-save');
   if(btn){
     btn.classList.toggle('active', chkSet.size > 0);
-    btn.textContent = chkSet.size ? `공유체크 (${chkSet.size})` : '공유체크';
+    btn.textContent = chkSet.size ? `공유저장 (${chkSet.size})` : '공유저장';
   }
 }
 
@@ -177,7 +177,7 @@ function saveShared(){
   const cnt = chkSet.size;
   chkSet.clear();
   const btn = document.getElementById('btn-share-save');
-  if(btn){ btn.classList.remove('active'); btn.textContent = '공유체크'; }
+  if(btn){ btn.classList.remove('active'); btn.textContent = '공유저장'; }
   toast(`☁️ ${cnt}명 공유 등록됐습니다`);
   render();
 }
