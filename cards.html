@@ -213,9 +213,14 @@ async function loadThumbs(list){
   }
 }
 
+/* 개인 + 공유 통합 카드 조회 */
+function findCard(id){
+  return DB.getCards().find(c=>c.id===id) || _driveShared.find(c=>c.id===id);
+}
+
 /* ── 명함 상세 오버레이 ── */
 function openCardOverlay(id) {
-  const card = DB.getCards().find(c=>c.id===id);
+  const card = findCard(id);
   if(!card) return;
   const rows = [
     card.mob && {ic:'📱',lbl:'휴대전화',val:card.mob,action:'전화',href:`tel:${card.mob}`},
@@ -282,8 +287,14 @@ function closeCardOverlay() {
 
 function toggleFav(id, btn) {
   const cards = DB.getCards();
-  const c = cards.find(x=>x.id===id);
-  if(!c) return;
+  let c = cards.find(x=>x.id===id);
+  if(!c){
+    /* 공유 명함은 내 DB에 추가 후 즐겨찾기 처리 */
+    const shared = _driveShared.find(x=>x.id===id);
+    if(!shared) return;
+    c = {...shared};
+    cards.unshift(c);
+  }
   c.fav = !c.fav;
   DB.setCards(cards);
   btn.textContent = c.fav ? '★' : '☆';
@@ -291,7 +302,7 @@ function toggleFav(id, btn) {
 }
 
 function goToCoFromCard(cardId) {
-  const card = DB.getCards().find(c=>c.id===cardId);
+  const card = findCard(cardId);
   if(!card||!card.co) return;
   const co = DB.getCos().find(c=>c.nm===card.co);
   if(!co){ toast('등록된 거래처가 없습니다'); return; }
@@ -299,7 +310,7 @@ function goToCoFromCard(cardId) {
 }
 
 function openVisitFromCard(cardId) {
-  const card = DB.getCards().find(c=>c.id===cardId);
+  const card = findCard(cardId);
   if(!card) return;
   const co = DB.getCos().find(c=>c.nm===card.co);
   openVisitModal(co?co.id:'', card.co||'');
