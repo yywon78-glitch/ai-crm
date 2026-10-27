@@ -168,7 +168,7 @@ const DB = {
   getVisits: ()=> JSON.parse(localStorage.getItem('crm_visits')||'null') || [..._VISITS],
   setVisits: d => { localStorage.setItem('crm_visits', JSON.stringify(d)); _scheduleSyncUp(); },
 
-  getGoogleClientId: ()=> localStorage.getItem('crm_google_client_id')||'',
+  getGoogleClientId: ()=> localStorage.getItem('crm_google_client_id')||'649878765858-vs311q5tkgos3v1tp61eaflu0bgiap44.apps.googleusercontent.com',
   setGoogleClientId: id=> localStorage.setItem('crm_google_client_id', id),
 };
 
