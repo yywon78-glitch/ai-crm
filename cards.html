@@ -221,6 +221,8 @@ const _origRefresh = typeof refreshCoVisits !== 'undefined' ? refreshCoVisits : 
 
 renderTabBar('cards');
 render();
+window.addEventListener('pageshow', e => { if(e.persisted) render(); });
+document.addEventListener('visibilitychange', () => { if(!document.hidden) render(); });
 </script>
 </body>
 </html>

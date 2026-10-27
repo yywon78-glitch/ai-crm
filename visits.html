@@ -530,6 +530,8 @@ function saveVisitNew(){
 
 renderTabBar('visits');
 renderList();
+window.addEventListener('pageshow', e => { if(e.persisted) renderList(); });
+document.addEventListener('visibilitychange', () => { if(!document.hidden) renderList(); });
 </script>
 </body>
 </html>

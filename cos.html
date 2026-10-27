@@ -111,6 +111,8 @@ function saveCo() {
 
 renderTabBar('cos');
 render();
+window.addEventListener('pageshow', e => { if(e.persisted) render(); });
+document.addEventListener('visibilitychange', () => { if(!document.hidden) render(); });
 </script>
 </body>
 </html>
