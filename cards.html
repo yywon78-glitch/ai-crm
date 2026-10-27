@@ -18,9 +18,10 @@
     <input class="srch" id="srch" placeholder="🔍  이름, 회사, 전화번호 검색" oninput="render()">
   </div>
   <div class="segtabs">
-    <div class="segtab on" id="seg-name" onclick="setMode('name',this)">이름순</div>
-    <div class="segtab"    id="seg-co"   onclick="setMode('co',this)">거래처순</div>
-    <div class="segtab"    id="seg-fav"  onclick="setMode('fav',this)">즐겨찾기</div>
+    <div class="segtab on" id="seg-name"   onclick="setMode('name',this)">이름순</div>
+    <div class="segtab"    id="seg-co"     onclick="setMode('co',this)">거래처순</div>
+    <div class="segtab"    id="seg-fav"    onclick="setMode('fav',this)">즐겨찾기</div>
+    <div class="segtab"    id="seg-recent" onclick="setMode('recent',this)">최근순</div>
   </div>
   <div class="pills" id="stat-pills"></div>
   <div class="body"><div class="bp" id="list"></div></div>
@@ -82,7 +83,12 @@ function render() {
     list.forEach(c=>(g[c.co||'미분류']=g[c.co||'미분류']||[]).push(c));
     el.innerHTML=Object.entries(g).map(([co,cs])=>`<div class="group-lbl">${co}</div>`+cs.map(cardHTML).join('')).join('<div style="height:4px"></div>');
   } else {
-    if(mode==='name') list=[...list].sort((a,b)=>a.nm.localeCompare(b.nm,'ko'));
+    if(mode==='name')   list=[...list].sort((a,b)=>a.nm.localeCompare(b.nm,'ko'));
+    if(mode==='recent') list=[...list].sort((a,b)=>{
+      const ta=parseInt((a.id||'').replace(/[^0-9]/g,'').slice(0,13))||0;
+      const tb=parseInt((b.id||'').replace(/[^0-9]/g,'').slice(0,13))||0;
+      return tb-ta;
+    });
     el.innerHTML=list.map(cardHTML).join('');
   }
 }

@@ -32,7 +32,7 @@
 <!-- 파일 input (위치기반 숨김 — display:none 사용 안 함) -->
 <input type="file" id="inp-cam" accept="image/*" capture="environment"
        style="position:fixed;top:-300px;left:-300px;width:1px;height:1px;opacity:0;">
-<input type="file" id="inp-gal" accept="image/*"
+<input type="file" id="inp-gal" accept="image/*" multiple
        style="position:fixed;top:-300px;left:-300px;width:1px;height:1px;opacity:0;">
 
 <!-- 직접 접근 시 cam-trigger (label 방식) -->
@@ -185,7 +185,29 @@ function onFile(e){
   document.getElementById('cam-trigger').style.display = 'none';
 }
 document.getElementById('inp-cam').onchange = onFile;
-document.getElementById('inp-gal').onchange = onFile;
+
+/* 갤러리: 여러 장 선택 지원 */
+document.getElementById('inp-gal').onchange = function(e){
+  const files = [...e.target.files];
+  e.target.value = '';
+  if(!files.length) return;
+  document.getElementById('cam-trigger').style.display = 'none';
+  const readAll = files.map(f => new Promise(resolve=>{
+    const r = new FileReader();
+    r.onload = ev => resolve(ev.target.result);
+    r.readAsDataURL(f);
+  }));
+  Promise.all(readAll).then(urls=>{
+    if(urls.length === 1){
+      showRotate(urls[0]);
+    } else {
+      // 첫 장 처리, 나머지 큐에 적재
+      _queue = urls.slice(1);
+      toast(`${urls.length}장 선택됨 — 순서대로 처리합니다`);
+      showRotate(urls[0]);
+    }
+  });
+};
 
 /* ── 진입 경로 결정 ── */
 const _pending = sessionStorage.getItem('scan_data');
@@ -310,19 +332,30 @@ function fillForm(info){
 }
 
 function showMulti(cards){
-  _multiCards = [];
   _multiCards = cards;
   document.getElementById('multi-title').textContent = `명함 ${cards.length}장 인식됨`;
   document.getElementById('multi-list').innerHTML = cards.map((c,i)=>`
-    <label style="display:flex;align-items:flex-start;gap:12px;padding:14px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;cursor:pointer;margin-bottom:9px;">
-      <input type="checkbox" checked data-i="${i}" style="width:18px;height:18px;margin-top:3px;flex-shrink:0;accent-color:var(--blue);">
-      <div style="flex:1;">
-        <div style="font-size:15px;font-weight:700;">${c.nm||'(이름없음)'} <span style="font-size:12px;font-weight:400;color:var(--t2);">${c.tl||''}</span></div>
+    <div id="mcard-${i}" style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;margin-bottom:9px;transition:opacity .2s;">
+      <input type="checkbox" checked data-i="${i}" style="width:18px;height:18px;flex-shrink:0;accent-color:var(--blue);" onchange="if(!this.checked)_passCard(${i})">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.nm||'(이름없음)'} <span style="font-size:12px;font-weight:400;color:var(--t2);">${c.tl||''}</span></div>
         <div style="font-size:13px;color:var(--blue);margin-top:2px;">${c.co||''}</div>
-        <div style="font-size:12px;color:var(--t2);margin-top:2px;">${[c.mob,c.ph,c.em].filter(Boolean).join(' · ')}</div>
+        <div style="font-size:12px;color:var(--t2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${[c.mob,c.ph,c.em].filter(Boolean).join(' · ')}</div>
       </div>
-    </label>`).join('');
+      <button id="mpass-${i}" onclick="_passCard(${i})" style="flex-shrink:0;padding:8px 14px;border-radius:9px;background:var(--bg);border:1.5px solid var(--bdr);font-size:13px;font-weight:700;color:var(--t2);cursor:pointer;touch-action:manipulation;">패스</button>
+    </div>`).join('');
   document.getElementById('multi-box').classList.add('show');
+}
+
+function _passCard(i){
+  const card = document.getElementById(`mcard-${i}`);
+  if(!card) return;
+  card.querySelector('input[type=checkbox]').checked = false;
+  card.style.opacity = '0.35';
+  const btn = document.getElementById(`mpass-${i}`);
+  btn.textContent = '패스됨';
+  btn.style.cssText = 'flex-shrink:0;padding:8px 14px;border-radius:9px;background:var(--red-lt);border:1.5px solid var(--red);font-size:13px;font-weight:700;color:var(--red);cursor:default;';
+  btn.disabled = true;
 }
 
 function saveMulti(){
