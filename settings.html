@@ -156,7 +156,16 @@
         <span class="set-ic">☁️</span>
         <div class="set-txt">
           <div class="set-t" style="color:#dc2626;">Drive 개인 데이터 초기화</div>
-          <div class="set-s">Drive의 명함·방문기록 파일 비우기</div>
+          <div class="set-s">Drive의 개인 명함·방문기록 파일 비우기</div>
+        </div>
+        <span class="set-arrow" style="color:#dc2626;">›</span>
+      </div>
+
+      <div class="set-item" id="clean-shared-drive-row" style="display:none;" onclick="cleanSharedDriveData()">
+        <span class="set-ic">🌐</span>
+        <div class="set-txt">
+          <div class="set-t" style="color:#dc2626;">공용 폴더 전체 초기화</div>
+          <div class="set-s">CRM_공용의 모든 공유 명함·방문기록 삭제</div>
         </div>
         <span class="set-arrow" style="color:#dc2626;">›</span>
       </div>
@@ -185,7 +194,7 @@
       <div class="set-lbl">앱 정보</div>
       <div class="set-item">
         <span class="set-ic">ℹ️</span>
-        <div class="set-txt"><div class="set-t">버전</div><div class="set-s">v12.7 · 2026-10-28 · 재연결 시 삭제 데이터 복원 버그 수정</div></div>
+        <div class="set-txt"><div class="set-t">버전</div><div class="set-s">v12.8 · 2026-10-28 · 공유 취소 및 공용 폴더 초기화 기능 추가</div></div>
       </div>
     </div>
   </div>
@@ -408,6 +417,7 @@ async function refreshDataStat(){
       'Drive 개인 (' + (GoogleAuth.getUserEmail()||'') + ')';
     document.getElementById('stat-drive').textContent = 'Drive 조회 중...';
     document.getElementById('clean-drive-row').style.display = 'flex';
+    document.getElementById('clean-shared-drive-row').style.display = 'flex';
 
     const peek = await DriveDB.peek();
     document.getElementById('stat-drive').innerHTML = peek
@@ -416,6 +426,7 @@ async function refreshDataStat(){
   } else {
     document.getElementById('stat-drive').textContent = '로그인 후 확인';
     document.getElementById('clean-drive-row').style.display = 'none';
+    document.getElementById('clean-shared-drive-row').style.display = 'none';
   }
 
   /* 공용 */
@@ -543,6 +554,16 @@ function cleanSharedCache(){
   localStorage.removeItem('crm_drive_shared_visits');
   toast('공유 캐시 초기화 완료 ✓');
   refreshDataStat();
+}
+
+async function cleanSharedDriveData(){
+  if(!GoogleAuth.isLoggedIn()){ toast('로그인이 필요합니다'); return; }
+  const sharedCnt = DB.getDriveShared().length;
+  if(!confirm(`⚠️ 공용 폴더 전체 초기화\n\n현재 공유 명함 ${sharedCnt}장을 포함한\n모든 공유 데이터를 삭제합니다.\n\n모든 계정에서 공유 명함이 사라집니다.\n계속하시겠습니까?`)) return;
+  toast('공용 폴더 초기화 중...');
+  const ok = await SharedDriveDB.clearShared();
+  toast(ok ? '공용 폴더 초기화 완료 ✓' : '초기화 실패. 다시 시도해주세요');
+  if(ok) refreshDataStat();
 }
 
 async function cleanDriveData(){

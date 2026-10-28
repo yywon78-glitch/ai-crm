@@ -410,7 +410,45 @@ const SharedDriveDB = (function(){
         return arr;
       } catch(e){ console.error('SharedDriveDB.loadVisits', e); return []; }
     },
-    getFolderUrl(){ return `https://drive.google.com/drive/folders/${FOLDER_ID}`; }
+    getFolderUrl(){ return `https://drive.google.com/drive/folders/${FOLDER_ID}`; },
+
+    /* 특정 카드 ID들을 공용 폴더에서 제거 */
+    async removeCards(ids){
+      if(!GoogleAuth.isLoggedIn() || !ids?.length) return false;
+      try{
+        const idSet = new Set(ids);
+        const eid = await _fileId(FILE_NAME);
+        if(!eid) return true;
+        const r = await _api(`https://www.googleapis.com/drive/v3/files/${eid}?alt=media`);
+        const data = await r.json();
+        const remaining = Array.isArray(data) ? data.filter(c=>!idSet.has(c.id)) : [];
+        const body = JSON.stringify(remaining);
+        const bnd  = 'CRM_DEL_BNDRY';
+        const mp   = `--${bnd}\r\nContent-Type: application/json\r\n\r\n{}\r\n--${bnd}\r\nContent-Type: application/json\r\n\r\n${body}\r\n--${bnd}--`;
+        await _api(`https://www.googleapis.com/upload/drive/v3/files/${eid}?uploadType=multipart`,
+          {method:'PATCH', headers:{'Content-Type':`multipart/related; boundary=${bnd}`}, body:mp});
+        return true;
+      } catch(e){ console.error('SharedDriveDB.removeCards', e); return false; }
+    },
+
+    /* 공용 폴더 전체 초기화 (관리자용) */
+    async clearShared(){
+      if(!GoogleAuth.isLoggedIn()) return false;
+      try{
+        const upload = async (name) => {
+          const eid = await _fileId(name);
+          if(!eid) return;
+          const bnd = 'CRM_CLR_BNDRY';
+          const mp  = `--${bnd}\r\nContent-Type: application/json\r\n\r\n{}\r\n--${bnd}\r\nContent-Type: application/json\r\n\r\n[]\r\n--${bnd}--`;
+          await _api(`https://www.googleapis.com/upload/drive/v3/files/${eid}?uploadType=multipart`,
+            {method:'PATCH', headers:{'Content-Type':`multipart/related; boundary=${bnd}`}, body:mp});
+        };
+        await Promise.all([upload(FILE_NAME), upload('crm_shared_visits.json')]);
+        localStorage.removeItem('crm_drive_shared');
+        localStorage.removeItem('crm_drive_shared_visits');
+        return true;
+      } catch(e){ console.error('SharedDriveDB.clearShared', e); return false; }
+    }
   };
 })();
 

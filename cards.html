@@ -246,7 +246,7 @@ function openCardOverlay(id) {
       <div class="det-hero">
         <div class="det-av" style="background:${card.cl}18;color:${card.cl}">${card.nm[0]}</div>
         <div>
-          <div class="det-nm">${card.nm}${card.shared?'<span class="b-shared" style="vertical-align:middle;margin-left:6px;">☁️공유</span>':''}</div>
+          <div class="det-nm">${card.nm}${card.shared?`<span class="b-shared" style="vertical-align:middle;margin-left:6px;">☁️공유</span>`:''}</div>
           <div class="det-tl">${card.tl||''}</div>
           <div class="det-co" onclick="goToCoFromCard('${id}')">${card.co||''}</div>
         </div>
@@ -264,6 +264,7 @@ function openCardOverlay(id) {
         <div id="card-orig-ph" class="orig-ph">이미지 로드중...</div>
         <img id="card-orig-img" style="width:100%;border-radius:8px;display:none;">
       </div>
+      ${card.shared && card.sharedBy===GoogleAuth.getUserEmail() ? `<button class="action-btn" style="background:#dc2626;" onclick="unshareCard('${id}')">☁️ 공유 취소</button>` : ''}
       ${card.addr?`<a href="map.html?addr=${encodeURIComponent(card.addr)}&nm=${encodeURIComponent(card.co||card.nm)}" class="action-btn" style="display:block;text-align:center;text-decoration:none;color:#fff;background:#10b981;">📍 지도에서 보기</a>`:''}
       <button class="action-btn" onclick="openVisitFromCard('${id}')">📝 방문 기록 추가</button>
       <div class="sec-hdr"><h3>방문 이력</h3></div>
@@ -294,6 +295,20 @@ function openCardOverlay(id) {
     const ph = document.getElementById('card-orig-ph');
     if(ph) ph.textContent='이미지 없음';
   });
+}
+
+async function unshareCard(id){
+  if(!confirm('이 명함의 공유를 취소합니다.\n공용 폴더에서 삭제됩니다.\n계속하시겠습니까?')) return;
+  /* 로컬: shared 플래그 제거 */
+  const cards = DB.getCards();
+  const c = cards.find(x=>x.id===id);
+  if(c){ delete c.shared; delete c.sharedBy; DB.setCards(cards); }
+  /* 공용 폴더에서 제거 */
+  if(GoogleAuth.isLoggedIn()){
+    await SharedDriveDB.removeCards([id]);
+  }
+  toast('공유 취소됐습니다 ✓');
+  history.back();
 }
 
 function closeCardOverlay() {
