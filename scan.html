@@ -67,10 +67,8 @@
     <div class="hdr-back" onclick="history.back()">←</div>
     <span class="hdr-t" id="result-title">스캔 결과</span>
     <span id="result-saved" style="font-size:12px;font-weight:700;background:var(--blue-lt);color:var(--blue);border-radius:10px;padding:3px 9px;margin-right:4px;"></span>
-    <button id="btn-pass"   class="hdr-btn" onclick="passCard()"   style="background:#6b7280;display:none;margin-right:4px;">건너뛰기</button>
-    <button id="btn-retake" class="hdr-btn" onclick="retake()"     style="background:var(--t2);margin-right:6px;">재촬영</button>
-    <button id="btn-save"   class="hdr-btn" onclick="saveCard()">저장</button>
-    <button id="btn-next"   class="hdr-btn" onclick="_doNext()"    style="background:#10b981;display:none;">다음 →</button>
+    <button class="hdr-btn" onclick="retake()" style="background:var(--t2);margin-right:6px;">재촬영</button>
+    <button class="hdr-btn" onclick="saveCard()">저장</button>
   </header>
   <div class="body">
     <div class="res-img-wrap">
@@ -112,6 +110,10 @@
       <button onclick="closeErr();retake()" style="flex:1;padding:12px;border-radius:10px;background:#f3f4f6;color:#374151;border:none;font-size:15px;font-weight:700;cursor:pointer;">재촬영</button>
       <button onclick="closeErr();startOCR()" style="flex:1;padding:12px;border-radius:10px;background:#2563eb;color:#fff;border:none;font-size:15px;font-weight:700;cursor:pointer;">다시 인식</button>
     </div>
+    <button id="err-pass-btn" onclick="closeErr();passCard()"
+      style="display:none;width:100%;margin-top:10px;padding:12px;border-radius:10px;background:#f3f4f6;color:#6b7280;border:1.5px solid #d1d5db;font-size:14px;font-weight:700;cursor:pointer;">
+      이 명함 건너뛰고 다음으로 →
+    </button>
   </div>
 </div>
 
@@ -139,6 +141,9 @@ function showErr(msg){
   document.getElementById('ld').classList.remove('show');
   document.getElementById('err-msg').textContent = msg;
   document.getElementById('err-box').style.display = 'flex';
+  /* 큐에 다음 명함이 있을 때만 건너뛰기 버튼 표시 */
+  const passBtn = document.getElementById('err-pass-btn');
+  if(passBtn) passBtn.style.display = _queue.length > 0 ? 'block' : 'none';
 }
 function closeErr(){
   document.getElementById('err-box').style.display = 'none';
