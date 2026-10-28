@@ -135,12 +135,12 @@ const GoogleAuth = (function(){
       try{
         google.accounts.oauth2.initTokenClient({
           client_id: cid, scope: SCOPE,
-          prompt: '',           /* 빈 문자열 = 팝업 없이 갱신 */
+          prompt: 'none',       /* none = 팝업 절대 안 띄움, 실패 시 조용히 에러 */
           callback: resp => {
             if(resp.error){ console.warn('silentRefresh 실패:', resp.error); return; }
             _saveToken(resp);
           }
-        }).requestAccessToken({prompt:''});
+        }).requestAccessToken({prompt:'none'});
       } catch(e){ console.warn('silentRefresh 오류:', e); }
     },
 
@@ -154,14 +154,14 @@ const GoogleAuth = (function(){
         try{
           google.accounts.oauth2.initTokenClient({
             client_id: cid, scope: SCOPE,
-            prompt: '',   /* 빈 문자열 = UI 없이 시도 */
+            prompt: 'none',   /* none = 팝업 절대 안 띄움, 실패 시 조용히 에러 */
             callback: resp => {
               if(resp.error){ console.log('세션 복구 실패(정상):', resp.error); return; }
               _saveToken(resp);
               _startRefreshTimer();
               if(typeof onSuccess==='function') onSuccess();
             }
-          }).requestAccessToken({prompt:''});
+          }).requestAccessToken({prompt:'none'});
         } catch(e){ console.warn('tryRestore 오류:', e); }
       };
       if(typeof google!=='undefined') _go();
