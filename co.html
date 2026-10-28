@@ -26,6 +26,7 @@
         <div id="co-badge" style="margin-top:6px;"></div>
       </div>
     </div>
+    <div id="co-map-btn"></div>
     <div class="sec-hdr"><h3>소속 명함</h3><a onclick="sessionStorage.setItem('scan_back','co.html?id='+id);location.href='scan.html'">+ 명함 추가</a></div>
     <div class="bp" id="co-cards" style="padding:0 14px 0;"></div>
     <div class="sec-hdr"><h3>방문 이력</h3><a onclick="openVisitModal()">+ 기록</a></div>
@@ -80,6 +81,13 @@ function load(){
   document.getElementById('co-nm').textContent = co.nm;
   document.getElementById('co-addr').textContent = co.addr||'';
   document.getElementById('co-badge').innerHTML = `<span class="bx ${stCls[co.st]||'b-bl'}">${stLbl[co.st]||co.st}</span>`;
+  if(co.addr){
+    document.getElementById('co-map-btn').innerHTML =
+      `<a href="map.html?addr=${encodeURIComponent(co.addr)}&nm=${encodeURIComponent(co.nm)}"
+         class="action-btn" style="display:block;text-align:center;text-decoration:none;color:#fff;background:#10b981;margin:12px 14px 0;">
+         📍 지도에서 보기
+       </a>`;
+  }
 
   const personalCards = DB.getCards().filter(c=>c.co===co.nm);
   const personalIds   = new Set(personalCards.map(c=>c.id));

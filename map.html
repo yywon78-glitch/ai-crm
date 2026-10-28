@@ -234,7 +234,30 @@ async function loadCos(){
 }
 
 renderTabBar('map');
-loadCos();
+
+/* addr 파라미터가 있으면 해당 위치 중심으로 먼저 이동 */
+(async function(){
+  const focusAddr = qp('addr');
+  const focusNm   = qp('nm');
+  if(focusAddr){
+    msg('위치 검색 중...',0);
+    const pos = await geocode(focusAddr);
+    if(pos){
+      map.setView([pos.lat,pos.lng],16);
+      /* 강조 마커 */
+      const m = L.marker([pos.lat,pos.lng],{
+        icon: L.divIcon({
+          html:`<div style="width:42px;height:42px;border-radius:50%;background:#dc2626;border:3px solid #fff;box-shadow:0 2px 12px rgba(220,38,38,.5);display:flex;align-items:center;justify-content:center;font-size:18px;">🏢</div>`,
+          className:'',iconSize:[42,42],iconAnchor:[21,42],popupAnchor:[0,-44]
+        })
+      }).addTo(map);
+      m.bindTooltip(focusNm||focusAddr,{permanent:true,direction:'top',offset:[0,-44],opacity:1});
+      m.openPopup();
+    }
+    msgHide();
+  }
+  loadCos();
+})();
 </script>
 </body>
 </html>

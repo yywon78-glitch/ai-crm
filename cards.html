@@ -263,6 +263,7 @@ function openCardOverlay(id) {
         <div class="orig-hdr">📷 명함 원본</div>
         ${card.img?`<img src="${card.img}" style="width:100%;border-radius:8px;">`:`<div class="orig-ph">이미지 저장됨</div>`}
       </div>
+      ${card.addr?`<a href="map.html?addr=${encodeURIComponent(card.addr)}&nm=${encodeURIComponent(card.co||card.nm)}" class="action-btn" style="display:block;text-align:center;text-decoration:none;color:#fff;background:#10b981;">📍 지도에서 보기</a>`:''}
       <button class="action-btn" onclick="openVisitFromCard('${id}')">📝 방문 기록 추가</button>
       <div class="sec-hdr"><h3>방문 이력</h3></div>
       <div class="tl" id="card-visit-tl">

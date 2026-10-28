@@ -334,6 +334,7 @@ function openCoOverlay(coId) {
       <div class="tl" id="co-visit-tl">
         ${visits.length ? visits.map(v=>_visitHtml(v)).join('') : '<div style="padding:16px;font-size:13px;color:var(--t3);text-align:center;">방문 기록이 없습니다</div>'}
       </div>
+      ${co.addr?`<a href="map.html?addr=${encodeURIComponent(co.addr)}&nm=${encodeURIComponent(co.nm)}" class="action-btn" style="display:block;text-align:center;text-decoration:none;color:#fff;background:#10b981;">📍 지도에서 보기</a>`:''}
       <button class="action-btn" onclick="openVisitModal('${coId}','${co.nm}')">📝 방문 기록 추가</button>
       <div style="height:20px;"></div>
     </div>`;

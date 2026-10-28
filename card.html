@@ -84,7 +84,7 @@ function load(){
     card.mob && {ic:'📱',lbl:'휴대전화',val:card.mob,action:'전화',href:`tel:${card.mob}`},
     card.ph  && {ic:'📞',lbl:'유선전화',val:card.ph, action:'전화',href:`tel:${card.ph}`},
     card.em  && {ic:'✉️',lbl:'이메일',  val:card.em, action:'메일',href:`mailto:${card.em}`},
-    card.addr&& {ic:'📍',lbl:'주소',    val:card.addr,action:'지도',href:`https://map.kakao.com/?q=${encodeURIComponent(card.addr)}`},
+    card.addr&& {ic:'📍',lbl:'주소',    val:card.addr,action:'지도',href:`map.html?addr=${encodeURIComponent(card.addr)}&nm=${encodeURIComponent(card.co||card.nm)}`},
   ].filter(Boolean);
 
   document.getElementById('info-sec').innerHTML = rows.map(r=>
