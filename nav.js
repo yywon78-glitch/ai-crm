@@ -276,6 +276,8 @@ function _esc(s) {
 const VISIT_TYPES = ['🤝 인사','💬 상담','📄 견적','🔧 AS','🍽 식사','📞 전화'];
 let _visitCtx = {coId:'', coNm:''};
 
+let _noCoState = false; /* pushState 억제 플래그 */
+
 function openCoOverlay(coId) {
   const cos = DB.getCos();
   let co = cos.find(c=>c.id===coId);
@@ -303,9 +305,10 @@ function openCoOverlay(coId) {
   const visits = DB.getVisits().filter(v=>v.coId===coId);
 
   const el = document.getElementById('overlay-co');
+  if(!_noCoState) history.pushState({overlay:'co', coId}, '');
   el.innerHTML = `
     <header class="hdr">
-      <div class="hdr-back" onclick="closeCoOverlay()">←</div>
+      <div class="hdr-back" onclick="history.back()">←</div>
       <span class="hdr-t">${co.nm}</span>
       <div class="hdr-icon" onclick="openCoEdit('${coId}')">✏️</div>
     </header>
@@ -390,3 +393,17 @@ function saveVisit() {
   refreshCoVisits(_visitCtx.coId);
   toast('방문 기록이 저장됐습니다 ✓');
 }
+
+/* ── 오버레이 히스토리 복원 (popstate) ── */
+window.addEventListener('popstate', function(e) {
+  const s = e.state;
+  if(s?.overlay === 'co') {
+    _noCoState = true;
+    openCoOverlay(s.coId);
+    _noCoState = false;
+  } else {
+    /* co 오버레이만 닫기 (card 오버레이는 cards.html popstate에서 처리) */
+    const coEl = document.getElementById('overlay-co');
+    if(coEl) coEl.classList.remove('show');
+  }
+});

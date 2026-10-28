@@ -94,6 +94,7 @@
 <script>
 let mode = 'name';
 const chkSet = new Set();
+let _noCardState = false;
 const tagCls = {고객:'b-bl',VIP:'b-gn',잠재:'b-am',휴면:'b-rd'};
 async function refreshSharedCards(){
   await SharedDriveDB.load(); /* 로드 후 DB.setDriveShared()에 자동 캐싱 */
@@ -236,7 +237,7 @@ function openCardOverlay(id) {
 
   document.getElementById('overlay-card').innerHTML = `
     <header class="hdr">
-      <div class="hdr-back" onclick="closeCardOverlay()">←</div>
+      <div class="hdr-back" onclick="history.back()">←</div>
       <span class="hdr-t">명함 상세</span>
       <div class="hdr-icon" onclick="toggleFav('${id}',this)">${card.fav?'★':'☆'}</div>
       <div class="hdr-icon" onclick="openCardEdit('${id}')">✏️</div>
@@ -277,6 +278,7 @@ function openCardOverlay(id) {
       </div>
       <div style="height:20px;"></div>
     </div>`;
+  if(!_noCardState) history.pushState({overlay:'card', id}, '');
   document.getElementById('overlay-card').classList.add('show');
   document.getElementById('overlay-card')._cardId = id;
 }
@@ -323,6 +325,23 @@ render();
 if(GoogleAuth.isLoggedIn()) refreshSharedCards();
 window.addEventListener('pageshow', e => { if(e.persisted) render(); });
 document.addEventListener('visibilitychange', () => { if(!document.hidden) render(); });
+
+/* ── 오버레이 히스토리 복원 (popstate) ── */
+window.addEventListener('popstate', function(e) {
+  const s = e.state;
+  if(s?.overlay === 'card') {
+    const cardEl = document.getElementById('overlay-card');
+    /* 이미 같은 카드 오버레이가 열려있으면 재렌더 불필요 */
+    if(cardEl._cardId !== s.id || !cardEl.classList.contains('show')) {
+      _noCardState = true;
+      openCardOverlay(s.id);
+      _noCardState = false;
+    }
+  } else if(!s?.overlay) {
+    closeAllOverlays();
+    render();
+  }
+});
 </script>
 </body>
 </html>
