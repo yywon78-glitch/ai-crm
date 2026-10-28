@@ -331,7 +331,9 @@ const DriveDB = (function(){
 const SharedDriveDB = (function(){
   const FOLDER_ID = '1vsNVDH17zJZWUYZSNeUAVPrP1WApAFDg';
   const FILE_NAME = 'crm_shared_cards.json';
+  const DRIVE_KEY  = 'AIzaSyAcSzNgWqtYz9GM3JVs4LFGWy4N25fbRjA';
 
+  /* OAuth 필요 (쓰기용) */
   async function _api(url, opts={}){
     const res = await fetch(url, {
       ...opts,
@@ -341,8 +343,24 @@ const SharedDriveDB = (function(){
     return res;
   }
 
+  /* API 키만으로 읽기 — OAuth 불필요 */
+  async function _publicGet(url){
+    const sep = url.includes('?') ? '&' : '?';
+    const res = await fetch(url + sep + 'key=' + DRIVE_KEY);
+    if(!res.ok){ const e=await res.json().catch(()=>({})); throw new Error(e.error?.message||'PublicDriveAPI '+res.status); }
+    return res;
+  }
+
+  /* 쓰기용 파일 ID (OAuth) */
   async function _fileId(name){
     const r = await _api(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`name='${name}' and '${FOLDER_ID}' in parents and trashed=false`)}&fields=files(id)`);
+    const d = await r.json();
+    return d.files?.[0]?.id || null;
+  }
+
+  /* 읽기용 파일 ID (API 키) */
+  async function _publicFileId(name){
+    const r = await _publicGet(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`name='${name}' and '${FOLDER_ID}' in parents and trashed=false`)}&fields=files(id)`);
     const d = await r.json();
     return d.files?.[0]?.id || null;
   }
@@ -389,21 +407,18 @@ const SharedDriveDB = (function(){
         return false;
       }
     },
-    /* CRM_공용 → 공유 명함 불러오기 */
+    /* CRM_공용 → 공유 명함 불러오기 (API 키 — 로그인 불필요) */
     async load(){
-      if(!GoogleAuth.isLoggedIn()) return [];
       try{
-        const eid = await _fileId(FILE_NAME);
+        const eid = await _publicFileId(FILE_NAME);
         if(!eid) return [];
-        const r = await _api(`https://www.googleapis.com/drive/v3/files/${eid}?alt=media`);
+        const r = await _publicGet(`https://www.googleapis.com/drive/v3/files/${eid}?alt=media`);
         const data = await r.json();
         const arr = Array.isArray(data) ? data : [];
-        /* _img 필드가 있으면 ImgDB에 저장 후 제거 */
         for(const c of arr){
           if(c._img){ try{ await ImgDB.set(c.id, c._img); }catch(e){} delete c._img; }
         }
         DB.setDriveShared(arr);
-        /* 공용 폴더에 없는 내 공유 카드 → shared 플래그 자동 해제 */
         SharedDriveDB.cleanMySharedFlags(arr);
         return arr;
       } catch(e){ console.error('SharedDriveDB.load', e); return []; }
@@ -434,13 +449,12 @@ const SharedDriveDB = (function(){
         return true;
       } catch(e){ console.error('SharedDriveDB.syncVisits', e); return false; }
     },
-    /* CRM_공용 → 공유 방문기록 불러오기 */
+    /* CRM_공용 → 공유 방문기록 불러오기 (API 키 — 로그인 불필요) */
     async loadVisits(){
-      if(!GoogleAuth.isLoggedIn()) return [];
       try{
-        const eid = await _fileId('crm_shared_visits.json');
+        const eid = await _publicFileId('crm_shared_visits.json');
         if(!eid) return [];
-        const r = await _api(`https://www.googleapis.com/drive/v3/files/${eid}?alt=media`);
+        const r = await _publicGet(`https://www.googleapis.com/drive/v3/files/${eid}?alt=media`);
         const data = await r.json();
         const arr = Array.isArray(data) ? data : [];
         DB.setDriveSharedVisits(arr);
