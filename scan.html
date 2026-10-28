@@ -395,21 +395,22 @@ function saveMulti(){
 
 function _goAfterSave(dest){
   if(_queue.length > 0){
-    /* 페이지 리로드 없이 메모리에서 다음 명함 처리 */
+    /* 토스트 보여준 뒤 다음 명함으로 */
     const next = _queue.shift();
     const idx = (parseInt(sessionStorage.getItem('scan_idx')||'1')) + 1;
     sessionStorage.setItem('scan_idx', idx.toString());
     _captured = null;
-    document.getElementById('result-view').classList.remove('show');
-    closeErr();
-    showRotate(next);
+    setTimeout(()=>{
+      document.getElementById('result-view').classList.remove('show');
+      closeErr();
+      showRotate(next);
+    }, 1200);
     return;
   }
   sessionStorage.removeItem('scan_idx');
   sessionStorage.removeItem('scan_total');
-  const back=sessionStorage.getItem('scan_back')||'cards.html';
   sessionStorage.removeItem('scan_back');
-  location.href=dest;
+  setTimeout(()=>{ location.href=dest; }, 1200);
 }
 
 /* 이 명함 패스 → 다음으로 */
