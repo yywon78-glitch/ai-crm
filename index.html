@@ -117,7 +117,7 @@
     <div class="hw-hero">
       <div class="hw-hero-top">
         <span class="hw-logo">BUSINESS CARD CRM</span>
-        <span class="hw-ver">v12.1</span>
+        <span class="hw-ver">v12.2</span>
       </div>
       <div class="hw-date" id="today-date"></div>
       <div class="hw-stats">
@@ -290,37 +290,53 @@ renderTabBar('home');
 load();
 loadTodayVisits();
 
-/* Drive 상태 표시 — tryRestore 제거(번쩍임 원인) */
-(function(){
+/* Drive 상태 표시 및 로그인 콜백 처리 */
+(async function(){
   const dot = document.getElementById('drive-dot');
-  if(GoogleAuth.isLoggedIn()){
-    /* 토큰 유효 → 바로 sync */
-    dot.style.background = '#4ade80';
-    dot.style.display = 'block';
-    dot.title = 'Drive 연결됨';
-    DriveDB.syncDown().then(ok=>{ if(ok){ load(); loadTodayVisits(); } });
-  } else if(localStorage.getItem('crm_gemail')){
-    /* 이전 로그인 기록은 있으나 만료 → 주황 점으로 표시, 탭 시 재로그인 */
-    dot.style.background = '#fb923c';
-    dot.style.display = 'block';
-    dot.title = 'Drive 토큰 만료 — 탭하여 재연결';
+  const p   = new URLSearchParams(location.search);
+
+  /* ① OAuth 콜백 — Worker에서 리다이렉트 후 drive_auth=success */
+  if(p.get('drive_auth') === 'success'){
+    history.replaceState({}, '', location.pathname);
+    const ok = await GoogleAuth.fetchFreshToken();
+    if(ok){
+      dot.style.background = '#4ade80'; dot.style.display='block'; dot.title='Drive 연결됨';
+      DriveDB.syncDown().then(r=>{ if(r){ load(); loadTodayVisits(); } });
+      toast('Google Drive 연결됐습니다 ✓');
+    }
+    return;
   }
-  /* 로그인 기록 없으면 dot 숨김 유지 */
+  if(p.get('drive_auth') === 'error'){
+    history.replaceState({}, '', location.pathname);
+    toast('Drive 로그인 실패. 다시 시도해주세요.');
+  }
+
+  /* ② 토큰 유효 → 바로 sync */
+  if(GoogleAuth.isLoggedIn()){
+    dot.style.background = '#4ade80'; dot.style.display='block'; dot.title='Drive 연결됨';
+    DriveDB.syncDown().then(ok=>{ if(ok){ load(); loadTodayVisits(); } });
+    return;
+  }
+
+  /* ③ 토큰 만료됐지만 Worker에 refresh_token 있을 수 있음 → 조용히 갱신 시도 */
+  if(DB.getWorkerUrl() && localStorage.getItem('crm_gemail')){
+    const ok = await GoogleAuth.fetchFreshToken();
+    if(ok){
+      dot.style.background = '#4ade80'; dot.style.display='block'; dot.title='Drive 연결됨';
+      DriveDB.syncDown().then(r=>{ if(r){ load(); loadTodayVisits(); } });
+      return;
+    }
+    /* Worker에도 토큰 없음 → 주황 점 */
+    dot.style.background = '#fb923c'; dot.style.display='block'; dot.title='Drive 재연결 필요 — 탭하여 로그인';
+  }
 })();
 
 function _driveDotTap(){
   const dot = document.getElementById('drive-dot');
   if(GoogleAuth.isLoggedIn()){
-    /* 이미 연결 — 수동 syncDown */
     DriveDB.syncDown().then(ok=>{ if(ok){ load(); loadTodayVisits(); toast('Drive 동기화 완료 ✓'); } });
   } else {
-    /* 만료 → 재로그인 */
-    GoogleAuth.login(()=>{
-      dot.style.background = '#4ade80';
-      dot.title = 'Drive 연결됨';
-      DriveDB.syncDown().then(ok=>{ if(ok){ load(); loadTodayVisits(); } });
-      toast('Drive 재연결됐습니다 ✓');
-    });
+    GoogleAuth.login(); /* Worker /auth/start 로 리다이렉트 */
   }
 }
 

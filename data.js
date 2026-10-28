@@ -84,6 +84,10 @@ const DB = {
   getGoogleClientId: ()=> localStorage.getItem('crm_google_client_id')||'649878765858-vs311q5tkgos3v1tp61eaflu0bgiap44.apps.googleusercontent.com',
   setGoogleClientId: id=> localStorage.setItem('crm_google_client_id', id),
 
+  /* Worker URL (Cloudflare) */
+  getWorkerUrl: ()=> (localStorage.getItem('crm_worker_url')||'').replace(/\/$/,''),
+  setWorkerUrl: u => localStorage.setItem('crm_worker_url', (u||'').replace(/\/$/,'')),
+
   /* 공유 명함 캐시 */
   getDriveShared:       ()=> JSON.parse(localStorage.getItem('crm_drive_shared')||'[]'),
   setDriveShared:       d => localStorage.setItem('crm_drive_shared', JSON.stringify(d)),
@@ -93,42 +97,26 @@ const DB = {
 };
 
 /* ══════════════════════════════════════════
-   Google Identity Services 스크립트 동적 로드
-══════════════════════════════════════════ */
-(function(){
-  if(document.getElementById('_gsi_script')) return;
-  const s = document.createElement('script');
-  s.id  = '_gsi_script';
-  s.src = 'https://accounts.google.com/gsi/client';
-  s.async = true; s.defer = true;
-  document.head.appendChild(s);
-})();
-
-/* ══════════════════════════════════════════
-   GoogleAuth — OAuth 토큰 관리
+   GoogleAuth — Worker 기반 토큰 관리
+   GIS 라이브러리 완전 제거 → 번쩍임 없음
+   Refresh Token은 Cloudflare Worker KV에 보관
+   → 1시간 만료 없이 자동 갱신
 ══════════════════════════════════════════ */
 const GoogleAuth = (function(){
-  const SCOPE = 'https://www.googleapis.com/auth/drive';
-  let _token = null, _expiry = 0, _client = null, _refreshTimer = null;
+  let _token = null, _expiry = 0;
 
-  /* 저장된 토큰 복원 */
+  /* 로컬 캐시에서 토큰 복원 */
   (function(){
-    try {
+    try{
       const t = JSON.parse(localStorage.getItem('crm_gtoken')||'null');
       if(t && t.expiry > Date.now() + 60000){ _token = t.token; _expiry = t.expiry; }
-    } catch(e){}
+    }catch(e){}
   })();
 
-  function _saveToken(resp){
-    _token  = resp.access_token;
-    _expiry = Date.now() + resp.expires_in * 1000;
-    localStorage.setItem('crm_gtoken', JSON.stringify({token:_token, expiry:_expiry}));
-  }
-
-  /* 50분마다 자동 갱신 타이머 시작 */
-  function _startRefreshTimer(){
-    if(_refreshTimer) clearInterval(_refreshTimer);
-    _refreshTimer = setInterval(()=> GoogleAuth.silentRefresh(), 50 * 60 * 1000);
+  function _save(token, expiry, email){
+    _token = token; _expiry = expiry;
+    localStorage.setItem('crm_gtoken', JSON.stringify({token, expiry}));
+    if(email) localStorage.setItem('crm_gemail', email);
   }
 
   return {
@@ -136,82 +124,52 @@ const GoogleAuth = (function(){
     getToken()    { return _token; },
     getUserEmail(){ return localStorage.getItem('crm_gemail')||''; },
 
-    /* 조용한 자동 갱신 — 사용자 개입 없음 */
-    silentRefresh(){
-      const cid = DB.getGoogleClientId();
-      if(!cid || typeof google==='undefined') return;
+    /* Worker에서 신선한 토큰 가져오기 (자동 갱신) */
+    async fetchFreshToken(){
+      const wUrl = DB.getWorkerUrl();
+      if(!wUrl) return false;
       try{
-        google.accounts.oauth2.initTokenClient({
-          client_id: cid, scope: SCOPE,
-          prompt: 'none',       /* none = 팝업 절대 안 띄움, 실패 시 조용히 에러 */
-          callback: resp => {
-            if(resp.error){ console.warn('silentRefresh 실패:', resp.error); return; }
-            _saveToken(resp);
-          }
-        }).requestAccessToken({prompt:'none'});
-      } catch(e){ console.warn('silentRefresh 오류:', e); }
+        const r = await fetch(wUrl + '/auth/token');
+        if(!r.ok) return false;
+        const d = await r.json();
+        if(d.error || !d.token) return false;
+        _save(d.token, d.expiry, d.email);
+        return true;
+      }catch(e){ return false; }
     },
 
-    /* 앱 시작 시 조용한 세션 복구 — 팝업 없음 */
-    tryRestore(onSuccess){
-      /* 이전 로그인 흔적이 없으면 스킵 */
-      if(!localStorage.getItem('crm_gemail') && !localStorage.getItem('crm_gtoken')) return;
-      const cid = DB.getGoogleClientId();
-      if(!cid) return;
-      /* 세션 내 재시도 방지 — 페이지 이동마다 GIS iframe 깜박임 제거 */
-      try{ sessionStorage.setItem('_auth_skip','1'); }catch(e){}
-      const _go = () => {
-        try{
-          google.accounts.oauth2.initTokenClient({
-            client_id: cid, scope: SCOPE,
-            prompt: 'none',   /* none = 팝업 절대 안 띄움, 실패 시 조용히 에러 */
-            callback: resp => {
-              if(resp.error){ console.log('세션 복구 실패(정상):', resp.error); return; }
-              _saveToken(resp);
-              _startRefreshTimer();
-              if(typeof onSuccess==='function') onSuccess();
-            }
-          }).requestAccessToken({prompt:'none'});
-        } catch(e){ console.warn('tryRestore 오류:', e); }
-      };
-      if(typeof google!=='undefined') _go();
-      else setTimeout(_go, 2000);
+    /* Drive API 호출 전 토큰 유효 확인 — 만료 시 Worker에서 갱신 */
+    async ensureToken(){
+      if(_token && _expiry > Date.now() + 60000) return true;
+      return await GoogleAuth.fetchFreshToken();
     },
 
-    login(onDone){
-      const cid = DB.getGoogleClientId();
-      if(!cid){ alert('설정 → Google Drive에서 Client ID를 먼저 입력해주세요.'); return; }
-      const _go = () => {
-        _client = google.accounts.oauth2.initTokenClient({
-          client_id: cid,
-          scope: SCOPE,
-          callback: async resp => {
-            if(resp.error){ console.error('OAuth:', resp); return; }
-            _saveToken(resp);
-            _startRefreshTimer();   /* 로그인 후 자동갱신 시작 */
-            /* 이메일 가져오기 */
-            try{
-              const r = await fetch('https://www.googleapis.com/drive/v3/about?fields=user',
-                {headers:{Authorization:'Bearer '+_token}});
-              const d = await r.json();
-              localStorage.setItem('crm_gemail', d.user?.emailAddress||'');
-            } catch(e){}
-            if(typeof onDone==='function') onDone();
-          }
-        });
-        _client.requestAccessToken({prompt:'consent'});
-      };
-      if(typeof google !== 'undefined') _go();
-      else { setTimeout(_go, 1500); }
+    /* 로그인 — Worker /auth/start 로 리다이렉트 */
+    login(){
+      const wUrl = DB.getWorkerUrl();
+      if(!wUrl){ alert('설정 → Worker URL을 먼저 입력해주세요.'); return; }
+      location.href = wUrl + '/auth/start';
     },
 
-    logout(){
-      if(_token) google.accounts.oauth2?.revoke(_token, ()=>{});
+    /* 로그아웃 — Worker KV 정리 + 로컬 정리 */
+    async logout(){
+      const wUrl = DB.getWorkerUrl();
+      if(wUrl) await fetch(wUrl + '/auth/logout', {method:'POST'}).catch(()=>{});
       _token = null; _expiry = 0;
       localStorage.removeItem('crm_gtoken');
       localStorage.removeItem('crm_gemail');
       localStorage.removeItem('crm_gdrive_folder');
       localStorage.removeItem('crm_gdrive_lastsync');
+    },
+
+    /* Worker 로그인 상태 확인 */
+    async checkWorkerStatus(){
+      const wUrl = DB.getWorkerUrl();
+      if(!wUrl) return {logged_in: false, email:''};
+      try{
+        const r = await fetch(wUrl + '/auth/status');
+        return await r.json();
+      }catch(e){ return {logged_in: false, email:''}; }
     }
   };
 })();
@@ -225,10 +183,23 @@ const DriveDB = (function(){
   let _busy = false;
 
   async function _api(url, opts={}){
+    /* 토큰 만료 시 Worker에서 자동 갱신 */
+    if(!GoogleAuth.isLoggedIn()) await GoogleAuth.fetchFreshToken();
     const res = await fetch(url, {
       ...opts,
       headers:{'Authorization':'Bearer '+GoogleAuth.getToken(), ...(opts.headers||{})}
     });
+    /* 401이면 한 번 더 갱신 후 재시도 */
+    if(res.status === 401){
+      const refreshed = await GoogleAuth.fetchFreshToken();
+      if(!refreshed) throw new Error('인증 만료 — 재로그인 필요');
+      const res2 = await fetch(url, {
+        ...opts,
+        headers:{'Authorization':'Bearer '+GoogleAuth.getToken(), ...(opts.headers||{})}
+      });
+      if(!res2.ok){ const e=await res2.json().catch(()=>({})); throw new Error(e.error?.message||'DriveAPI '+res2.status); }
+      return res2;
+    }
     if(!res.ok){ const e=await res.json().catch(()=>({})); throw new Error(e.error?.message||'DriveAPI '+res.status); }
     return res;
   }
