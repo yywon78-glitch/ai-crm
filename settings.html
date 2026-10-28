@@ -77,14 +77,93 @@
       </div>
     </div>
 
+    <!-- ── 데이터 현황 ── -->
     <div class="set-grp">
-      <div class="set-lbl">데이터 관리</div>
-      <div class="set-item" style="flex-direction:column;align-items:stretch;gap:0;padding:12px 16px;">
-        <div id="data-stat" style="font-size:12px;color:var(--t2);line-height:2;padding-bottom:10px;border-bottom:1px solid var(--bdr);"></div>
-        <div style="display:flex;gap:8px;padding-top:10px;">
-          <button onclick="deleteDummy()" style="flex:1;padding:12px 8px;border-radius:10px;border:1.5px solid #f59e0b;background:#fffbeb;color:#b45309;font-size:13px;font-weight:700;cursor:pointer;">🗑 샘플만 삭제</button>
-          <button onclick="confirmReset()" style="flex:1;padding:12px 8px;border-radius:10px;border:1.5px solid #dc2626;background:#fef2f2;color:#dc2626;font-size:13px;font-weight:700;cursor:pointer;">⚠️ 전체 초기화</button>
+      <div class="set-lbl">데이터 현황</div>
+      <div style="padding:4px 16px 12px;">
+        <!-- 로컬 -->
+        <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--bdr);">
+          <span style="font-size:20px;margin-top:1px;">📱</span>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:3px;">기기 로컬</div>
+            <div style="font-size:12px;color:var(--t2);" id="stat-local">확인 중...</div>
+          </div>
         </div>
+        <!-- Drive 개인 -->
+        <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--bdr);">
+          <span style="font-size:20px;margin-top:1px;">☁️</span>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:3px;" id="stat-drive-title">Drive 개인</div>
+            <div style="font-size:12px;color:var(--t2);" id="stat-drive">로그인 후 확인</div>
+          </div>
+        </div>
+        <!-- 공용 -->
+        <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;">
+          <span style="font-size:20px;margin-top:1px;">🌐</span>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:3px;">Drive 공용 (캐시)</div>
+            <div style="font-size:12px;color:var(--t2);" id="stat-shared">-</div>
+          </div>
+        </div>
+        <button onclick="refreshDataStat()" id="btn-stat-refresh"
+          style="width:100%;padding:11px;border-radius:10px;border:1.5px solid var(--bdr);background:var(--bg);color:var(--t1);font-size:13px;font-weight:700;cursor:pointer;margin-top:4px;">
+          🔄 현황 새로고침
+        </button>
+      </div>
+    </div>
+
+    <!-- ── 데이터 정리 ── -->
+    <div class="set-grp">
+      <div class="set-lbl">데이터 정리</div>
+
+      <div class="set-item" onclick="cleanEmptyCards()">
+        <span class="set-ic">🗑</span>
+        <div class="set-txt">
+          <div class="set-t">빈 명함 삭제</div>
+          <div class="set-s" id="clean-empty-s">이름 없는 명함 정리</div>
+        </div>
+        <span class="set-arrow">›</span>
+      </div>
+
+      <div class="set-item" onclick="cleanDupes()">
+        <span class="set-ic">📋</span>
+        <div class="set-txt">
+          <div class="set-t">중복 명함 정리</div>
+          <div class="set-s" id="clean-dupe-s">이름+회사 동일 항목</div>
+        </div>
+        <span class="set-arrow">›</span>
+      </div>
+
+      <div class="set-item" onclick="cleanImages()">
+        <span class="set-ic">🖼️</span>
+        <div class="set-txt">
+          <div class="set-t">스캔이미지 전체 삭제</div>
+          <div class="set-s" id="clean-img-s">IndexedDB 이미지 제거</div>
+        </div>
+        <span class="set-arrow">›</span>
+      </div>
+
+      <div class="set-item" onclick="cleanSharedCache()">
+        <span class="set-ic">🔄</span>
+        <div class="set-txt">
+          <div class="set-t">공유 캐시 초기화</div>
+          <div class="set-s" id="clean-shared-s">타인 공유 명함 캐시 제거</div>
+        </div>
+        <span class="set-arrow">›</span>
+      </div>
+
+      <div class="set-item" id="clean-drive-row" style="display:none;" onclick="cleanDriveData()">
+        <span class="set-ic">☁️</span>
+        <div class="set-txt">
+          <div class="set-t" style="color:#dc2626;">Drive 개인 데이터 초기화</div>
+          <div class="set-s">Drive의 명함·방문기록 파일 비우기</div>
+        </div>
+        <span class="set-arrow" style="color:#dc2626;">›</span>
+      </div>
+
+      <div style="display:flex;gap:8px;padding:12px 16px 4px;">
+        <button onclick="deleteDummy()" style="flex:1;padding:12px 8px;border-radius:10px;border:1.5px solid #f59e0b;background:#fffbeb;color:#b45309;font-size:13px;font-weight:700;cursor:pointer;">🗑 샘플만 삭제</button>
+        <button onclick="confirmReset()" style="flex:1;padding:12px 8px;border-radius:10px;border:1.5px solid #dc2626;background:#fef2f2;color:#dc2626;font-size:13px;font-weight:700;cursor:pointer;">⚠️ 전체 초기화</button>
       </div>
     </div>
 
@@ -106,7 +185,7 @@
       <div class="set-lbl">앱 정보</div>
       <div class="set-item">
         <span class="set-ic">ℹ️</span>
-        <div class="set-txt"><div class="set-t">버전</div><div class="set-s">v11.9 · 2026-10-28 · 화면 이동 시 자동로그인 깜박임 제거</div></div>
+        <div class="set-txt"><div class="set-t">버전</div><div class="set-s">v12.0 · 2026-10-28 · 데이터 현황 및 정리 기능</div></div>
       </div>
     </div>
   </div>
@@ -280,20 +359,72 @@ function load(){
   loadDataStat();
 }
 
-function loadDataStat(){
+async function refreshDataStat(){
+  const btn = document.getElementById('btn-stat-refresh');
+  if(btn) btn.textContent = '🔄 로딩 중...';
+
+  /* 로컬 */
   const cards  = DB.getCards();
   const cos    = DB.getCos();
   const visits = DB.getVisits();
-  const realCards  = cards.filter(c=>!c.isDummy).length;
-  const dummyCards = cards.filter(c=> c.isDummy).length;
-  const realCos    = cos.filter(c=>!c.isDummy).length;
-  const dummyCos   = cos.filter(c=> c.isDummy).length;
-  const realVisits = visits.filter(v=>!v.isDummy).length;
-  const dummyVisits= visits.filter(v=> v.isDummy).length;
-  document.getElementById('data-stat').innerHTML =
-    `<span style="color:var(--t1);font-weight:600;">실제 데이터</span> &nbsp;명함 ${realCards}장 · 거래처 ${realCos}개 · 방문기록 ${realVisits}건`+
-    `<br><span style="color:#f59e0b;font-weight:600;">샘플 데이터</span> &nbsp;명함 ${dummyCards}장 · 거래처 ${dummyCos}개 · 방문기록 ${dummyVisits}건`;
+  const shared = DB.getDriveShared();
+  let imgCnt = 0;
+  try{ imgCnt = await ImgDB.count(); }catch(e){}
+
+  const emptyN = cards.filter(c=>!c.nm?.trim()).length;
+  const dupeN  = _findDupes(cards).length;
+
+  document.getElementById('stat-local').innerHTML =
+    `명함 <b>${cards.length}</b>장 · 거래처 <b>${cos.length}</b>개 · 방문기록 <b>${visits.length}</b>건`+
+    `<br>스캔이미지 <b>${imgCnt}</b>개`+
+    (emptyN ? `<br><span style="color:#f59e0b;">⚠ 빈 명함 ${emptyN}장</span>` : '')+
+    (dupeN  ? `<br><span style="color:#f59e0b;">⚠ 중복 명함 ${dupeN}건</span>` : '');
+
+  document.getElementById('clean-empty-s').textContent =
+    emptyN ? `이름 없는 명함 ${emptyN}장` : '없음';
+  document.getElementById('clean-dupe-s').textContent =
+    dupeN ? `중복 ${dupeN}건 발견` : '없음';
+  document.getElementById('clean-img-s').textContent =
+    `이미지 ${imgCnt}개 제거`;
+  document.getElementById('clean-shared-s').textContent =
+    `공유 캐시 ${shared.length}장`;
+
+  /* Drive 개인 */
+  if(GoogleAuth.isLoggedIn()){
+    document.getElementById('stat-drive-title').textContent =
+      'Drive 개인 (' + (GoogleAuth.getUserEmail()||'') + ')';
+    document.getElementById('stat-drive').textContent = 'Drive 조회 중...';
+    document.getElementById('clean-drive-row').style.display = 'flex';
+
+    const peek = await DriveDB.peek();
+    document.getElementById('stat-drive').innerHTML = peek
+      ? `명함 <b>${peek.cards}</b>장 · 방문기록 <b>${peek.visits}</b>건`
+      : '조회 실패 (네트워크 확인)';
+  } else {
+    document.getElementById('stat-drive').textContent = '로그인 후 확인';
+    document.getElementById('clean-drive-row').style.display = 'none';
+  }
+
+  /* 공용 */
+  document.getElementById('stat-shared').innerHTML =
+    `공유 명함 캐시 <b>${shared.length}</b>장`;
+
+  if(btn) btn.textContent = '🔄 현황 새로고침';
 }
+
+function _findDupes(cards){
+  const seen = {}, dupes = [];
+  cards.forEach(c=>{
+    const key = (c.nm||'').trim()+'__'+(c.co||'').trim();
+    if(!key.startsWith('__')){
+      if(seen[key]) dupes.push(c.id);
+      else seen[key] = true;
+    }
+  });
+  return dupes;
+}
+
+function loadDataStat(){ refreshDataStat(); }
 
 function editKakaoKey(){
   document.getElementById('kakao-inp').value=DB.getKakaoKey();
@@ -357,6 +488,60 @@ function exportCSV(){
   toast('CSV 내보내기 완료 ✓');
 }
 
+function cleanEmptyCards(){
+  const cards = DB.getCards();
+  const empty = cards.filter(c=>!c.nm?.trim());
+  if(!empty.length){ toast('빈 명함이 없습니다'); return; }
+  if(!confirm(`이름 없는 명함 ${empty.length}장을 삭제합니다.\n계속하시겠습니까?`)) return;
+  const ids = new Set(empty.map(c=>c.id));
+  DB.setCards(cards.filter(c=>!ids.has(c.id)));
+  empty.forEach(c=>ImgDB.del(c.id).catch(()=>{}));
+  toast(`빈 명함 ${empty.length}장 삭제 완료 ✓`);
+  refreshDataStat();
+}
+
+function cleanDupes(){
+  const cards = DB.getCards();
+  const dupeIds = new Set(_findDupes(cards));
+  if(!dupeIds.size){ toast('중복 명함이 없습니다'); return; }
+  if(!confirm(`중복 명함 ${dupeIds.size}건을 삭제합니다.\n(이름+회사 동일 시 나중에 등록된 것 삭제)\n계속하시겠습니까?`)) return;
+  DB.setCards(cards.filter(c=>!dupeIds.has(c.id)));
+  dupeIds.forEach(id=>ImgDB.del(id).catch(()=>{}));
+  toast(`중복 명함 ${dupeIds.size}건 삭제 완료 ✓`);
+  refreshDataStat();
+}
+
+async function cleanImages(){
+  let cnt = 0;
+  try{ cnt = await ImgDB.count(); }catch(e){}
+  if(!cnt){ toast('저장된 이미지가 없습니다'); return; }
+  if(!confirm(`스캔이미지 ${cnt}개를 전부 삭제합니다.\n명함 데이터는 유지됩니다.\n계속하시겠습니까?`)) return;
+  try{
+    await ImgDB.clear();
+    toast(`이미지 ${cnt}개 삭제 완료 ✓`);
+    refreshDataStat();
+  } catch(e){ toast('삭제 실패: '+e.message); }
+}
+
+function cleanSharedCache(){
+  const cnt = DB.getDriveShared().length;
+  if(!confirm(`공유 캐시 ${cnt}장을 초기화합니다.\n(다음 동기화 시 자동 복원됩니다)\n계속하시겠습니까?`)) return;
+  localStorage.removeItem('crm_drive_shared');
+  localStorage.removeItem('crm_drive_shared_visits');
+  toast('공유 캐시 초기화 완료 ✓');
+  refreshDataStat();
+}
+
+async function cleanDriveData(){
+  if(!GoogleAuth.isLoggedIn()){ toast('로그인이 필요합니다'); return; }
+  const email = GoogleAuth.getUserEmail();
+  if(!confirm(`⚠️ Drive 개인 데이터 초기화\n\n계정: ${email}\n\nDrive의 crm_cards.json, crm_visits.json을\n빈 파일로 덮어씁니다.\n\n기기 로컬 데이터는 유지됩니다.\n계속하시겠습니까?`)) return;
+  toast('Drive 초기화 중...');
+  const ok = await DriveDB.clearPersonalData();
+  toast(ok ? 'Drive 개인 데이터 초기화 완료 ✓' : '초기화 실패. 다시 시도해주세요');
+  if(ok) refreshDataStat();
+}
+
 function deleteDummy(){
   const cards  = DB.getCards().filter(c=>!c.isDummy);
   const cos    = DB.getCos().filter(c=>!c.isDummy);
@@ -370,11 +555,10 @@ function deleteDummy(){
 }
 
 function confirmReset(){
-  if(confirm('⚠️ 전체 초기화\n\n모든 데이터(실제 + 샘플)를 삭제하고\n빈 상태로 시작합니다.\n\n계속하시겠습니까?')){
-    localStorage.removeItem('crm_cards');
-    localStorage.removeItem('crm_cos');
-    localStorage.removeItem('crm_visits');
-    loadDataStat();
+  if(confirm('⚠️ 전체 초기화\n\n모든 데이터(명함·거래처·방문기록·이미지)를\n삭제하고 빈 상태로 시작합니다.\n\n계속하시겠습니까?')){
+    ['crm_cards','crm_cos','crm_visits','crm_drive_shared','crm_drive_shared_visits'].forEach(k=>localStorage.removeItem(k));
+    ImgDB.clear().catch(()=>{});
+    refreshDataStat();
     toast('전체 초기화 완료 ✓');
   }
 }

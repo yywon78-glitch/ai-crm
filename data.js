@@ -41,6 +41,14 @@ const ImgDB = (function(){
       const tx = db.transaction('imgs','readwrite');
       tx.objectStore('imgs').delete(id); tx.oncomplete = res;
     })),
+    count: () => _open().then(db => new Promise((res,rej)=>{
+      const req = db.transaction('imgs','readonly').objectStore('imgs').count();
+      req.onsuccess = e => res(e.target.result); req.onerror = rej;
+    })),
+    clear: () => _open().then(db => new Promise((res,rej)=>{
+      const tx = db.transaction('imgs','readwrite');
+      tx.objectStore('imgs').clear(); tx.oncomplete = res; tx.onerror = rej;
+    })),
     /* 기존 localStorage img 마이그레이션 */
     migrate: async (cards) => {
       let changed = false;
@@ -312,7 +320,34 @@ const DriveDB = (function(){
     },
 
     getLastSync(){ return localStorage.getItem('crm_gdrive_lastsync')||null; },
-    getFolderUrl(){ return _fid ? `https://drive.google.com/drive/folders/${_fid}` : null; }
+    getFolderUrl(){ return _fid ? `https://drive.google.com/drive/folders/${_fid}` : null; },
+
+    /* Drive 파일 건수만 조회 — localStorage 덮어쓰기 없음 */
+    async peek(){
+      if(!GoogleAuth.isLoggedIn()) return null;
+      try{
+        const [cards, visits] = await Promise.all([
+          _load('crm_cards.json'), _load('crm_visits.json')
+        ]);
+        return {
+          cards:  Array.isArray(cards)  ? cards.length  : 0,
+          visits: Array.isArray(visits) ? visits.length : 0
+        };
+      } catch(e){ return null; }
+    },
+
+    /* Drive 개인 파일을 빈 배열로 초기화 */
+    async clearPersonalData(){
+      if(!GoogleAuth.isLoggedIn()) return false;
+      try{
+        await Promise.all([
+          _save('crm_cards.json',  []),
+          _save('crm_visits.json', [])
+        ]);
+        localStorage.removeItem('crm_needs_sync');
+        return true;
+      } catch(e){ console.error('clearPersonalData', e); return false; }
+    }
   };
 })();
 
