@@ -177,9 +177,23 @@ function mkIcon(color){
   });
 }
 
-/* ── 거래처 로드 ── */
+/* ── 거래처 로드 — 카드 데이터 전체(개인+공유)에서 파생 ── */
 async function loadCos(){
-  const cos=DB.getCos().filter(c=>c.addr);
+  /* 모든 카드에서 거래처+주소 파생 */
+  const personal = DB.getCards();
+  const personalIds = new Set(personal.map(c=>c.id));
+  const sharedCards = DB.getDriveShared().filter(c=>!personalIds.has(c.id));
+  const allCards = [...personal, ...sharedCards];
+
+  const coMap = {};
+  allCards.forEach(c=>{
+    if(c.co && c.addr && !coMap[c.co])
+      coMap[c.co] = {nm:c.co, addr:c.addr, id:'_sc_'+c.co, st:'active'};
+  });
+  /* 수동 등록 거래처(주소 있는 것)로 덮어쓰기 */
+  DB.getCos().filter(c=>c.addr).forEach(c=>{ coMap[c.nm]={...c}; });
+
+  const cos = Object.values(coMap);
   if(!cos.length){msg('주소가 있는 거래처가 없습니다');return;}
   msg(`거래처 ${cos.length}곳 위치 검색 중...`,0);
   const bounds=[];
@@ -192,7 +206,7 @@ async function loadCos(){
       m.bindPopup(`
         <div style="font-size:14px;font-weight:700;margin-bottom:3px;">${co.nm}</div>
         <div style="font-size:11px;color:#666;margin-bottom:10px;">${co.addr}</div>
-        <button onclick="location.href='co.html?id=${co.id}'"
+        <button onclick="location.href='co.html?id=${encodeURIComponent(co.id)}'"
           style="display:block;width:100%;padding:8px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">
           거래처 상세 →
         </button>`);
@@ -204,6 +218,7 @@ async function loadCos(){
   msgHide();
   if(bounds.length>1) map.fitBounds(bounds,{padding:[50,50]});
   else if(bounds.length===1) map.setView(bounds[0],14);
+  else msg('주소를 찾을 수 없습니다');
 }
 
 renderTabBar('map');
