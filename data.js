@@ -329,25 +329,23 @@ const SharedDriveDB = (function(){
     return d.files?.[0]?.id || null;
   }
 
-  async function _sharedUpload(name, newItems, myEmail, parentId){
-    /* 기존 파일에서 다른 사용자 항목은 그대로 유지하고 내 것만 교체 (누적) */
+  async function _sharedUpload(name, newItems, parentId){
+    /* 단순 upsert: 기존 로드 → ID 기준 추가/업데이트 → 저장 */
     const eid = await _fileId(name);
-    let others = [];
+    let map = {};
     if(eid){
       try{
         const r = await _api(`https://www.googleapis.com/drive/v3/files/${eid}?alt=media`);
-        const existing = await r.json();
-        others = Array.isArray(existing)
-          ? existing.filter(c => c.sharedBy !== myEmail)
-          : [];
+        const d = await r.json();
+        if(Array.isArray(d)) d.forEach(c => { map[c.id] = c; });
       } catch(e){}
     }
-    const merged = [...others, ...newItems];
-    const body   = JSON.stringify(merged);
-    const bnd    = 'CRM_MRG_BNDRY';
-    const meta   = JSON.stringify(eid ? {} : {name, parents:[parentId]});
-    const mp     = `--${bnd}\r\nContent-Type: application/json\r\n\r\n${meta}\r\n--${bnd}\r\nContent-Type: application/json\r\n\r\n${body}\r\n--${bnd}--`;
-    const url    = eid
+    newItems.forEach(c => { map[c.id] = c; }); /* 추가 or 업데이트 */
+    const body = JSON.stringify(Object.values(map));
+    const bnd  = 'CRM_MRG_BNDRY';
+    const meta = JSON.stringify(eid ? {} : {name, parents:[parentId]});
+    const mp   = `--${bnd}\r\nContent-Type: application/json\r\n\r\n${meta}\r\n--${bnd}\r\nContent-Type: application/json\r\n\r\n${body}\r\n--${bnd}--`;
+    const url  = eid
       ? `https://www.googleapis.com/upload/drive/v3/files/${eid}?uploadType=multipart`
       : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
     await _api(url, {method:eid?'PATCH':'POST',
@@ -358,15 +356,13 @@ const SharedDriveDB = (function(){
     async sync(){
       if(!GoogleAuth.isLoggedIn()) return false;
       try{
-        const myEmail = GoogleAuth.getUserEmail();
-        const shared  = DB.getCards().filter(c=>c.shared);
+        const shared = DB.getCards().filter(c=>c.shared);
         /* 이미지도 함께 첨부 (_img 필드) */
         const withImgs = await Promise.all(shared.map(async c=>{
           try{ const img = await ImgDB.get(c.id); return img ? {...c, _img:img} : {...c}; }
           catch(e){ return {...c}; }
         }));
-        /* 다른 사용자 데이터는 유지하고 내 것만 교체 (누적) */
-        await _sharedUpload(FILE_NAME, withImgs, myEmail, FOLDER_ID);
+        await _sharedUpload(FILE_NAME, withImgs, FOLDER_ID);
         return true;
       } catch(e){ console.error('SharedDriveDB.sync', e); return false; }
     },
@@ -391,10 +387,8 @@ const SharedDriveDB = (function(){
     async syncVisits(){
       if(!GoogleAuth.isLoggedIn()) return false;
       try{
-        const myEmail = GoogleAuth.getUserEmail();
-        const shared  = DB.getVisits().filter(v=>v.shared);
-        /* 다른 사용자 방문기록은 유지하고 내 것만 교체 (누적) */
-        await _sharedUpload('crm_shared_visits.json', shared, myEmail, FOLDER_ID);
+        const shared = DB.getVisits().filter(v=>v.shared);
+        await _sharedUpload('crm_shared_visits.json', shared, FOLDER_ID);
         return true;
       } catch(e){ console.error('SharedDriveDB.syncVisits', e); return false; }
     },
