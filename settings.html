@@ -194,7 +194,7 @@
       <div class="set-lbl">앱 정보</div>
       <div class="set-item">
         <span class="set-ic">ℹ️</span>
-        <div class="set-txt"><div class="set-t">버전</div><div class="set-s">v13.2 · 2026-10-28 · 홈 화면 Drive 연결 배너 추가</div></div>
+        <div class="set-txt"><div class="set-t">버전</div><div class="set-s">v13.3 · 2026-10-28 · Drive 연결 시 메인/새기기 자동 구분</div></div>
       </div>
     </div>
   </div>
@@ -309,10 +309,18 @@ async function loadStorageInfo(){
 }
 
 function driveLogin(){
-  GoogleAuth.login(()=>{
+  GoogleAuth.login(async ()=>{
     loadDriveStatus();
     toast('Google Drive 연결됐습니다 ✓');
-    DriveDB.syncDown().then(ok => { if(ok) toast('Drive에서 데이터를 불러왔습니다 ✓'); });
+    if(DB.getKey()){
+      /* API 키 있는 기기(메인) → 먼저 Drive에 올림 */
+      await DriveDB.syncUp();
+      toast('설정을 Drive에 저장했습니다 ✓');
+    } else {
+      /* API 키 없는 기기(새 기기) → Drive에서 받아옴 */
+      const ok = await DriveDB.syncDown();
+      if(ok){ load(); toast('데이터를 불러왔습니다 ✓'); }
+    }
   });
 }
 
