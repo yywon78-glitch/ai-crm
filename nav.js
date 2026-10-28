@@ -155,6 +155,7 @@ function saveCardEdit(id) {
   _removeModal('_cedit');
   toast('저장됐습니다 ✓');
   if(typeof openCardOverlay==='function') openCardOverlay(id);
+  else if(typeof load==='function') load();
   else if(typeof render==='function') render();
 }
 
@@ -162,10 +163,12 @@ function deleteCard(id) {
   if(!confirm('이 명함을 삭제하시겠습니까?')) return;
   const cards = DB.getCards().filter(c=>c.id!==id);
   DB.setCards(cards);
+  ImgDB.del(id).catch(()=>{});
   _removeModal('_cedit');
   closeAllOverlays();
   toast('명함이 삭제됐습니다');
   if(typeof render==='function') render();
+  else location.href='cards.html';
 }
 
 /* ══════════════════════════════════════════
