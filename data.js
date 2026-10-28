@@ -66,11 +66,11 @@ const ImgDB = (function(){
 /* ── DB 레이어 ── */
 const DB = {
   getKey:       ()=> localStorage.getItem('crm_key')||'',
-  setKey:       k => localStorage.setItem('crm_key', k),
+  setKey:       k => { localStorage.setItem('crm_key', k); _scheduleSyncUp(); },
   getWorkspace: ()=> localStorage.getItem('crm_workspace')||'',
-  setWorkspace: k => localStorage.setItem('crm_workspace', k),
+  setWorkspace: k => { localStorage.setItem('crm_workspace', k); _scheduleSyncUp(); },
   getKakaoKey:  ()=> localStorage.getItem('crm_kakao_key')||'',
-  setKakaoKey:  k => localStorage.setItem('crm_kakao_key', k),
+  setKakaoKey:  k => { localStorage.setItem('crm_kakao_key', k); _scheduleSyncUp(); },
 
   getCards:  ()=> JSON.parse(localStorage.getItem('crm_cards')||'null') || [..._CARDS],
   setCards:  d => { localStorage.setItem('crm_cards', JSON.stringify(d)); localStorage.setItem('crm_needs_sync','1'); _scheduleSyncUp(); },
@@ -503,4 +503,13 @@ function _scheduleSyncUp(){
   if(!GoogleAuth.isLoggedIn()) return;
   clearTimeout(_syncTimer);
   _syncTimer = setTimeout(()=> DriveDB.syncUp(), 3000);
+}
+
+/* Drive에 설정 파일이 없으면 즉시 업로드 (기기 최초 연결 시) */
+async function _ensureSettingsUploaded(){
+  if(!GoogleAuth.isLoggedIn()) return;
+  if(!DB.getKey()) return; /* API 키가 로컬에도 없으면 스킵 */
+  try{
+    await DriveDB.syncUp();
+  } catch(e){}
 }

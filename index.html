@@ -117,7 +117,7 @@
     <div class="hw-hero">
       <div class="hw-hero-top">
         <span class="hw-logo">BUSINESS CARD CRM</span>
-        <span class="hw-ver">v13.0</span>
+        <span class="hw-ver">v13.1</span>
       </div>
       <div class="hw-date" id="today-date"></div>
       <div class="hw-stats">
@@ -296,6 +296,7 @@ loadTodayVisits();
   if(GoogleAuth.isLoggedIn()){
     dot.style.background = '#4ade80'; dot.style.display='block'; dot.title='Drive 연결됨';
     DriveDB.syncDown().then(ok=>{ if(ok){ load(); loadTodayVisits(); } });
+    _ensureSettingsUploaded(); /* API 키 등 설정을 Drive에 아직 안 올렸으면 업로드 */
   } else if(localStorage.getItem('crm_gemail')){
     dot.style.background = '#fb923c'; dot.style.display='block'; dot.title='Drive 토큰 만료 — 탭하여 재연결';
   }
