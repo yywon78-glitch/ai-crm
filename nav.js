@@ -71,9 +71,10 @@ window.addEventListener('load', async function(){
 
   if(GoogleAuth.isLoggedIn()){
     /* 토큰 유효 → 바로 sync */
+    try{ sessionStorage.setItem('_auth_skip','1'); }catch(e){}
     await _doSync();
-  } else {
-    /* 토큰 만료 → 조용히 복구 후 sync */
+  } else if(!sessionStorage.getItem('_auth_skip')){
+    /* 세션 첫 페이지에서만 복구 시도 — 이후 페이지는 GIS 깜박임 없이 스킵 */
     GoogleAuth.tryRestore(async ()=> await _doSync());
   }
 });

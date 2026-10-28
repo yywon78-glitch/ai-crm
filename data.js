@@ -150,6 +150,8 @@ const GoogleAuth = (function(){
       if(!localStorage.getItem('crm_gemail') && !localStorage.getItem('crm_gtoken')) return;
       const cid = DB.getGoogleClientId();
       if(!cid) return;
+      /* 세션 내 재시도 방지 — 페이지 이동마다 GIS iframe 깜박임 제거 */
+      try{ sessionStorage.setItem('_auth_skip','1'); }catch(e){}
       const _go = () => {
         try{
           google.accounts.oauth2.initTokenClient({
