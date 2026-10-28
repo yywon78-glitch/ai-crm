@@ -117,7 +117,7 @@
     <div class="hw-hero">
       <div class="hw-hero-top">
         <span class="hw-logo">BUSINESS CARD CRM</span>
-        <span class="hw-ver">v13.1</span>
+        <span class="hw-ver">v13.2</span>
       </div>
       <div class="hw-date" id="today-date"></div>
       <div class="hw-stats">
@@ -133,6 +133,18 @@
           <div class="hw-stat-n" id="s-visits">0</div>
           <div class="hw-stat-l">방문</div>
         </div>
+      </div>
+    </div>
+
+    <!-- Drive 미연결 배너 -->
+    <div id="drive-banner" style="display:none;margin:0 16px 12px;padding:14px 16px;background:linear-gradient(135deg,rgba(37,99,235,.15),rgba(59,130,246,.08));border:1.5px solid rgba(59,130,246,.4);border-radius:14px;cursor:pointer;touch-action:manipulation;" onclick="_driveDotTap()">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-size:26px;">☁️</span>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:800;color:#93c5fd;">Google Drive 연결</div>
+          <div style="font-size:12px;color:rgba(147,197,253,.7);margin-top:2px;">탭하여 로그인 → 데이터 자동 동기화</div>
+        </div>
+        <span style="font-size:18px;color:#60a5fa;">›</span>
       </div>
     </div>
 
@@ -296,9 +308,13 @@ loadTodayVisits();
   if(GoogleAuth.isLoggedIn()){
     dot.style.background = '#4ade80'; dot.style.display='block'; dot.title='Drive 연결됨';
     DriveDB.syncDown().then(ok=>{ if(ok){ load(); loadTodayVisits(); } });
-    _ensureSettingsUploaded(); /* API 키 등 설정을 Drive에 아직 안 올렸으면 업로드 */
+    _ensureSettingsUploaded();
   } else if(localStorage.getItem('crm_gemail')){
     dot.style.background = '#fb923c'; dot.style.display='block'; dot.title='Drive 토큰 만료 — 탭하여 재연결';
+    document.getElementById('drive-banner').style.display = 'block';
+  } else {
+    /* 처음 접속 — 배너 표시 */
+    document.getElementById('drive-banner').style.display = 'block';
   }
 })();
 
@@ -308,9 +324,11 @@ function _driveDotTap(){
     DriveDB.syncDown().then(ok=>{ if(ok){ load(); loadTodayVisits(); toast('Drive 동기화 완료 ✓'); } });
   } else {
     GoogleAuth.login(()=>{
-      dot.style.background = '#4ade80'; dot.title='Drive 연결됨';
+      dot.style.background = '#4ade80'; dot.style.display='block'; dot.title='Drive 연결됨';
+      document.getElementById('drive-banner').style.display = 'none';
       DriveDB.syncDown().then(ok=>{ if(ok){ load(); loadTodayVisits(); } });
-      toast('Drive 재연결됐습니다 ✓');
+      _ensureSettingsUploaded();
+      toast('Drive 연결됐습니다 ✓');
     });
   }
 }
