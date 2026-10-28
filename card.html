@@ -70,8 +70,7 @@ const id = qp('id');
 let card = null;
 
 function load(){
-  const cards = DB.getCards();
-  card = cards.find(c=>c.id===id);
+  card = DB.getCards().find(c=>c.id===id) || DB.getDriveShared().find(c=>c.id===id);
   if(!card){ history.back(); return; }
 
   document.getElementById('card-av').textContent = card.nm[0];

@@ -321,7 +321,7 @@ function openCoOverlay(coId) {
       <div class="sec-hdr"><h3>소속 명함 (${cards.length})</h3></div>
       <div class="bp" style="padding:0 14px;">
         ${cards.length ? cards.map(c=>`
-          <div class="li" onclick="${typeof openCardOverlay==='function'?`openCardOverlay('${c.id}')`:`location.href='card.html?id=${c.id}'`}">
+          <div class="li" onclick="location.href='card.html?id=${c.id}'">
             <div class="av" style="background:${c.cl}18;color:${c.cl}">${c.nm[0]}</div>
             <div class="li-info"><div class="li-name">${c.nm}</div><div class="li-sub">${c.tl||''}</div></div>
             <div class="li-r"><span class="bx ${tagCls[c.tag]||'b-bl'}">${c.tag}</span><span class="chev">›</span></div>
