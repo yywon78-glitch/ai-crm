@@ -95,7 +95,12 @@ function load(){
     </div>`
   ).join('');
 
-  if(card.img){ const img=document.getElementById('orig-img'); img.src=card.img; img.style.display='block'; document.getElementById('orig-ph').style.display='none'; }
+  ImgDB.get(card.id).then(data=>{
+    if(!data) return;
+    const img=document.getElementById('orig-img');
+    img.src=data; img.style.display='block';
+    document.getElementById('orig-ph').style.display='none';
+  }).catch(()=>{});
 
   renderVisits();
 }

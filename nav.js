@@ -284,9 +284,12 @@ function openCoOverlay(coId) {
   /* 파생 거래처(_sc_)면 개인 DB에 자동 등록 후 정식 ID로 교체 */
   if(!co && coId.startsWith('_sc_')){
     const nm = coId.slice(4); /* '_sc_' 이후가 회사명 */
-    const sc = DB.getDriveShared().filter(c=>c.co===nm);
-    if(sc.length){
-      co = {id:'co'+Date.now(), nm, addr:sc[0].addr||'', ind:'', st:'active', cnt:sc.length, last:'-'};
+    const allCards = [
+      ...DB.getCards().filter(c=>c.co===nm),
+      ...DB.getDriveShared().filter(c=>c.co===nm)
+    ];
+    if(allCards.length){
+      co = {id:'co'+Date.now(), nm, addr:allCards[0].addr||'', ind:'', st:'active', cnt:0, last:'-'};
       const updated = DB.getCos();
       updated.unshift(co);
       DB.setCos(updated);
