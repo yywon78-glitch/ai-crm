@@ -382,7 +382,12 @@ const SharedDriveDB = (function(){
         }));
         await _sharedUpload(FILE_NAME, withImgs, FOLDER_ID);
         return true;
-      } catch(e){ console.error('SharedDriveDB.sync', e); return false; }
+      } catch(e){
+        console.error('SharedDriveDB.sync 실패:', e.message || e);
+        console.warn('공용 폴더 ID:', FOLDER_ID, '/ 파일:', FILE_NAME);
+        console.warn('토큰 유효:', GoogleAuth.isLoggedIn(), '/ 계정:', GoogleAuth.getUserEmail());
+        return false;
+      }
     },
     /* CRM_공용 → 공유 명함 불러오기 */
     async load(){

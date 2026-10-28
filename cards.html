@@ -179,22 +179,40 @@ function tickCard(id){
 }
 
 /* [공유 저장] 버튼 — 체크된 카드 전부 shared = true */
-function saveShared(){
+async function saveShared(){
   if(!chkSet.size) return;
+  if(!GoogleAuth.isLoggedIn()){
+    toast('❗ Google 로그인 후 공유 가능합니다 (설정에서 로그인)');
+    return;
+  }
   const me = GoogleAuth.getUserEmail();
+  const ids = [...chkSet];
   const cards = DB.getCards();
-  chkSet.forEach(id=>{
+  ids.forEach(id=>{
     const c = cards.find(x=>x.id===id);
     if(c){ c.shared = true; c.sharedBy = me; }
   });
   DB.setCards(cards);
-  if(GoogleAuth.isLoggedIn()) SharedDriveDB.sync();
-  const cnt = chkSet.size;
+  const cnt = ids.length;
   chkSet.clear();
   const btn = document.getElementById('btn-share-save');
   if(btn){ btn.classList.remove('active'); btn.textContent = '공유저장'; }
-  toast(`☁️ ${cnt}명 공유 등록됐습니다`);
   render();
+  toast(`☁️ 공용 폴더에 업로드 중...`);
+  const ok = await SharedDriveDB.sync();
+  if(ok){
+    toast(`☁️ ${cnt}명 공유 등록 완료`);
+  } else {
+    /* Drive 업로드 실패 → 로컬 플래그 롤백 */
+    const cards2 = DB.getCards();
+    ids.forEach(id=>{
+      const c = cards2.find(x=>x.id===id);
+      if(c){ delete c.shared; delete c.sharedBy; }
+    });
+    DB.setCards(cards2);
+    render();
+    toast('❗ 공용 폴더 업로드 실패 — 콘솔(F12) 에러 확인해주세요');
+  }
 }
 
 /* 목록 렌더 후 썸네일 비동기 로드 */
