@@ -66,6 +66,7 @@
   <header class="hdr">
     <div class="hdr-back" onclick="history.back()">←</div>
     <span class="hdr-t" id="result-title">스캔 결과</span>
+    <button id="btn-pass" class="hdr-btn" onclick="passCard()" style="background:#6b7280;display:none;margin-right:4px;">건너뛰기</button>
     <button class="hdr-btn" onclick="retake()" style="background:var(--t2);margin-right:6px;">재촬영</button>
     <button class="hdr-btn" onclick="saveCard()">저장</button>
   </header>
@@ -82,15 +83,7 @@
     <div class="fgrp"><div class="flb">유선전화</div><input class="finp" id="f-ph" placeholder="02-0000-0000" type="tel"></div>
     <div class="fgrp"><div class="flb">이메일</div><input class="finp" id="f-em" placeholder="email@company.com" type="email"></div>
     <div class="fgrp"><div class="flb">주소</div><input class="finp" id="f-addr" placeholder="주소"></div>
-    <div style="height:16px;"></div>
-    <!-- 패스 버튼 — 헤더가 아닌 하단에 배치 (저장과 혼동 방지) -->
-    <div id="pass-wrap" style="display:none;padding:0 14px 8px;">
-      <button onclick="passCard()"
-        style="width:100%;padding:13px;border-radius:12px;background:#f3f4f6;border:1.5px solid #d1d5db;color:#6b7280;font-size:14px;font-weight:700;cursor:pointer;">
-        이 명함 건너뛰고 다음으로 →
-      </button>
-    </div>
-    <div style="height:16px;"></div>
+    <div style="height:24px;"></div>
   </div>
 </div>
 
@@ -433,8 +426,8 @@ function updateResultHeader(){
   } else {
     titleEl.textContent = '스캔 결과';
   }
-  /* 패스 버튼은 더 처리할 명함이 있을 때만 하단에 표시 */
-  if(passWrap) passWrap.style.display = _queue.length > 0 ? '' : 'none';
+  const passBtn = document.getElementById('btn-pass');
+  if(passBtn) passBtn.style.display = _queue.length > 0 ? '' : 'none';
 }
 
 function saveCard(){
@@ -460,7 +453,7 @@ function saveCard(){
   cards.unshift({id:newId,nm,co,tl:document.getElementById('f-tl').value.trim(),mob:document.getElementById('f-mob').value.trim(),ph:document.getElementById('f-ph').value.trim(),em:document.getElementById('f-em').value.trim(),addr:document.getElementById('f-addr').value.trim(),tag:'고객',cl:COLORS[Math.floor(Math.random()*COLORS.length)],fav:false,img:null});
   DB.setCards(cards);
   if(_captured) ImgDB.set(newId, _captured).catch(()=>{});
-  toast('명함이 저장됐습니다 ✓');
+  toast(`명함이 저장됐습니다 ✓ (누적 ${DB.getCards().length}장)`);
   _goAfterSave('card.html?id='+newId);
 }
 </script>
