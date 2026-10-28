@@ -65,7 +65,8 @@
 <div id="result-view" class="page">
   <header class="hdr">
     <div class="hdr-back" onclick="history.back()">←</div>
-    <span class="hdr-t">스캔 결과</span>
+    <span class="hdr-t" id="result-title">스캔 결과</span>
+    <button id="btn-pass" class="hdr-btn" onclick="passCard()" style="background:#6b7280;display:none;margin-right:4px;">패스</button>
     <button class="hdr-btn" onclick="retake()" style="background:var(--t2);margin-right:6px;">재촬영</button>
     <button class="hdr-btn" onclick="saveCard()">저장</button>
   </header>
@@ -198,10 +199,11 @@ document.getElementById('inp-gal').onchange = function(e){
     r.readAsDataURL(f);
   }));
   Promise.all(readAll).then(urls=>{
+    sessionStorage.setItem('scan_idx',   '1');
+    sessionStorage.setItem('scan_total', urls.length.toString());
     if(urls.length === 1){
       showRotate(urls[0]);
     } else {
-      // 첫 장 처리, 나머지 큐에 적재
       _queue = urls.slice(1);
       toast(`${urls.length}장 선택됨 — 순서대로 처리합니다`);
       showRotate(urls[0]);
@@ -312,6 +314,7 @@ async function processImage(dataUrl){
       const ri = document.getElementById('res-img');
       ri.src = dataUrl; ri.style.display='block';
       document.getElementById('res-ph').style.display='none';
+      updateResultHeader();
       document.getElementById('result-view').classList.add('show');
     } else {
       showMulti(cards);
@@ -389,15 +392,41 @@ function saveMulti(){
 function _goAfterSave(dest){
   if(_queue.length > 0){
     const next = _queue.shift();
+    const idx = (parseInt(sessionStorage.getItem('scan_idx')||'1')) + 1;
+    sessionStorage.setItem('scan_idx', idx.toString());
     sessionStorage.setItem('scan_data', next);
     if(_queue.length > 0) sessionStorage.setItem('scan_queue', JSON.stringify(_queue));
     location.href = 'scan.html';
     return;
   }
+  sessionStorage.removeItem('scan_idx');
+  sessionStorage.removeItem('scan_total');
   const back=sessionStorage.getItem('scan_back')||'cards.html';
   sessionStorage.removeItem('scan_back');
   history.replaceState(null,'',back);
   location.href=dest;
+}
+
+/* 이 명함 패스 → 다음으로 */
+function passCard(){
+  toast('건너뜁니다 →');
+  document.getElementById('result-view').classList.remove('show');
+  _captured = null;
+  setTimeout(()=> _goAfterSave('cards.html'), 600);
+}
+
+/* 결과 헤더 진행 표시 업데이트 */
+function updateResultHeader(){
+  const idx   = sessionStorage.getItem('scan_idx');
+  const total = sessionStorage.getItem('scan_total');
+  const titleEl = document.getElementById('result-title');
+  const passBtn = document.getElementById('btn-pass');
+  if(idx && total && parseInt(total) > 1){
+    titleEl.textContent = `스캔 결과 (${idx}/${total}장)`;
+  } else {
+    titleEl.textContent = '스캔 결과';
+  }
+  if(passBtn) passBtn.style.display = _queue.length > 0 ? '' : 'none';
 }
 
 function saveCard(){
