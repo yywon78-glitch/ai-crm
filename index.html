@@ -107,7 +107,7 @@
   <!-- 헤더 -->
   <div class="hw-hdr">
     <span class="hw-hdr-t">명함 CRM</span>
-    <div id="drive-dot" style="display:none;width:8px;height:8px;border-radius:50%;background:#4ade80;margin-right:4px;" title="Google Drive 연결됨"></div>
+    <div id="drive-dot" style="display:none;width:8px;height:8px;border-radius:50%;background:#4ade80;margin-right:4px;cursor:pointer;" onclick="_driveDotTap()" title="Google Drive 연결됨"></div>
     <div class="hw-hdr-ic" onclick="location.href='settings.html'">⚙️</div>
   </div>
 
@@ -117,7 +117,7 @@
     <div class="hw-hero">
       <div class="hw-hero-top">
         <span class="hw-logo">BUSINESS CARD CRM</span>
-        <span class="hw-ver">v12.0</span>
+        <span class="hw-ver">v12.1</span>
       </div>
       <div class="hw-date" id="today-date"></div>
       <div class="hw-stats">
@@ -290,21 +290,39 @@ renderTabBar('home');
 load();
 loadTodayVisits();
 
-/* Drive 세션 복구 + 자동 syncDown */
+/* Drive 상태 표시 — tryRestore 제거(번쩍임 원인) */
 (function(){
-  /* 1) 토큰 유효 → 바로 sync */
+  const dot = document.getElementById('drive-dot');
   if(GoogleAuth.isLoggedIn()){
-    document.getElementById('drive-dot').style.display = 'block';
+    /* 토큰 유효 → 바로 sync */
+    dot.style.background = '#4ade80';
+    dot.style.display = 'block';
+    dot.title = 'Drive 연결됨';
     DriveDB.syncDown().then(ok=>{ if(ok){ load(); loadTodayVisits(); } });
-    return;
+  } else if(localStorage.getItem('crm_gemail')){
+    /* 이전 로그인 기록은 있으나 만료 → 주황 점으로 표시, 탭 시 재로그인 */
+    dot.style.background = '#fb923c';
+    dot.style.display = 'block';
+    dot.title = 'Drive 토큰 만료 — 탭하여 재연결';
   }
-  /* 2) 토큰 만료됐지만 이전 로그인 기록 있음 → 조용히 복구 시도 */
-  GoogleAuth.tryRestore(async ()=>{
-    document.getElementById('drive-dot').style.display = 'block';
-    const ok = await DriveDB.syncDown();
-    if(ok){ load(); loadTodayVisits(); }
-  });
+  /* 로그인 기록 없으면 dot 숨김 유지 */
 })();
+
+function _driveDotTap(){
+  const dot = document.getElementById('drive-dot');
+  if(GoogleAuth.isLoggedIn()){
+    /* 이미 연결 — 수동 syncDown */
+    DriveDB.syncDown().then(ok=>{ if(ok){ load(); loadTodayVisits(); toast('Drive 동기화 완료 ✓'); } });
+  } else {
+    /* 만료 → 재로그인 */
+    GoogleAuth.login(()=>{
+      dot.style.background = '#4ade80';
+      dot.title = 'Drive 연결됨';
+      DriveDB.syncDown().then(ok=>{ if(ok){ load(); loadTodayVisits(); } });
+      toast('Drive 재연결됐습니다 ✓');
+    });
+  }
+}
 
 // 뒤로가기·탭 전환으로 돌아올 때도 통계 갱신
 window.addEventListener('pageshow', e => { if(e.persisted){ load(); loadTodayVisits(); } });
