@@ -65,13 +65,13 @@ const DB = {
   setKakaoKey:  k => localStorage.setItem('crm_kakao_key', k),
 
   getCards:  ()=> JSON.parse(localStorage.getItem('crm_cards')||'null') || [..._CARDS],
-  setCards:  d => { localStorage.setItem('crm_cards', JSON.stringify(d)); _scheduleSyncUp(); },
+  setCards:  d => { localStorage.setItem('crm_cards', JSON.stringify(d)); localStorage.setItem('crm_needs_sync','1'); _scheduleSyncUp(); },
 
   getCos:    ()=> JSON.parse(localStorage.getItem('crm_cos')||'null') || [..._COS],
   setCos:    d => localStorage.setItem('crm_cos', JSON.stringify(d)), /* cos는 Drive 동기화 안 함 — 카드에서 파생 */
 
   getVisits: ()=> JSON.parse(localStorage.getItem('crm_visits')||'null') || [..._VISITS],
-  setVisits: d => { localStorage.setItem('crm_visits', JSON.stringify(d)); _scheduleSyncUp(); },
+  setVisits: d => { localStorage.setItem('crm_visits', JSON.stringify(d)); localStorage.setItem('crm_needs_sync','1'); _scheduleSyncUp(); },
 
   getGoogleClientId: ()=> localStorage.getItem('crm_google_client_id')||'649878765858-vs311q5tkgos3v1tp61eaflu0bgiap44.apps.googleusercontent.com',
   setGoogleClientId: id=> localStorage.setItem('crm_google_client_id', id),
@@ -271,6 +271,11 @@ const DriveDB = (function(){
     /* Drive → localStorage */
     async syncDown(){
       if(!GoogleAuth.isLoggedIn()) return false;
+      /* 로컬에 미업로드 변경분이 있으면 먼저 Drive에 올림 */
+      if(localStorage.getItem('crm_needs_sync') === '1'){
+        await DriveDB.syncUp();
+        return true;
+      }
       try{
         const [cards, visits] = await Promise.all([
           _load('crm_cards.json'), _load('crm_visits.json')
@@ -292,6 +297,7 @@ const DriveDB = (function(){
           _save('crm_visits.json', DB.getVisits())
         ]);
         localStorage.setItem('crm_gdrive_lastsync', new Date().toISOString());
+        localStorage.removeItem('crm_needs_sync');
         _busy = false; return true;
       } catch(e){ console.error('syncUp', e); _busy = false; return false; }
     },

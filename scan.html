@@ -395,28 +395,27 @@ function saveMulti(){
 
 function _goAfterSave(dest){
   if(_queue.length > 0){
+    /* 페이지 리로드 없이 메모리에서 다음 명함 처리 */
     const next = _queue.shift();
     const idx = (parseInt(sessionStorage.getItem('scan_idx')||'1')) + 1;
     sessionStorage.setItem('scan_idx', idx.toString());
-    sessionStorage.setItem('scan_data', next);
-    if(_queue.length > 0) sessionStorage.setItem('scan_queue', JSON.stringify(_queue));
-    location.href = 'scan.html';
+    _captured = null;
+    document.getElementById('result-view').classList.remove('show');
+    closeErr();
+    showRotate(next);
     return;
   }
   sessionStorage.removeItem('scan_idx');
   sessionStorage.removeItem('scan_total');
   const back=sessionStorage.getItem('scan_back')||'cards.html';
   sessionStorage.removeItem('scan_back');
-  history.replaceState(null,'',back);
   location.href=dest;
 }
 
 /* 이 명함 패스 → 다음으로 */
 function passCard(){
-  toast('건너뜁니다 →');
-  document.getElementById('result-view').classList.remove('show');
-  _captured = null;
-  setTimeout(()=> _goAfterSave('cards.html'), 600);
+  closeErr();
+  _goAfterSave('cards.html');
 }
 
 /* 결과 헤더 진행 표시 업데이트 */
@@ -452,7 +451,7 @@ function saveCard(){
     DB.setCards(cards);
     if(_captured) ImgDB.set(dup.id, _captured).catch(()=>{});
     toast('업데이트됐습니다 ✓');
-    _goAfterSave('card.html?id='+dup.id);
+    _goAfterSave('cards.html?sort=recent');
     return;
   }
   const newId='c'+Date.now();
@@ -460,7 +459,7 @@ function saveCard(){
   DB.setCards(cards);
   if(_captured) ImgDB.set(newId, _captured).catch(()=>{});
   toast('명함이 저장됐습니다 ✓');
-  _goAfterSave('card.html?id='+newId);
+  _goAfterSave('cards.html?sort=recent');
 }
 </script>
 </body>

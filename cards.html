@@ -321,6 +321,12 @@ function openVisitFromCard(cardId) {
   document.getElementById('overlay-card')._cardId = cardId;
 }
 
+const _initSort = new URLSearchParams(location.search).get('sort');
+if(_initSort === 'recent'){
+  mode = 'recent';
+  document.getElementById('seg-recent').classList.add('on');
+  document.getElementById('seg-name').classList.remove('on');
+}
 renderTabBar('cards');
 render();
 if(GoogleAuth.isLoggedIn()) refreshSharedCards();
