@@ -134,8 +134,8 @@ function saveCo() {
 
 renderTabBar('cos');
 render();
-window.addEventListener('pageshow', e => { if(e.persisted) render(); });
-document.addEventListener('visibilitychange', () => { if(!document.hidden) render(); });
+window.addEventListener('pageshow', e => { if(e.persisted){ closeAllOverlays(); render(); } });
+document.addEventListener('visibilitychange', () => { if(!document.hidden){ closeAllOverlays(); render(); } });
 </script>
 </body>
 </html>

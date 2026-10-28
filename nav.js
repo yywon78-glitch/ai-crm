@@ -1,13 +1,18 @@
 /* ── 탭바 ── */
+function _navTo(url){
+  if(typeof closeAllOverlays==='function') closeAllOverlays();
+  /* 오버레이용 pushState 항목 제거 후 이동 */
+  location.href = url;
+}
 function renderTabBar(active) {
   const el = document.getElementById('tabbar');
   if(!el) return;
   el.innerHTML = `
-    <div class="tbi${active==='home'?' on':''}"   onclick="location.href='index.html'"><span class="ic">🏠</span><span class="lb">홈</span></div>
-    <div class="tbi${active==='cards'?' on':''}"  onclick="location.href='cards.html'"><span class="ic">🪪</span><span class="lb">명함</span></div>
+    <div class="tbi${active==='home'?' on':''}"   onclick="_navTo('index.html')"><span class="ic">🏠</span><span class="lb">홈</span></div>
+    <div class="tbi${active==='cards'?' on':''}"  onclick="_navTo('cards.html')"><span class="ic">🪪</span><span class="lb">명함</span></div>
     <div class="tb-scan"><label style="display:flex;flex-direction:column;align-items:center;cursor:pointer;width:100%;"><input type="file" accept="image/*" capture="environment" style="position:fixed;top:-200px;left:-200px;width:1px;height:1px;opacity:0;" onchange="_tbScanHandler(event)"><div class="scan-fab">📷</div><span class="lb">스캔</span></label></div>
-    <div class="tbi${active==='map'?' on':''}"     onclick="location.href='map.html'"><span class="ic">🗺️</span><span class="lb">지도보기</span></div>
-    <div class="tbi${active==='visits'?' on':''}" onclick="location.href='visits.html'"><span class="ic">📋</span><span class="lb">방문기록</span></div>
+    <div class="tbi${active==='map'?' on':''}"     onclick="_navTo('map.html')"><span class="ic">🗺️</span><span class="lb">지도보기</span></div>
+    <div class="tbi${active==='visits'?' on':''}" onclick="_navTo('visits.html')"><span class="ic">📋</span><span class="lb">방문기록</span></div>
   `;
 }
 

@@ -342,8 +342,8 @@ if(_initSort === 'recent'){
 renderTabBar('cards');
 render();
 if(GoogleAuth.isLoggedIn()) refreshSharedCards();
-window.addEventListener('pageshow', e => { if(e.persisted) render(); });
-document.addEventListener('visibilitychange', () => { if(!document.hidden) render(); });
+window.addEventListener('pageshow', e => { if(e.persisted){ closeAllOverlays(); render(); } });
+document.addEventListener('visibilitychange', () => { if(!document.hidden){ closeAllOverlays(); render(); } });
 
 /* ── 오버레이 히스토리 복원 (popstate) ── */
 window.addEventListener('popstate', function(e) {
