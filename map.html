@@ -210,6 +210,17 @@ function mkIcon(color){
   });
 }
 
+/* 같은 좌표 마커 분산 */
+const _posCount = {};
+function spreadPos(lat, lng){
+  const k = `${lat.toFixed(4)},${lng.toFixed(4)}`;
+  const n = (_posCount[k] = (_posCount[k]||0) + 1);
+  if(n === 1) return [lat, lng];
+  /* n번째부터 원형 배치 (반경 약 30m) */
+  const angle = ((n - 2) * 60) * Math.PI / 180;
+  return [lat + 0.00028 * Math.cos(angle), lng + 0.00028 * Math.sin(angle)];
+}
+
 /* ── 거래처 로드 — 카드 데이터 전체(개인+공유)에서 파생 ── */
 async function loadCos(){
   /* 모든 카드에서 거래처+주소 파생 */
@@ -234,7 +245,8 @@ async function loadCos(){
     const co=cos[i];
     const pos=await geocode(co.addr);
     if(pos){
-      const m=L.marker([pos.lat,pos.lng],{icon:mkIcon(SC[co.st]||'#2563eb')}).addTo(map);
+      const [slat,slng] = spreadPos(pos.lat, pos.lng);
+      const m=L.marker([slat,slng],{icon:mkIcon(SC[co.st]||'#2563eb')}).addTo(map);
       m.bindTooltip(co.nm,{permanent:true,direction:'top',offset:[0,-36],opacity:1});
       m.bindPopup(`
         <div style="font-size:14px;font-weight:700;margin-bottom:3px;">${co.nm}</div>
@@ -243,7 +255,7 @@ async function loadCos(){
           style="display:block;width:100%;padding:8px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">
           거래처 상세 →
         </button>`);
-      bounds.push([pos.lat,pos.lng]);
+      bounds.push([slat,slng]);
     }
     msg(`위치 검색 중... (${i+1}/${cos.length})`,0);
     if(i<cos.length-1) await new Promise(r=>setTimeout(r,1100));
