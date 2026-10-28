@@ -47,12 +47,12 @@
         <div id="gdrive-storage" style="margin-top:8px;font-size:11px;color:#3b82f6;"></div>
       </div>
 
-      <!-- Worker URL 설정 (필수) -->
-      <div class="set-item" onclick="editWorkerUrl()">
-        <span class="set-ic">⚡</span>
+      <!-- Client ID 설정 -->
+      <div class="set-item" onclick="editClientId()">
+        <span class="set-ic">🔧</span>
         <div class="set-txt">
-          <div class="set-t">Worker URL 설정</div>
-          <div class="set-s" id="worker-url-status">미설정 — Drive 연동에 필요</div>
+          <div class="set-t">Google Client ID 설정</div>
+          <div class="set-s" id="client-id-status">미설정 — Drive 연동에 필요</div>
         </div>
         <span class="set-arrow">›</span>
       </div>
@@ -185,24 +185,8 @@
       <div class="set-lbl">앱 정보</div>
       <div class="set-item">
         <span class="set-ic">ℹ️</span>
-        <div class="set-txt"><div class="set-t">버전</div><div class="set-s">v12.2 · 2026-10-28 · Worker 기반 OAuth (번쩍임 근본 해결)</div></div>
+        <div class="set-txt"><div class="set-t">버전</div><div class="set-s">v12.3 · 2026-10-28 · Worker OAuth 롤백, 기존 GIS 방식 복원</div></div>
       </div>
-    </div>
-  </div>
-</div>
-
-<!-- Worker URL 모달 -->
-<div class="moverlay" id="modal-worker" onclick="if(event.target===this)closeWorkerModal()">
-  <div class="msheet">
-    <div class="m-handle"></div>
-    <div class="m-title">Worker URL 설정</div>
-    <div class="m-body">
-      <div><div class="flb">Cloudflare Worker URL</div><input class="finp" id="worker-inp" placeholder="https://crm-worker.xxx.workers.dev"></div>
-      <div style="font-size:12px;color:var(--t2);line-height:1.8;margin-top:4px;">
-        Cloudflare Workers에 배포된 Worker의 URL입니다.<br>
-        설정 가이드: 설정 → <b>SETUP_WORKER.md</b> 참조
-      </div>
-      <button class="m-btn" onclick="saveWorkerUrl()">저장</button>
     </div>
   </div>
 </div>
@@ -283,9 +267,9 @@
 <script>
 /* ── Google Drive ── */
 function loadDriveStatus(){
-  const wUrl = DB.getWorkerUrl();
-  document.getElementById('worker-url-status').textContent =
-    wUrl ? `설정됨 (${wUrl.replace('https://','').slice(0,30)})` : '미설정 — Drive 연동에 필요';
+  const cid = DB.getGoogleClientId();
+  document.getElementById('client-id-status').textContent =
+    cid ? `설정됨 (${cid.slice(0,20)}...)` : '미설정 — Drive 연동에 필요';
 
   if(GoogleAuth.isLoggedIn()){
     document.getElementById('gdrive-login-row').style.display  = 'none';
@@ -316,29 +300,31 @@ async function loadStorageInfo(){
 }
 
 function driveLogin(){
-  const wUrl = DB.getWorkerUrl();
-  if(!wUrl){ toast('먼저 Worker URL을 설정해주세요'); editWorkerUrl(); return; }
-  GoogleAuth.login(); /* Worker /auth/start 로 리다이렉트 */
+  GoogleAuth.login(()=>{
+    loadDriveStatus();
+    toast('Google Drive 연결됐습니다 ✓');
+    DriveDB.syncDown().then(ok => { if(ok) toast('Drive에서 데이터를 불러왔습니다 ✓'); });
+  });
 }
 
-async function driveLogout(){
+function driveLogout(){
   if(!confirm('Google Drive 연결을 해제하시겠습니까?\n(기기 내 데이터는 유지됩니다)')) return;
-  await GoogleAuth.logout();
+  GoogleAuth.logout();
   loadDriveStatus();
   toast('연결 해제됐습니다');
 }
 
-function editWorkerUrl(){
-  document.getElementById('worker-inp').value = DB.getWorkerUrl();
-  document.getElementById('modal-worker').classList.add('show');
+function editClientId(){
+  document.getElementById('clientid-inp').value = DB.getGoogleClientId();
+  document.getElementById('modal-clientid').classList.add('show');
 }
-function closeWorkerModal(){ document.getElementById('modal-worker').classList.remove('show'); }
-function saveWorkerUrl(){
-  const v = document.getElementById('worker-inp').value.trim();
-  DB.setWorkerUrl(v);
-  closeWorkerModal();
+function closeClientIdModal(){ document.getElementById('modal-clientid').classList.remove('show'); }
+function saveClientId(){
+  const v = document.getElementById('clientid-inp').value.trim();
+  DB.setGoogleClientId(v);
+  closeClientIdModal();
   loadDriveStatus();
-  toast('Worker URL이 저장됐습니다 ✓');
+  toast('Client ID가 저장됐습니다 ✓');
 }
 
 async function driveSyncDown(){
