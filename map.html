@@ -156,14 +156,26 @@ const GK='crm_geo2';
 function gCache(){try{return JSON.parse(localStorage.getItem(GK)||'{}')}catch(e){return{}}}
 function gSave(a,v){try{const c=gCache();c[a]=v;localStorage.setItem(GK,JSON.stringify(c))}catch(e){}}
 
+/* 지오코딩 전 주소 정제 */
+function cleanAddr(addr){
+  return addr
+    .replace(/^\s*\(우\)\s*\d{5}\s*/,'')  /* (우)07228 제거 */
+    .replace(/^\s*\d{5}\s+/,'')            /* 02579 제거 */
+    .replace(/\([^)]{3,}\)/g,'')           /* (건물명...) 제거 */
+    .replace(/,\s*.+층.*$/,'')             /* ,N층 이후 제거 */
+    .replace(/\s+/g,' ').trim();
+}
+
 async function geocode(addr){
   if(!addr) return null;
-  const c=gCache(); if(c[addr]) return c[addr];
+  const key = cleanAddr(addr);
+  if(!key) return null;
+  const c=gCache(); if(c[key]) return c[key];
   try{
-    const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addr)}&format=json&limit=1&countrycodes=kr`,
+    const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(key)}&format=json&limit=1&countrycodes=kr`,
       {headers:{'Accept-Language':'ko','User-Agent':'CRM-Map/1.0'}});
     const d=await r.json();
-    if(d.length){const v={lat:+d[0].lat,lng:+d[0].lon};gSave(addr,v);return v;}
+    if(d.length){const v={lat:+d[0].lat,lng:+d[0].lon};gSave(key,v);return v;}
   }catch(e){}
   return null;
 }
