@@ -93,16 +93,26 @@ const DB = {
 };
 
 /* ══════════════════════════════════════════
-   Google Identity Services 스크립트 동적 로드
+   Google Identity Services — 로그인 시에만 로드
+   페이지 로드 시 자동 실행하지 않음 → 번쩍임 없음
 ══════════════════════════════════════════ */
-(function(){
-  if(document.getElementById('_gsi_script')) return;
-  const s = document.createElement('script');
-  s.id  = '_gsi_script';
-  s.src = 'https://accounts.google.com/gsi/client';
-  s.async = true; s.defer = true;
-  document.head.appendChild(s);
-})();
+function _loadGIS(){
+  return new Promise(resolve => {
+    if(typeof google !== 'undefined' && google.accounts) return resolve();
+    if(document.getElementById('_gsi_script')){
+      /* 이미 로딩 중 — 완료 대기 */
+      const t = setInterval(()=>{
+        if(typeof google !== 'undefined' && google.accounts){ clearInterval(t); resolve(); }
+      }, 100);
+      return;
+    }
+    const s = document.createElement('script');
+    s.id  = '_gsi_script';
+    s.src = 'https://accounts.google.com/gsi/client';
+    s.onload = resolve;
+    document.head.appendChild(s);
+  });
+}
 
 /* ══════════════════════════════════════════
    GoogleAuth — OAuth 토큰 관리
@@ -129,28 +139,26 @@ const GoogleAuth = (function(){
     getToken()    { return _token; },
     getUserEmail(){ return localStorage.getItem('crm_gemail')||''; },
 
-    login(onDone){
+    async login(onDone){
       const cid = DB.getGoogleClientId();
       if(!cid){ alert('설정 → Google Client ID를 먼저 입력해주세요.'); return; }
-      const _go = () => {
-        _client = google.accounts.oauth2.initTokenClient({
-          client_id: cid, scope: SCOPE,
-          callback: async resp => {
-            if(resp.error){ console.error('OAuth:', resp); return; }
-            _saveToken(resp);
-            try{
-              const r = await fetch('https://www.googleapis.com/drive/v3/about?fields=user',
-                {headers:{Authorization:'Bearer '+_token}});
-              const d = await r.json();
-              localStorage.setItem('crm_gemail', d.user?.emailAddress||'');
-            } catch(e){}
-            if(typeof onDone==='function') onDone();
-          }
-        });
-        _client.requestAccessToken({prompt:'consent'});
-      };
-      if(typeof google !== 'undefined') _go();
-      else setTimeout(_go, 1500);
+      /* 로그인할 때만 GIS 로드 — 평소엔 스크립트 자체를 안 불러서 번쩍임 없음 */
+      await _loadGIS();
+      _client = google.accounts.oauth2.initTokenClient({
+        client_id: cid, scope: SCOPE,
+        callback: async resp => {
+          if(resp.error){ console.error('OAuth:', resp); return; }
+          _saveToken(resp);
+          try{
+            const r = await fetch('https://www.googleapis.com/drive/v3/about?fields=user',
+              {headers:{Authorization:'Bearer '+_token}});
+            const d = await r.json();
+            localStorage.setItem('crm_gemail', d.user?.emailAddress||'');
+          } catch(e){}
+          if(typeof onDone==='function') onDone();
+        }
+      });
+      _client.requestAccessToken({prompt:'consent'});
     },
 
     logout(){
