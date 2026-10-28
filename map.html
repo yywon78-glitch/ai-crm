@@ -169,17 +169,35 @@ function cleanAddr(addr){
   return s.trim();
 }
 
+async function _nominatim(q){
+  const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&countrycodes=kr`,
+    {headers:{'Accept-Language':'ko','User-Agent':'CRM-Map/1.0'}});
+  const d=await r.json();
+  return d.length ? {lat:+d[0].lat,lng:+d[0].lon} : null;
+}
+
 async function geocode(addr){
   if(!addr) return null;
   const key = cleanAddr(addr);
   if(!key) return null;
   const c=gCache(); if(c[key]) return c[key];
-  try{
-    const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(key)}&format=json&limit=1&countrycodes=kr`,
-      {headers:{'Accept-Language':'ko','User-Agent':'CRM-Map/1.0'}});
-    const d=await r.json();
-    if(d.length){const v={lat:+d[0].lat,lng:+d[0].lon};gSave(key,v);return v;}
-  }catch(e){}
+
+  /* 단계적 단순화: 1) 전체 → 2) 번지 제거 → 3) 시+구+로 → 4) 시+구 */
+  const parts = key.split(/\s+/);
+  const tries = [
+    key,
+    parts.slice(0, -1).join(' '),              /* 마지막 단어 제거 */
+    parts.slice(0, Math.max(3, parts.length-2)).join(' '), /* 앞 3개 */
+    parts.slice(0, 2).join(' '),               /* 시+구만 */
+  ].filter((v,i,a)=>v && a.indexOf(v)===i);   /* 중복 제거 */
+
+  for(let i=0;i<tries.length;i++){
+    try{
+      const v = await _nominatim(tries[i]);
+      if(v){ gSave(key,v); return v; }
+    }catch(e){}
+    if(i<tries.length-1) await new Promise(r=>setTimeout(r,700));
+  }
   return null;
 }
 
