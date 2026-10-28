@@ -329,26 +329,44 @@ const SharedDriveDB = (function(){
     return d.files?.[0]?.id || null;
   }
 
+  async function _sharedUpload(name, newItems, myEmail, parentId){
+    /* 기존 파일에서 다른 사용자 항목은 그대로 유지하고 내 것만 교체 (누적) */
+    const eid = await _fileId(name);
+    let others = [];
+    if(eid){
+      try{
+        const r = await _api(`https://www.googleapis.com/drive/v3/files/${eid}?alt=media`);
+        const existing = await r.json();
+        others = Array.isArray(existing)
+          ? existing.filter(c => c.sharedBy !== myEmail)
+          : [];
+      } catch(e){}
+    }
+    const merged = [...others, ...newItems];
+    const body   = JSON.stringify(merged);
+    const bnd    = 'CRM_MRG_BNDRY';
+    const meta   = JSON.stringify(eid ? {} : {name, parents:[parentId]});
+    const mp     = `--${bnd}\r\nContent-Type: application/json\r\n\r\n${meta}\r\n--${bnd}\r\nContent-Type: application/json\r\n\r\n${body}\r\n--${bnd}--`;
+    const url    = eid
+      ? `https://www.googleapis.com/upload/drive/v3/files/${eid}?uploadType=multipart`
+      : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+    await _api(url, {method:eid?'PATCH':'POST',
+      headers:{'Content-Type':`multipart/related; boundary=${bnd}`}, body:mp});
+  }
+
   return {
     async sync(){
       if(!GoogleAuth.isLoggedIn()) return false;
       try{
-        const shared = DB.getCards().filter(c=>c.shared);
+        const myEmail = GoogleAuth.getUserEmail();
+        const shared  = DB.getCards().filter(c=>c.shared);
         /* 이미지도 함께 첨부 (_img 필드) */
         const withImgs = await Promise.all(shared.map(async c=>{
           try{ const img = await ImgDB.get(c.id); return img ? {...c, _img:img} : {...c}; }
           catch(e){ return {...c}; }
         }));
-        const body   = JSON.stringify(withImgs);
-        const eid    = await _fileId();
-        const bnd    = 'CRM_SHARED_BNDRY';
-        const meta   = JSON.stringify(eid ? {} : {name:FILE_NAME, parents:[FOLDER_ID]});
-        const mp     = `--${bnd}\r\nContent-Type: application/json\r\n\r\n${meta}\r\n--${bnd}\r\nContent-Type: application/json\r\n\r\n${body}\r\n--${bnd}--`;
-        const url    = eid
-          ? `https://www.googleapis.com/upload/drive/v3/files/${eid}?uploadType=multipart`
-          : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
-        await _api(url, {method:eid?'PATCH':'POST',
-          headers:{'Content-Type':`multipart/related; boundary=${bnd}`}, body:mp});
+        /* 다른 사용자 데이터는 유지하고 내 것만 교체 (누적) */
+        await _sharedUpload(FILE_NAME, withImgs, myEmail, FOLDER_ID);
         return true;
       } catch(e){ console.error('SharedDriveDB.sync', e); return false; }
     },
@@ -373,17 +391,10 @@ const SharedDriveDB = (function(){
     async syncVisits(){
       if(!GoogleAuth.isLoggedIn()) return false;
       try{
-        const shared = DB.getVisits().filter(v=>v.shared);
-        const body   = JSON.stringify(shared);
-        const eid    = await _fileId('crm_shared_visits.json');
-        const bnd    = 'CRM_SHARED_V_BNDRY';
-        const meta   = JSON.stringify(eid ? {} : {name:'crm_shared_visits.json', parents:[FOLDER_ID]});
-        const mp     = `--${bnd}\r\nContent-Type: application/json\r\n\r\n${meta}\r\n--${bnd}\r\nContent-Type: application/json\r\n\r\n${body}\r\n--${bnd}--`;
-        const url    = eid
-          ? `https://www.googleapis.com/upload/drive/v3/files/${eid}?uploadType=multipart`
-          : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
-        await _api(url, {method:eid?'PATCH':'POST',
-          headers:{'Content-Type':`multipart/related; boundary=${bnd}`}, body:mp});
+        const myEmail = GoogleAuth.getUserEmail();
+        const shared  = DB.getVisits().filter(v=>v.shared);
+        /* 다른 사용자 방문기록은 유지하고 내 것만 교체 (누적) */
+        await _sharedUpload('crm_shared_visits.json', shared, myEmail, FOLDER_ID);
         return true;
       } catch(e){ console.error('SharedDriveDB.syncVisits', e); return false; }
     },
