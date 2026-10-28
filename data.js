@@ -237,7 +237,7 @@ const DriveDB = (function(){
     /* Drive → localStorage */
     async syncDown(){
       if(!GoogleAuth.isLoggedIn()) return false;
-      /* 로컬에 미업로드 변경분이 있으면 먼저 Drive에 올림 */
+      /* 로컬 미업로드 변경분 있으면 먼저 올림 */
       if(localStorage.getItem('crm_needs_sync') === '1'){
         await DriveDB.syncUp();
         return true;
@@ -246,6 +246,11 @@ const DriveDB = (function(){
         const [cards, visits] = await Promise.all([
           _load('crm_cards.json'), _load('crm_visits.json')
         ]);
+        /* 네트워크 대기 중 로컬 변경이 생겼을 수 있어 재확인 */
+        if(localStorage.getItem('crm_needs_sync') === '1'){
+          await DriveDB.syncUp();
+          return true;
+        }
         if(cards)  localStorage.setItem('crm_cards',  JSON.stringify(cards));
         if(visits) localStorage.setItem('crm_visits', JSON.stringify(visits));
         localStorage.setItem('crm_gdrive_lastsync', new Date().toISOString());

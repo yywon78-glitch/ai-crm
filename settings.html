@@ -185,7 +185,7 @@
       <div class="set-lbl">앱 정보</div>
       <div class="set-item">
         <span class="set-ic">ℹ️</span>
-        <div class="set-txt"><div class="set-t">버전</div><div class="set-s">v12.6 · 2026-10-28 · 공유 데이터 누적 저장 버그 수정</div></div>
+        <div class="set-txt"><div class="set-t">버전</div><div class="set-s">v12.7 · 2026-10-28 · 재연결 시 삭제 데이터 복원 버그 수정</div></div>
       </div>
     </div>
   </div>
@@ -570,6 +570,7 @@ function deleteDummy(){
 function confirmReset(){
   if(confirm('⚠️ 전체 초기화\n\n모든 데이터(명함·거래처·방문기록·이미지)를\n삭제하고 빈 상태로 시작합니다.\n\n계속하시겠습니까?')){
     ['crm_cards','crm_cos','crm_visits','crm_drive_shared','crm_drive_shared_visits'].forEach(k=>localStorage.removeItem(k));
+    localStorage.setItem('crm_needs_sync','1'); /* 빈 상태를 Drive에도 반영 */
     ImgDB.clear().catch(()=>{});
     refreshDataStat();
     toast('전체 초기화 완료 ✓');
