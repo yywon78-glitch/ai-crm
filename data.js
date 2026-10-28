@@ -385,8 +385,27 @@ const SharedDriveDB = (function(){
           if(c._img){ try{ await ImgDB.set(c.id, c._img); }catch(e){} delete c._img; }
         }
         DB.setDriveShared(arr);
+        /* 공용 폴더에 없는 내 공유 카드 → shared 플래그 자동 해제 */
+        SharedDriveDB.cleanMySharedFlags(arr);
         return arr;
       } catch(e){ console.error('SharedDriveDB.load', e); return []; }
+    },
+
+    /* 공용 폴더에 없는 내 공유 카드의 shared 플래그 자동 제거 */
+    cleanMySharedFlags(folderCards){
+      const myEmail  = GoogleAuth.getUserEmail();
+      if(!myEmail) return;
+      const folderIds = new Set(folderCards.map(c=>c.id));
+      const cards  = DB.getCards();
+      let changed  = false;
+      cards.forEach(c=>{
+        if(c.shared && c.sharedBy === myEmail && !folderIds.has(c.id)){
+          delete c.shared; delete c.sharedBy; changed = true;
+        }
+      });
+      if(changed){
+        DB.setCards(cards); /* 변경 있으면 저장 + Drive syncUp 예약 */
+      }
     },
     /* 공유 방문기록 업로드 */
     async syncVisits(){
@@ -429,6 +448,17 @@ const SharedDriveDB = (function(){
           {method:'PATCH', headers:{'Content-Type':`multipart/related; boundary=${bnd}`}, body:mp});
         return true;
       } catch(e){ console.error('SharedDriveDB.removeCards', e); return false; }
+    },
+
+    /* 현재 사용자가 공용 폴더 소유자(관리자)인지 확인 */
+    async isAdmin(){
+      if(!GoogleAuth.isLoggedIn()) return false;
+      try{
+        const r = await _api(`https://www.googleapis.com/drive/v3/files/${FOLDER_ID}?fields=owners`);
+        const d = await r.json();
+        const me = GoogleAuth.getUserEmail().toLowerCase();
+        return Array.isArray(d.owners) && d.owners.some(o=>o.emailAddress?.toLowerCase()===me);
+      } catch(e){ return false; }
     },
 
     /* 공용 폴더 전체 초기화 (관리자용) */
