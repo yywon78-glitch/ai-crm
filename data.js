@@ -341,7 +341,12 @@ const SharedDriveDB = (function(){
       if(!GoogleAuth.isLoggedIn()) return false;
       try{
         const shared = DB.getCards().filter(c=>c.shared);
-        const body   = JSON.stringify(shared);
+        /* 이미지도 함께 첨부 (_img 필드) */
+        const withImgs = await Promise.all(shared.map(async c=>{
+          try{ const img = await ImgDB.get(c.id); return img ? {...c, _img:img} : {...c}; }
+          catch(e){ return {...c}; }
+        }));
+        const body   = JSON.stringify(withImgs);
         const eid    = await _fileId();
         const bnd    = 'CRM_SHARED_BNDRY';
         const meta   = JSON.stringify(eid ? {} : {name:FILE_NAME, parents:[FOLDER_ID]});
@@ -363,6 +368,10 @@ const SharedDriveDB = (function(){
         const r = await _api(`https://www.googleapis.com/drive/v3/files/${eid}?alt=media`);
         const data = await r.json();
         const arr = Array.isArray(data) ? data : [];
+        /* _img 필드가 있으면 ImgDB에 저장 후 제거 */
+        for(const c of arr){
+          if(c._img){ try{ await ImgDB.set(c.id, c._img); }catch(e){} delete c._img; }
+        }
         DB.setDriveShared(arr);
         return arr;
       } catch(e){ console.error('SharedDriveDB.load', e); return []; }
