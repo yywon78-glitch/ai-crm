@@ -67,9 +67,10 @@
     <div class="hdr-back" onclick="history.back()">←</div>
     <span class="hdr-t" id="result-title">스캔 결과</span>
     <span id="result-saved" style="font-size:12px;font-weight:700;background:var(--blue-lt);color:var(--blue);border-radius:10px;padding:3px 9px;margin-right:4px;"></span>
-    <button id="btn-pass" class="hdr-btn" onclick="passCard()" style="background:#6b7280;display:none;margin-right:4px;">건너뛰기</button>
-    <button class="hdr-btn" onclick="retake()" style="background:var(--t2);margin-right:6px;">재촬영</button>
-    <button class="hdr-btn" onclick="saveCard()">저장</button>
+    <button id="btn-pass"   class="hdr-btn" onclick="passCard()"   style="background:#6b7280;display:none;margin-right:4px;">건너뛰기</button>
+    <button id="btn-retake" class="hdr-btn" onclick="retake()"     style="background:var(--t2);margin-right:6px;">재촬영</button>
+    <button id="btn-save"   class="hdr-btn" onclick="saveCard()">저장</button>
+    <button id="btn-next"   class="hdr-btn" onclick="_doNext()"    style="background:#10b981;display:none;">다음 →</button>
   </header>
   <div class="body">
     <div class="res-img-wrap">
@@ -456,8 +457,6 @@ function saveCard(){
   cards.unshift({id:newId,nm,co,tl:document.getElementById('f-tl').value.trim(),mob:document.getElementById('f-mob').value.trim(),ph:document.getElementById('f-ph').value.trim(),em:document.getElementById('f-em').value.trim(),addr:document.getElementById('f-addr').value.trim(),tag:'고객',cl:COLORS[Math.floor(Math.random()*COLORS.length)],fav:false,img:null});
   DB.setCards(cards);
   if(_captured) ImgDB.set(newId, _captured).catch(()=>{});
-  const savedEl = document.getElementById('result-saved');
-  if(savedEl) savedEl.textContent = `저장 ${DB.getCards().length}장`;
   toast('명함이 저장됐습니다 ✓');
   _goAfterSave('card.html?id='+newId);
 }
