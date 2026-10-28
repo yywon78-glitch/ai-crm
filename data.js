@@ -243,16 +243,22 @@ const DriveDB = (function(){
         return true;
       }
       try{
-        const [cards, visits] = await Promise.all([
-          _load('crm_cards.json'), _load('crm_visits.json')
+        const [cards, visits, settings] = await Promise.all([
+          _load('crm_cards.json'), _load('crm_visits.json'), _load('crm_settings.json')
         ]);
         /* 네트워크 대기 중 로컬 변경이 생겼을 수 있어 재확인 */
         if(localStorage.getItem('crm_needs_sync') === '1'){
           await DriveDB.syncUp();
           return true;
         }
-        if(cards)  localStorage.setItem('crm_cards',  JSON.stringify(cards));
-        if(visits) localStorage.setItem('crm_visits', JSON.stringify(visits));
+        if(cards)    localStorage.setItem('crm_cards',   JSON.stringify(cards));
+        if(visits)   localStorage.setItem('crm_visits',  JSON.stringify(visits));
+        if(settings){
+          if(settings.key)       localStorage.setItem('crm_key',              settings.key);
+          if(settings.workspace) localStorage.setItem('crm_workspace',        settings.workspace);
+          if(settings.kakaoKey)  localStorage.setItem('crm_kakao_key',        settings.kakaoKey);
+          if(settings.clientId)  localStorage.setItem('crm_google_client_id', settings.clientId);
+        }
         localStorage.setItem('crm_gdrive_lastsync', new Date().toISOString());
         return true;
       } catch(e){ console.error('syncDown', e); return false; }
@@ -263,9 +269,16 @@ const DriveDB = (function(){
       if(!GoogleAuth.isLoggedIn() || _busy) return false;
       _busy = true;
       try{
+        const settings = {
+          key:       DB.getKey(),
+          workspace: DB.getWorkspace(),
+          kakaoKey:  DB.getKakaoKey(),
+          clientId:  DB.getGoogleClientId(),
+        };
         await Promise.all([
-          _save('crm_cards.json',  DB.getCards()),
-          _save('crm_visits.json', DB.getVisits())
+          _save('crm_cards.json',    DB.getCards()),
+          _save('crm_visits.json',   DB.getVisits()),
+          _save('crm_settings.json', settings),
         ]);
         localStorage.setItem('crm_gdrive_lastsync', new Date().toISOString());
         localStorage.removeItem('crm_needs_sync');
