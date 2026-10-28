@@ -152,18 +152,21 @@ map.on('click',e=>{
 });
 
 /* ── Nominatim 캐시 ── */
-const GK='crm_geo2';
+const GK='crm_geo3'; /* 버전 올려서 구 캐시 무효화 */
 function gCache(){try{return JSON.parse(localStorage.getItem(GK)||'{}')}catch(e){return{}}}
 function gSave(a,v){try{const c=gCache();c[a]=v;localStorage.setItem(GK,JSON.stringify(c))}catch(e){}}
 
 /* 지오코딩 전 주소 정제 */
 function cleanAddr(addr){
-  return addr
-    .replace(/^\s*\(우\)\s*\d{5}\s*/,'')  /* (우)07228 제거 */
-    .replace(/^\s*\d{5}\s+/,'')            /* 02579 제거 */
-    .replace(/\([^)]{3,}\)/g,'')           /* (건물명...) 제거 */
-    .replace(/,\s*.+층.*$/,'')             /* ,N층 이후 제거 */
+  let s = addr
+    .replace(/^\s*\(우\)\s*\d{5}\s*/,'')   /* (우)07228 제거 */
+    .replace(/^\s*\d{5}\s+/,'')             /* 02579 제거 */
+    .replace(/\([^)]{3,}\)/g,'')            /* (건물명...) 제거 */
+    .replace(/,.*$/,'')                     /* 쉼표 이후 제거 */
     .replace(/\s+/g,' ').trim();
+  /* 번지수 뒤 건물명 제거 (예: "87 더존을지타워" → "87") */
+  s = s.replace(/(\d+)\s+(?!층|호|번|가$)[^\d\s]\S+\s*$/, '$1');
+  return s.trim();
 }
 
 async function geocode(addr){
