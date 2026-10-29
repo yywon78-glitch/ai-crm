@@ -450,21 +450,25 @@ const SharedDriveDB = (function(){
       } catch(e){ console.error('SharedDriveDB.load', e); return []; }
     },
 
-    /* 공용 폴더에 없는 내 공유 카드의 shared 플래그 자동 제거 */
+    /* 공용 폴더 데이터로 로컬 sharedBy 교정 + 없는 카드 플래그 제거 */
     cleanMySharedFlags(folderCards){
-      const myEmail  = GoogleAuth.getUserEmail();
+      const myEmail = GoogleAuth.getUserEmail();
       if(!myEmail) return;
-      const folderIds = new Set(folderCards.map(c=>c.id));
-      const cards  = DB.getCards();
-      let changed  = false;
+      const folderMap = new Map(folderCards.map(c=>[c.id, c]));
+      const cards = DB.getCards();
+      let changed = false;
       cards.forEach(c=>{
-        if(c.shared && c.sharedBy === myEmail && !folderIds.has(c.id)){
+        if(!c.shared) return;
+        const fc = folderMap.get(c.id);
+        if(fc){
+          /* 공용 폴더에 있는 카드 → sharedBy를 폴더 기준으로 교정 */
+          if(c.sharedBy !== fc.sharedBy){ c.sharedBy = fc.sharedBy; changed = true; }
+        } else if(c.sharedBy === myEmail){
+          /* 내가 올린 카드인데 공용 폴더에 없음 → 플래그 제거 */
           delete c.shared; delete c.sharedBy; changed = true;
         }
       });
-      if(changed){
-        DB.setCards(cards); /* 변경 있으면 저장 + Drive syncUp 예약 */
-      }
+      if(changed) DB.setCards(cards);
     },
     /* 공유 방문기록 업로드 */
     async syncVisits(){
