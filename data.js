@@ -189,7 +189,7 @@ const GoogleAuth = (function(){
       _token = null; _expiry = 0;
       localStorage.removeItem('crm_gtoken');
       localStorage.removeItem('crm_gemail');
-      localStorage.removeItem('crm_gdrive_folder');
+      /* crm_gdrive_folder는 유지 — 재로그인 시 중복 폴더 생성 방지 */
       localStorage.removeItem('crm_gdrive_lastsync');
     }
   };
