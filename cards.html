@@ -124,7 +124,11 @@ function render() {
 
   let list = cards.filter(c=>!q||c.nm.includes(q)||(c.co||'').includes(q)||(c.mob||'').includes(q));
   if(mode==='fav')    list=list.filter(c=>c.fav);
-  if(mode==='shared') list=personal; /* 내것만 = 내 personal 전체 (내공유+미공유) */
+  if(mode==='shared'){
+    const me = GoogleAuth.getUserEmail();
+    /* 내것만 = 내가 등록한 카드만 (남의 sharedBy 카드 제외) */
+    list = personal.filter(c => !c.shared || !c.sharedBy || c.sharedBy === me);
+  }
 
   const el = document.getElementById('list');
   if(!list.length){
@@ -150,8 +154,8 @@ function render() {
 function cardHTML(c){
   /* 이미 공유된 카드: 라벨만 / 미공유: 체크박스 */
   const me = GoogleAuth.getUserEmail();
-  /* personal DB에 있으면 무조건 내것 (sharedBy 불일치 데이터 대응) */
-  const isMine = c.shared && (_personalIds.has(c.id) || !c.sharedBy || c.sharedBy === me);
+  /* sharedBy 기준으로 내것/남의것 판별 */
+  const isMine = c.shared && (!c.sharedBy || c.sharedBy === me);
   const shareEl = c.shared
     ? `<span class="b-shared" style="${isMine?'':'background:#fef3c7;color:#92400e;border:1px solid #fde68a;'}">${isMine?'☁️내공유':'☁️공유'}</span>`
     : `<span class="share-chk${chkSet.has(c.id)?' on':''}" data-id="${c.id}"
