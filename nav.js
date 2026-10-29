@@ -9,9 +9,9 @@ function renderTabBar(active) {
   if(!el) return;
   el.innerHTML = `
     <div class="tbi${active==='home'?' on':''}"   onclick="_navTo('index.html')"><span class="ic">🏠</span><span class="lb">홈</span></div>
-    <div class="tbi${active==='cards'?' on':''}"  onclick="_navTo('cards.html')"><span class="ic">🪪</span><span class="lb">명함</span></div>
+    <div class="tbi${active==='cards'?' on':''}"  onclick="_navTo('cards.html')"><span class="ic">🪪</span><span class="lb">명함목록</span></div>
     <div class="tb-scan"><label style="display:flex;flex-direction:column;align-items:center;cursor:pointer;width:100%;"><input type="file" accept="image/*" capture="environment" style="position:fixed;top:-200px;left:-200px;width:1px;height:1px;opacity:0;" onchange="_tbScanHandler(event)"><div class="scan-fab">📷</div><span class="lb">스캔</span></label></div>
-    <div class="tbi${active==='map'?' on':''}"     onclick="_navTo('map.html')"><span class="ic">🗺️</span><span class="lb">지도보기</span></div>
+    <div class="tbi${active==='cos'?' on':''}"     onclick="_navTo('cos.html')"><span class="ic">🏢</span><span class="lb">거래처목록</span></div>
     <div class="tbi${active==='visits'?' on':''}" onclick="_navTo('visits.html')"><span class="ic">📋</span><span class="lb">방문기록</span></div>
   `;
 }

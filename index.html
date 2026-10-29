@@ -25,7 +25,7 @@
 .hw-date{font-size:13px;color:rgba(255,255,255,.55);margin-bottom:14px;}
 
 /* 통계 카드 */
-.hw-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.hw-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
 .hw-stat{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 10px;text-align:center;position:relative;overflow:hidden;}
 .hw-stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
 .hw-stat.s-card::before{background:linear-gradient(90deg,#3b82f6,#60a5fa);}
@@ -123,7 +123,11 @@
       <div class="hw-stats">
         <div class="hw-stat s-card" onclick="location.href='cards.html'">
           <div class="hw-stat-n" id="s-cards">0</div>
-          <div class="hw-stat-l">명함</div>
+          <div class="hw-stat-l">내명함</div>
+        </div>
+        <div class="hw-stat s-card" style="opacity:.7;" onclick="location.href='cards.html'">
+          <div class="hw-stat-n" id="s-cards-all">0</div>
+          <div class="hw-stat-l">전체명함</div>
         </div>
         <div class="hw-stat s-co" onclick="location.href='cos.html'">
           <div class="hw-stat-n" id="s-cos">0</div>
@@ -133,18 +137,6 @@
           <div class="hw-stat-n" id="s-visits">0</div>
           <div class="hw-stat-l">방문</div>
         </div>
-      </div>
-    </div>
-
-    <!-- Drive 미연결 배너 -->
-    <div id="drive-banner" style="display:none;margin:0 16px 12px;padding:14px 16px;background:linear-gradient(135deg,rgba(37,99,235,.15),rgba(59,130,246,.08));border:1.5px solid rgba(59,130,246,.4);border-radius:14px;cursor:pointer;touch-action:manipulation;" onclick="_driveDotTap()">
-      <div style="display:flex;align-items:center;gap:12px;">
-        <span style="font-size:26px;">☁️</span>
-        <div style="flex:1;">
-          <div style="font-size:14px;font-weight:800;color:#93c5fd;">Google Drive 연결</div>
-          <div style="font-size:12px;color:rgba(147,197,253,.7);margin-top:2px;">탭하여 로그인 → 데이터 자동 동기화</div>
-        </div>
-        <span style="font-size:18px;color:#60a5fa;">›</span>
       </div>
     </div>
 
@@ -197,7 +189,7 @@
       <!-- ③ 방문기록 & 지도 -->
       <div class="hw-lbl">영업 활동</div>
       <div class="hw-grid2">
-        <div class="hw-node hw-tile hw-tile-amb" onclick="location.href='visits.html'">
+        <div class="hw-node hw-tile hw-tile-pur" onclick="location.href='visits.html'">
           <span class="hw-tile-badge" id="b-visits"></span>
           <div class="hw-tile-ic">📋</div>
           <div class="hw-tile-t">방문기록</div>
@@ -277,7 +269,10 @@
 
 function load(){
   const cards=DB.getCards(),cos=DB.getCos(),visits=DB.getVisits();
+  const personalIds=new Set(cards.map(c=>c.id));
+  const sharedOthers=DB.getDriveShared().filter(c=>!personalIds.has(c.id));
   document.getElementById('s-cards').textContent=cards.length;
+  document.getElementById('s-cards-all').textContent=cards.length+sharedOthers.length;
   document.getElementById('s-cos').textContent=cos.length;
   document.getElementById('s-visits').textContent=visits.length;
   document.getElementById('b-cards').textContent=cards.length+'장';
@@ -319,17 +314,11 @@ loadTodayVisits();
     GoogleAuth.silentLogin().then(()=>{
       if(GoogleAuth.isLoggedIn()){
         dot.style.background = '#4ade80'; dot.style.display='block'; dot.title='Drive 연결됨';
-        document.getElementById('drive-banner').style.display = 'none';
         DriveDB.syncDown().then(ok=>{ if(ok){ load(); loadTodayVisits(); } });
       } else {
-        /* 자동 재연결 실패 → 수동 안내 */
         dot.style.background = '#fb923c'; dot.style.display='block'; dot.title='Drive 토큰 만료 — 탭하여 재연결';
-        document.getElementById('drive-banner').style.display = 'block';
       }
     });
-  } else {
-    /* 처음 접속 — 배너 표시 */
-    document.getElementById('drive-banner').style.display = 'block';
   }
 })();
 
@@ -340,7 +329,6 @@ function _driveDotTap(){
   } else {
     GoogleAuth.login(()=>{
       dot.style.background = '#4ade80'; dot.style.display='block'; dot.title='Drive 연결됨';
-      document.getElementById('drive-banner').style.display = 'none';
       DriveDB.syncDown().then(ok=>{ if(ok){ load(); loadTodayVisits(); } });
       _ensureSettingsUploaded();
       toast('Drive 연결됐습니다 ✓');
