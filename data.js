@@ -214,10 +214,24 @@ const DriveDB = (function(){
 
   async function _folder(){
     if(_fid) return _fid;
-    const r = await _api(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`name='${FOLDER}' and mimeType='application/vnd.google-apps.folder' and trashed=false`)}&fields=files(id)`);
+    const savedId = localStorage.getItem('crm_gdrive_folder');
+    if(savedId){
+      /* 기존 폴더 ID 검증 */
+      try{
+        await _api(`https://www.googleapis.com/drive/v3/files/${savedId}?fields=id`);
+        _fid = savedId;
+        return _fid;
+      } catch(e){
+        /* 폴더 접근 실패 → 오류 (새로 만들지 않음) */
+        throw new Error('Drive 폴더 접근 실패. 설정에서 Google 계정을 다시 연결해주세요.');
+      }
+    }
+    /* 최초 로그인: 기존 폴더 검색 후 없으면 1회만 생성 */
+    const r = await _api(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`name='${FOLDER}' and mimeType='application/vnd.google-apps.folder' and trashed=false`)}&fields=files(id)&orderBy=modifiedTime+desc`);
     const d = await r.json();
-    if(d.files?.length){ _fid = d.files[0].id; }
-    else {
+    if(d.files?.length){
+      _fid = d.files[0].id;
+    } else {
       const c = await _api('https://www.googleapis.com/drive/v3/files',{
         method:'POST', headers:{'Content-Type':'application/json'},
         body:JSON.stringify({name:FOLDER, mimeType:'application/vnd.google-apps.folder'})
@@ -354,7 +368,7 @@ const DriveDB = (function(){
 const SharedDriveDB = (function(){
   const FOLDER_ID = '1vsNVDH17zJZWUYZSNeUAVPrP1WApAFDg';
   const FILE_NAME = 'crm_shared_cards.json';
-  const DRIVE_KEY  = 'AIzaSyAcSzNgWqtYz9GM3JVs4LFGWy4N25fbRjA';
+  const GAS_URL   = 'https://script.google.com/macros/s/AKfycbzrb9CZcNzK0Qb95pNpf9ts9sx8Jcy6QiFk8-jzYgwQd61Q3LYu4QRFQeFuE7T5aRuR/exec';
 
   /* OAuth 필요 (쓰기용) */
   async function _api(url, opts={}){
@@ -366,24 +380,16 @@ const SharedDriveDB = (function(){
     return res;
   }
 
-  /* API 키만으로 읽기 — OAuth 불필요 */
-  async function _publicGet(url){
-    const sep = url.includes('?') ? '&' : '?';
-    const res = await fetch(url + sep + 'key=' + DRIVE_KEY);
-    if(!res.ok){ const e=await res.json().catch(()=>({})); throw new Error(e.error?.message||'PublicDriveAPI '+res.status); }
-    return res;
+  /* GAS 경유 읽기 — API 키 불필요, 로그인 불필요 */
+  async function _gasGet(type){
+    const res = await fetch(`${GAS_URL}?type=${type}`);
+    if(!res.ok) throw new Error('GAS GET ' + res.status);
+    return await res.json();
   }
 
   /* 쓰기용 파일 ID (OAuth) */
   async function _fileId(name){
     const r = await _api(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`name='${name}' and '${FOLDER_ID}' in parents and trashed=false`)}&fields=files(id)`);
-    const d = await r.json();
-    return d.files?.[0]?.id || null;
-  }
-
-  /* 읽기용 파일 ID (API 키) — 최신 파일 우선 */
-  async function _publicFileId(name){
-    const r = await _publicGet(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`name='${name}' and '${FOLDER_ID}' in parents and trashed=false`)}&fields=files(id)&orderBy=modifiedTime+desc`);
     const d = await r.json();
     return d.files?.[0]?.id || null;
   }
@@ -430,14 +436,11 @@ const SharedDriveDB = (function(){
         return false;
       }
     },
-    /* CRM_공용 → 공유 명함 불러오기 (API 키 — 로그인 불필요) */
+    /* CRM_공용 → 공유 명함 불러오기 (GAS 경유 — 로그인 불필요) */
     async load(){
       try{
-        const eid = await _publicFileId(FILE_NAME);
-        if(!eid) return [];
-        const r = await _publicGet(`https://www.googleapis.com/drive/v3/files/${eid}?alt=media`);
-        const data = await r.json();
-        const arr = Array.isArray(data) ? data : [];
+        const arr0 = await _gasGet('cards');
+        const arr = Array.isArray(arr0) ? arr0 : [];
         for(const c of arr){
           if(c._img){ try{ await ImgDB.set(c.id, c._img); }catch(e){} delete c._img; }
         }
@@ -472,14 +475,11 @@ const SharedDriveDB = (function(){
         return true;
       } catch(e){ console.error('SharedDriveDB.syncVisits', e); return false; }
     },
-    /* CRM_공용 → 공유 방문기록 불러오기 (API 키 — 로그인 불필요) */
+    /* CRM_공용 → 공유 방문기록 불러오기 (GAS 경유 — 로그인 불필요) */
     async loadVisits(){
       try{
-        const eid = await _publicFileId('crm_shared_visits.json');
-        if(!eid) return [];
-        const r = await _publicGet(`https://www.googleapis.com/drive/v3/files/${eid}?alt=media`);
-        const data = await r.json();
-        const arr = Array.isArray(data) ? data : [];
+        const arr = await _gasGet('visits');
+        if(!Array.isArray(arr)) return [];
         DB.setDriveSharedVisits(arr);
         return arr;
       } catch(e){ console.error('SharedDriveDB.loadVisits', e); return []; }
