@@ -315,8 +315,18 @@ loadTodayVisits();
     DriveDB.syncDown().then(ok=>{ if(ok){ load(); loadTodayVisits(); } });
     _ensureSettingsUploaded();
   } else if(localStorage.getItem('crm_gemail')){
-    dot.style.background = '#fb923c'; dot.style.display='block'; dot.title='Drive 토큰 만료 — 탭하여 재연결';
-    document.getElementById('drive-banner').style.display = 'block';
+    /* 토큰 만료 → 조용히 재연결 시도 */
+    GoogleAuth.silentLogin().then(()=>{
+      if(GoogleAuth.isLoggedIn()){
+        dot.style.background = '#4ade80'; dot.style.display='block'; dot.title='Drive 연결됨';
+        document.getElementById('drive-banner').style.display = 'none';
+        DriveDB.syncDown().then(ok=>{ if(ok){ load(); loadTodayVisits(); } });
+      } else {
+        /* 자동 재연결 실패 → 수동 안내 */
+        dot.style.background = '#fb923c'; dot.style.display='block'; dot.title='Drive 토큰 만료 — 탭하여 재연결';
+        document.getElementById('drive-banner').style.display = 'block';
+      }
+    });
   } else {
     /* 처음 접속 — 배너 표시 */
     document.getElementById('drive-banner').style.display = 'block';
