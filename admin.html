@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>관리자 집계</title>
+<link rel="stylesheet" href="shared.css?v=1029">
+<style>
+body { background:var(--bg); margin:0; font-family:-apple-system,sans-serif; padding-bottom:40px; }
+
+/* 헤더 */
+.hdr { position:sticky;top:0;z-index:10;height:52px;background:var(--card);
+  border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 16px;gap:12px; }
+.hdr-back { font-size:20px;color:var(--t2);text-decoration:none;padding:4px 8px 4px 0; }
+.hdr-t { flex:1;font-size:17px;font-weight:700;color:var(--t1); }
+.hdr-btn { background:var(--blue-lt);color:var(--blue);border:none;border-radius:8px;
+  padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer; }
+
+/* 요약 카드 */
+.sum-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px; }
+.sum-card { background:var(--card);border-radius:14px;border:1px solid var(--bdr);
+  padding:16px 12px;text-align:center; }
+.sum-num  { font-size:28px;font-weight:800;color:var(--blue);line-height:1; }
+.sum-lbl  { font-size:11px;color:var(--t3);margin-top:5px;font-weight:600; }
+
+/* 섹션 */
+.sec { margin:0 16px 20px; }
+.sec-hdr { display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:10px; }
+.sec-t { font-size:14px;font-weight:700;color:var(--t1); }
+.sec-cnt { font-size:12px;color:var(--t3); }
+
+/* 테이블 */
+.tbl { background:var(--card);border-radius:14px;border:1px solid var(--bdr);overflow:hidden; }
+.tbl-row { display:grid;align-items:center;padding:12px 14px;border-bottom:1px solid var(--bdr); }
+.tbl-row:last-child { border-bottom:none; }
+.tbl-head { background:var(--bg);font-size:11px;font-weight:700;color:var(--t3); }
+
+.row-account { grid-template-columns:1fr 52px 52px 80px; gap:8px; }
+.row-co      { grid-template-columns:1fr 60px 1fr; gap:8px; }
+
+.cell-main  { font-size:13px;font-weight:600;color:var(--t1);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap; }
+.cell-email { font-size:11px;color:var(--t3);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap; }
+.cell-num   { font-size:14px;font-weight:700;color:var(--blue);text-align:center; }
+.cell-date  { font-size:10px;color:var(--t3);text-align:right; }
+.cell-tag   { font-size:10px;background:var(--blue-lt);color:var(--blue);
+  border-radius:5px;padding:2px 7px;font-weight:700;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis; }
+
+/* 배지 */
+.badge { display:inline-block;font-size:10px;font-weight:700;border-radius:5px;
+  padding:2px 7px;margin-left:4px; }
+.b-card  { background:#dbeafe;color:#1d4ed8; }
+.b-visit { background:#d1fae5;color:#065f46; }
+
+/* 빈 화면 */
+.empty { padding:60px 16px;text-align:center;color:var(--t3); }
+.empty-ic { font-size:40px;margin-bottom:12px; }
+.empty-t { font-size:15px;font-weight:600;margin-bottom:6px;color:var(--t2); }
+
+/* 로딩 */
+.loading { display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:80px 16px;gap:14px; }
+.spinner { width:36px;height:36px;border:3px solid var(--bdr);
+  border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg)} }
+.loading-t { font-size:14px;color:var(--t3); }
+
+/* 마지막 갱신 */
+.last-sync { font-size:11px;color:var(--t3);text-align:center;
+  padding:0 16px 8px; }
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <a href="index.html" class="hdr-back">←</a>
+  <span class="hdr-t">관리자 집계</span>
+  <button class="hdr-btn" onclick="loadData()">↻ 새로고침</button>
+</header>
+
+<div id="view-loading" class="loading">
+  <div class="spinner"></div>
+  <div class="loading-t">공유 데이터 로딩 중...</div>
+</div>
+
+<div id="view-main" style="display:none;">
+  <!-- 요약 -->
+  <div class="sum-grid">
+    <div class="sum-card">
+      <div class="sum-num" id="s-cards">—</div>
+      <div class="sum-lbl">공유 명함</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-num" id="s-accounts">—</div>
+      <div class="sum-lbl">등록 계정</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-num" id="s-cos">—</div>
+      <div class="sum-lbl">거래처 수</div>
+    </div>
+  </div>
+
+  <div class="last-sync" id="last-sync"></div>
+
+  <!-- 계정별 -->
+  <div class="sec">
+    <div class="sec-hdr">
+      <span class="sec-t">📧 계정별 등록 현황</span>
+      <span class="sec-cnt" id="cnt-accounts"></span>
+    </div>
+    <div class="tbl">
+      <div class="tbl-row tbl-head row-account">
+        <div>계정</div>
+        <div style="text-align:center;">명함</div>
+        <div style="text-align:center;">방문</div>
+        <div style="text-align:right;">최근 등록</div>
+      </div>
+      <div id="list-accounts"></div>
+    </div>
+  </div>
+
+  <!-- 거래처별 -->
+  <div class="sec">
+    <div class="sec-hdr">
+      <span class="sec-t">🏢 거래처별 명함 현황</span>
+      <span class="sec-cnt" id="cnt-cos"></span>
+    </div>
+    <div class="tbl">
+      <div class="tbl-row tbl-head row-co">
+        <div>거래처명</div>
+        <div style="text-align:center;">명함</div>
+        <div>등록 계정</div>
+      </div>
+      <div id="list-cos"></div>
+    </div>
+  </div>
+
+  <!-- 카드 전체 목록 -->
+  <div class="sec">
+    <div class="sec-hdr">
+      <span class="sec-t">🪪 공유 명함 전체</span>
+      <span class="sec-cnt" id="cnt-all"></span>
+    </div>
+    <div class="tbl" id="list-all"></div>
+  </div>
+</div>
+
+<div id="view-empty" class="empty" style="display:none;">
+  <div class="empty-ic">📭</div>
+  <div class="empty-t">공유 등록된 명함이 없습니다</div>
+</div>
+
+<script src="data.js"></script>
+<script>
+let _cards = [], _visits = [];
+
+async function loadData(){
+  document.getElementById('view-loading').style.display = 'flex';
+  document.getElementById('view-main').style.display   = 'none';
+  document.getElementById('view-empty').style.display  = 'none';
+
+  [_cards, _visits] = await Promise.all([
+    SharedDriveDB.load(),
+    SharedDriveDB.loadVisits()
+  ]);
+
+  document.getElementById('view-loading').style.display = 'none';
+
+  if(!_cards.length){
+    document.getElementById('view-empty').style.display = 'block';
+    return;
+  }
+  render(_cards, _visits);
+  document.getElementById('view-main').style.display = 'block';
+}
+
+function render(cards, visits){
+  const now = new Date().toLocaleString('ko-KR',{hour12:false});
+  document.getElementById('last-sync').textContent = `마지막 조회: ${now}`;
+
+  /* ── 계정별 집계 ── */
+  const byAccount = {};
+  cards.forEach(c=>{
+    const k = c.sharedBy || '미확인';
+    if(!byAccount[k]) byAccount[k] = {cards:0, latest:''};
+    byAccount[k].cards++;
+    const dt = c.sharedAt || c.dt || '';
+    if(dt > byAccount[k].latest) byAccount[k].latest = dt;
+  });
+  visits.forEach(v=>{
+    const k = v.sharedBy || '미확인';
+    if(!byAccount[k]) byAccount[k] = {cards:0, latest:''};
+    byAccount[k].visits = (byAccount[k].visits||0) + 1;
+  });
+
+  const accountList = Object.entries(byAccount)
+    .sort((a,b)=> b[1].cards - a[1].cards);
+
+  document.getElementById('s-cards').textContent    = cards.length;
+  document.getElementById('s-accounts').textContent = accountList.length;
+  document.getElementById('s-cos').textContent      = new Set(cards.map(c=>c.co||'미확인')).size;
+  document.getElementById('cnt-accounts').textContent = `${accountList.length}개 계정`;
+
+  document.getElementById('list-accounts').innerHTML = accountList.map(([email, data])=>{
+    const shortEmail = email.length > 22 ? email.slice(0,20)+'…' : email;
+    const latestStr  = data.latest ? data.latest.slice(0,10) : '—';
+    return `<div class="tbl-row row-account">
+      <div>
+        <div class="cell-main">${shortEmail}</div>
+      </div>
+      <div class="cell-num">${data.cards}</div>
+      <div class="cell-num" style="color:#10b981;">${data.visits||0}</div>
+      <div class="cell-date">${latestStr}</div>
+    </div>`;
+  }).join('');
+
+  /* ── 거래처별 집계 ── */
+  const byCo = {};
+  cards.forEach(c=>{
+    const k = c.co || '미확인';
+    if(!byCo[k]) byCo[k] = {count:0, accounts:new Set()};
+    byCo[k].count++;
+    if(c.sharedBy) byCo[k].accounts.add(c.sharedBy);
+  });
+
+  const coList = Object.entries(byCo).sort((a,b)=> b[1].count - a[1].count);
+  document.getElementById('cnt-cos').textContent = `${coList.length}개 거래처`;
+
+  document.getElementById('list-cos').innerHTML = coList.map(([co, data])=>{
+    const accounts = [...data.accounts];
+    const accStr   = accounts.length <= 2
+      ? accounts.map(e=> e.split('@')[0]).join(', ')
+      : accounts.slice(0,2).map(e=> e.split('@')[0]).join(', ') + ` 외 ${accounts.length-2}`;
+    return `<div class="tbl-row row-co">
+      <div class="cell-main">${co}</div>
+      <div class="cell-num">${data.count}</div>
+      <div class="cell-tag">${accStr}</div>
+    </div>`;
+  }).join('');
+
+  /* ── 전체 카드 목록 ── */
+  document.getElementById('cnt-all').textContent = `${cards.length}건`;
+
+  const sorted = [...cards].sort((a,b)=> (b.sharedAt||'') > (a.sharedAt||'') ? 1 : -1);
+  document.getElementById('list-all').innerHTML = sorted.map(c=>{
+    const acct = (c.sharedBy||'').split('@')[0] || '미확인';
+    return `<div class="tbl-row" style="grid-template-columns:1fr auto;gap:8px;">
+      <div>
+        <div class="cell-main">${c.nm||'—'} <span style="font-size:11px;color:var(--t3);font-weight:400;">${c.tl||''}</span></div>
+        <div class="cell-email">${c.co||''}</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="badge b-card">${acct}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+loadData();
+</script>
+</body>
+</html>
