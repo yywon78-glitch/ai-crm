@@ -127,11 +127,9 @@ function render() {
   /* 다른 계정이 공유한 명함 (내 목록에 없는 것만 추가) */
   const otherShared = DB.getDriveShared().filter(c=>!_personalIds.has(c.id));
   const cards = [...personal, ...otherShared];
-  const tot=cards.length, vip=cards.filter(c=>c.tag==='VIP').length, fav=cards.filter(c=>c.fav).length;
-  const sharedCnt = cards.filter(c=>c.shared).length;
+  const mineCnt = personal.filter(c => !c.shared || !c.sharedBy || c.sharedBy === GoogleAuth.getUserEmail()).length;
   document.getElementById('stat-pills').innerHTML =
-    `<div class="pill">🪪 총 ${tot}장</div><div class="pill">⭐ VIP ${vip}명</div><div class="pill">💛 즐겨찾기 ${fav}명</div>`+
-    (sharedCnt ? `<div class="pill">☁️ 공유 ${sharedCnt}명</div>` : '');
+    `<div class="pill">전체 ${cards.length}장</div><div class="pill">내것 ${mineCnt}장</div>`;
 
   /* 전체/내것만 필터 */
   let baseList = ownerFilter === 'mine'
