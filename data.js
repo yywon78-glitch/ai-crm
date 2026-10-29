@@ -563,7 +563,12 @@ let _syncTimer = null;
 function _scheduleSyncUp(){
   if(!GoogleAuth.isLoggedIn()) return;
   clearTimeout(_syncTimer);
-  _syncTimer = setTimeout(()=> DriveDB.syncUp(), 3000);
+  _syncTimer = setTimeout(async ()=>{
+    await DriveDB.syncUp();
+    /* 공유 카드가 있으면 공용 폴더도 업데이트 */
+    const hasShared = DB.getCards().some(c=>c.shared);
+    if(hasShared) SharedDriveDB.sync().catch(()=>{});
+  }, 3000);
 }
 
 /* Drive에 설정 파일이 없으면 즉시 업로드 (기기 최초 연결 시) */
