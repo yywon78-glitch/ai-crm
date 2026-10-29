@@ -263,12 +263,7 @@ async function processImage(dataUrl){
   const ldMsg = document.getElementById('ld-msg');
   document.getElementById('ld').classList.add('show');
 
-  const apiKey = DB.getKey();
-  if(!apiKey){
-    document.getElementById('ld').classList.remove('show');
-    if(confirm('API 키가 설정되지 않았습니다.\n설정 화면으로 이동할까요?')) location.href='settings.html';
-    return;
-  }
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbxxfEmH6ItesbGCoCM0i04qt2YpgnW4HaaHWgW_IoksXG04YP8PIQzdiy7Fyxwwpp8I/exec';
 
   try{
     ldMsg.textContent = '이미지 준비 중...';
@@ -277,15 +272,9 @@ async function processImage(dataUrl){
     const base64 = forOCR.split(',')[1];
     ldMsg.textContent = 'AI 명함 인식 중...';
 
-    const res = await fetch('https://api.anthropic.com/v1/messages',{
+    const res = await fetch(GAS_URL,{
       method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version':'2023-06-01',
-        'anthropic-dangerous-direct-browser-access':'true',
-        'anthropic-workspace-id': DB.getWorkspace()||'wrkspc_01Pdf2hnBKy4HbTJCfTcdq9W'
-      },
+      headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
         model:'claude-haiku-4-5-20251001',
         max_tokens:2048,
