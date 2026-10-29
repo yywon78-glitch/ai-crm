@@ -123,7 +123,10 @@ function render() {
 
   let list = cards.filter(c=>!q||c.nm.includes(q)||(c.co||'').includes(q)||(c.mob||'').includes(q));
   if(mode==='fav')    list=list.filter(c=>c.fav);
-  if(mode==='shared') list=personal; /* 내것만 = 내 개인 DB 전체 (공유 올린 것 포함, 남의 공유 제외) */
+  if(mode==='shared'){
+    const me = GoogleAuth.getUserEmail();
+    list = personal.filter(c => !c.shared || !c.sharedBy || c.sharedBy === me);
+  } /* 내것만 = 미공유 + 내가 공유한 것 (남의 공유 제외) */
 
   const el = document.getElementById('list');
   if(!list.length){
