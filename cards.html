@@ -52,13 +52,14 @@
     <div class="segtab"    id="seg-co"     onclick="setMode('co',this)">거래처순</div>
     <div class="segtab"    id="seg-fav"    onclick="setMode('fav',this)">즐겨찾기</div>
     <div class="segtab"    id="seg-recent" onclick="setMode('recent',this)">최근순</div>
-    <div class="segtab"    id="seg-shared" onclick="setMode('shared',this)">내것만</div>
   </div>
-  <div style="display:flex;align-items:center;background:var(--card);border-bottom:1px solid var(--bdr);">
+  <div style="display:flex;align-items:center;background:var(--card);border-bottom:1px solid var(--bdr);padding:0 8px 0 0;gap:6px;">
     <div class="pills" id="stat-pills" style="flex:1;border-bottom:none;min-width:0;"></div>
-    <div style="padding:0 12px 0 0;flex-shrink:0;">
-      <button id="btn-share-save" onclick="saveShared()">공유저장</button>
+    <div style="display:flex;gap:4px;flex-shrink:0;">
+      <button id="btn-owner-all"  onclick="setOwner('all',this)"  style="padding:5px 10px;border-radius:8px;border:1px solid var(--blue);background:var(--blue);color:#fff;font-size:11px;font-weight:700;cursor:pointer;">전체</button>
+      <button id="btn-owner-mine" onclick="setOwner('mine',this)" style="padding:5px 10px;border-radius:8px;border:1px solid var(--bdr);background:transparent;color:var(--t3);font-size:11px;font-weight:700;cursor:pointer;">내것만</button>
     </div>
+    <button id="btn-share-save" onclick="saveShared()" style="flex-shrink:0;">공유저장</button>
   </div>
   <div class="body"><div class="bp" id="list"></div></div>
   <nav class="tabbar" id="tabbar"></nav>
@@ -93,6 +94,7 @@
 <script src="nav.js?v=1029"></script>
 <script>
 let mode = 'name';
+let ownerFilter = 'all'; /* 전체(all) / 내것만(mine) */
 const chkSet = new Set();
 let _noCardState = false;
 let _personalIds = new Set();
@@ -109,6 +111,15 @@ function setMode(m, el) {
   render();
 }
 
+function setOwner(f, el) {
+  ownerFilter = f;
+  document.getElementById('btn-owner-all').style.background  = f==='all'  ? 'var(--blue)' : 'transparent';
+  document.getElementById('btn-owner-all').style.color       = f==='all'  ? '#fff' : 'var(--t3)';
+  document.getElementById('btn-owner-mine').style.background = f==='mine' ? 'var(--blue)' : 'transparent';
+  document.getElementById('btn-owner-mine').style.color      = f==='mine' ? '#fff' : 'var(--t3)';
+  render();
+}
+
 function render() {
   const q = document.getElementById('srch').value;
   const personal = DB.getCards();
@@ -122,17 +133,17 @@ function render() {
     `<div class="pill">🪪 총 ${tot}장</div><div class="pill">⭐ VIP ${vip}명</div><div class="pill">💛 즐겨찾기 ${fav}명</div>`+
     (sharedCnt ? `<div class="pill">☁️ 공유 ${sharedCnt}명</div>` : '');
 
-  let list = cards.filter(c=>!q||c.nm.includes(q)||(c.co||'').includes(q)||(c.mob||'').includes(q));
-  if(mode==='fav')    list=list.filter(c=>c.fav);
-  if(mode==='shared'){
-    const me = GoogleAuth.getUserEmail();
-    /* 내것만 = 내가 등록한 카드만 (남의 sharedBy 카드 제외) */
-    list = personal.filter(c => !c.shared || !c.sharedBy || c.sharedBy === me);
-  }
+  /* 전체/내것만 필터 */
+  let baseList = ownerFilter === 'mine'
+    ? personal.filter(c => !c.shared || !c.sharedBy || c.sharedBy === GoogleAuth.getUserEmail())
+    : cards;
+
+  let list = baseList.filter(c=>!q||c.nm.includes(q)||(c.co||'').includes(q)||(c.mob||'').includes(q));
+  if(mode==='fav') list=list.filter(c=>c.fav);
 
   const el = document.getElementById('list');
   if(!list.length){
-    el.innerHTML=`<div class="empty"><div class="empty-ic">🪪</div><div class="empty-t">명함이 없습니다</div><div class="empty-s">${mode==='shared'?'전체 공유 등록됐습니다':'카메라로 스캔해보세요'}</div></div>`;
+    el.innerHTML=`<div class="empty"><div class="empty-ic">🪪</div><div class="empty-t">명함이 없습니다</div><div class="empty-s">카메라로 스캔해보세요</div></div>`;
     return;
   }
   if(mode==='co'){
