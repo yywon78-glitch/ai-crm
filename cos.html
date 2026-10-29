@@ -80,9 +80,15 @@ function render() {
   const q = document.getElementById('srch').value;
 
   /* 모든 카드(개인+공유)의 회사명으로 거래처 자동 파생 */
+  const personalCards = DB.getCards();
+  /* 개인카드의 nm+mob 셋 — 공유카드 중복 제거용 */
+  const personalKey = new Set(personalCards.map(c=>`${c.nm}|${c.mob||c.ph||''}`));
   const allCards = [
-    ...DB.getCards(),
-    ...DB.getDriveShared().filter(sc=>!DB.getCards().find(c=>c.id===sc.id))
+    ...personalCards,
+    ...DB.getDriveShared().filter(sc=>{
+      if(personalCards.find(c=>c.id===sc.id)) return false; /* 동일 ID */
+      return !personalKey.has(`${sc.nm}|${sc.mob||sc.ph||''}`); /* 동일 인물 */
+    })
   ];
   const registered = DB.getCos(); /* 수동 등록 거래처 (추가 정보 보유) */
   const regMap = Object.fromEntries(registered.map(c=>[c.nm, c]));
