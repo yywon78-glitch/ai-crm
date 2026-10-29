@@ -381,9 +381,9 @@ const SharedDriveDB = (function(){
     return d.files?.[0]?.id || null;
   }
 
-  /* 읽기용 파일 ID (API 키) */
+  /* 읽기용 파일 ID (API 키) — 최신 파일 우선 */
   async function _publicFileId(name){
-    const r = await _publicGet(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`name='${name}' and '${FOLDER_ID}' in parents and trashed=false`)}&fields=files(id)`);
+    const r = await _publicGet(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`name='${name}' and '${FOLDER_ID}' in parents and trashed=false`)}&fields=files(id)&orderBy=modifiedTime+desc`);
     const d = await r.json();
     return d.files?.[0]?.id || null;
   }
