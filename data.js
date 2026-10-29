@@ -405,7 +405,14 @@ const SharedDriveDB = (function(){
         if(Array.isArray(d)) d.forEach(c => { map[c.id] = c; });
       } catch(e){}
     }
-    newItems.forEach(c => { map[c.id] = c; }); /* 추가 or 업데이트 */
+    /* mob 기준 중복 제거: 같은 휴대폰번호 카드가 있으면 기존 ID/sharedBy 유지하고 데이터만 업데이트 */
+    newItems.forEach(c => {
+      if(c.mob){
+        const dup = Object.values(map).find(x => x.mob === c.mob && x.id !== c.id);
+        if(dup){ map[dup.id] = {...c, id: dup.id, sharedBy: dup.sharedBy}; return; }
+      }
+      map[c.id] = c;
+    });
     const body = JSON.stringify(Object.values(map));
     const bnd  = 'CRM_MRG_BNDRY';
     const meta = JSON.stringify(eid ? {} : {name, parents:[parentId]});
