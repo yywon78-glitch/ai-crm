@@ -450,12 +450,13 @@ const SharedDriveDB = (function(){
       } catch(e){ console.error('SharedDriveDB.load', e); return []; }
     },
 
-    /* 공용 폴더 데이터로 로컬 sharedBy 교정 + 없는 카드 플래그 제거 */
+    /* 공용 폴더 데이터로 로컬 sharedBy 교정 + 없는 카드 플래그 제거 + 내 공유 카드 복원 */
     cleanMySharedFlags(folderCards){
       const myEmail = GoogleAuth.getUserEmail();
       if(!myEmail) return;
       const folderMap = new Map(folderCards.map(c=>[c.id, c]));
       const cards = DB.getCards();
+      const cardIds = new Set(cards.map(c=>c.id));
       let changed = false;
       cards.forEach(c=>{
         if(!c.shared) return;
@@ -466,6 +467,13 @@ const SharedDriveDB = (function(){
         } else if(c.sharedBy === myEmail){
           /* 내가 올린 카드인데 공용 폴더에 없음 → 플래그 제거 */
           delete c.shared; delete c.sharedBy; changed = true;
+        }
+      });
+      /* 공용 폴더에 내 카드가 있는데 개인 DB에 없으면 복원 */
+      folderCards.forEach(fc=>{
+        if(fc.sharedBy === myEmail && !cardIds.has(fc.id)){
+          const restored = {...fc}; delete restored._img;
+          cards.push(restored); changed = true;
         }
       });
       if(changed) DB.setCards(cards);
