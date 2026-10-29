@@ -95,6 +95,7 @@
 let mode = 'name';
 const chkSet = new Set();
 let _noCardState = false;
+let _personalIds = new Set(); /* render()에서 갱신 — cardHTML에서 내/남 판별용 */
 const tagCls = {고객:'b-bl',VIP:'b-gn',잠재:'b-am',휴면:'b-rd'};
 async function refreshSharedCards(){
   await SharedDriveDB.load(); /* 로드 후 DB.setDriveShared()에 자동 캐싱 */
@@ -111,9 +112,9 @@ function setMode(m, el) {
 function render() {
   const q = document.getElementById('srch').value;
   const personal = DB.getCards();
-  const personalIds = new Set(personal.map(c=>c.id));
+  _personalIds = new Set(personal.map(c=>c.id));
   /* 다른 계정이 공유한 명함 (내 목록에 없는 것만 추가) */
-  const otherShared = DB.getDriveShared().filter(c=>!personalIds.has(c.id));
+  const otherShared = DB.getDriveShared().filter(c=>!_personalIds.has(c.id));
   const cards = [...personal, ...otherShared];
   const tot=cards.length, vip=cards.filter(c=>c.tag==='VIP').length, fav=cards.filter(c=>c.fav).length;
   const sharedCnt = cards.filter(c=>c.shared).length;
@@ -149,7 +150,8 @@ function render() {
 function cardHTML(c){
   /* 이미 공유된 카드: 라벨만 / 미공유: 체크박스 */
   const me = GoogleAuth.getUserEmail();
-  const isMine = c.shared && (!c.sharedBy || c.sharedBy === me);
+  /* 내 개인DB에 있는 카드 → 무조건 내것 (토큰 만료 상태에서도 정확히 판별) */
+  const isMine = c.shared && (_personalIds.has(c.id) || !c.sharedBy || c.sharedBy === me);
   const shareEl = c.shared
     ? `<span class="b-shared" style="${isMine?'':'background:#fef3c7;color:#92400e;border:1px solid #fde68a;'}">${isMine?'☁️내공유':'☁️공유'}</span>`
     : `<span class="share-chk${chkSet.has(c.id)?' on':''}" data-id="${c.id}"
