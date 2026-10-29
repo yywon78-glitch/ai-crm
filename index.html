@@ -121,36 +121,6 @@
         <span class="hw-ver">v16.5</span>
       </div>
       <div class="hw-date" id="today-date"></div>
-      <div class="hw-stats-lbl">전체</div>
-      <div class="hw-stats">
-        <div class="hw-stat s-card" onclick="location.href='cards.html'">
-          <div class="hw-stat-n" id="s-cards-all">0</div>
-          <div class="hw-stat-l">명함</div>
-        </div>
-        <div class="hw-stat s-co" onclick="location.href='cos.html'">
-          <div class="hw-stat-n" id="s-cos-all">0</div>
-          <div class="hw-stat-l">거래처</div>
-        </div>
-        <div class="hw-stat s-visit" onclick="location.href='visits.html'">
-          <div class="hw-stat-n" id="s-visits-all">0</div>
-          <div class="hw-stat-l">방문기록</div>
-        </div>
-      </div>
-      <div class="hw-stats-lbl" style="padding-top:8px;">내 것</div>
-      <div class="hw-stats">
-        <div class="hw-stat s-card" style="opacity:.75;" onclick="location.href='cards.html'">
-          <div class="hw-stat-n" id="s-cards">0</div>
-          <div class="hw-stat-l">명함</div>
-        </div>
-        <div class="hw-stat s-co" style="opacity:.75;" onclick="location.href='cos.html'">
-          <div class="hw-stat-n" id="s-cos">0</div>
-          <div class="hw-stat-l">거래처</div>
-        </div>
-        <div class="hw-stat s-visit" style="opacity:.75;" onclick="location.href='visits.html'">
-          <div class="hw-stat-n" id="s-visits">0</div>
-          <div class="hw-stat-l">방문기록</div>
-        </div>
-      </div>
     </div>
 
     <!-- 오늘 방문 예정 -->
@@ -282,21 +252,6 @@
 
 function load(){
   const cards=DB.getCards(),cos=DB.getCos(),visits=DB.getVisits();
-  const personalIds=new Set(cards.map(c=>c.id));
-  const sharedOthers=DB.getDriveShared().filter(c=>!personalIds.has(c.id));
-  const allCards=[...cards,...sharedOthers];
-  /* 전체 거래처: 모든 카드 기반 */
-  const allCos=new Set(allCards.map(c=>c.co).filter(Boolean));
-  /* 내 거래처: 내 카드 기반 */
-  const myCos=new Set(cards.map(c=>c.co).filter(Boolean));
-  /* 전체 집계 */
-  document.getElementById('s-cards-all').textContent=allCards.length;
-  document.getElementById('s-cos-all').textContent=allCos.size;
-  document.getElementById('s-visits-all').textContent=visits.length;
-  /* 내 것 집계 */
-  document.getElementById('s-cards').textContent=cards.length;
-  document.getElementById('s-cos').textContent=myCos.size;
-  document.getElementById('s-visits').textContent=visits.length;
   document.getElementById('b-cards').textContent=cards.length+'장';
   document.getElementById('b-cos').textContent=cos.length+'개';
   document.getElementById('b-visits').textContent=visits.length+'건';
