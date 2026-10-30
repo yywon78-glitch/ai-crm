@@ -142,7 +142,7 @@ function showErr(msg){
   document.getElementById('err-box').style.display = 'flex';
   /* 오류 시에도 헤더 건너뛰기 버튼 상태 갱신 */
   const passBtn = document.getElementById('btn-pass');
-  if(passBtn) passBtn.style.display = (_queue.length > 0 || _idbQueue > 0) ? '' : 'none';
+  if(passBtn) passBtn.style.display = '';
 }
 function closeErr(){
   document.getElementById('err-box').style.display = 'none';
@@ -440,7 +440,7 @@ function updateResultHeader(){
     titleEl.textContent = '스캔 결과';
   }
   if(savedEl) savedEl.textContent = `저장 ${DB.getCards().length}장`;
-  if(passBtn) passBtn.style.display = (_queue.length > 0 || _idbQueue > 0) ? '' : 'none';
+  if(passBtn) passBtn.style.display = '';
 }
 
 function saveCard(){
