@@ -48,7 +48,6 @@
   <header class="hdr" style="flex-shrink:0;background:#111;border-bottom:1px solid #333;">
     <div class="hdr-back" onclick="backToCamera()" style="color:#fff;">←</div>
     <span class="hdr-t" style="color:#fff;" id="rv-title">회전 조정 후 인식</span>
-    <button id="btn-rv-pass" onclick="passCard()" style="background:#6b7280;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;">건너뛰기</button>
   </header>
   <div class="rv-img-wrap">
     <img id="rv-img" src="">
@@ -58,7 +57,10 @@
       <button class="rv-rot-btn" onclick="rotate(-90)">↺ 좌회전</button>
       <button class="rv-rot-btn" onclick="rotate(90)">↻ 우회전</button>
     </div>
-    <button class="rv-ocr-btn" onclick="startOCR()">인식</button>
+    <div style="display:flex;gap:8px;">
+      <button class="rv-ocr-btn" style="flex:4;" onclick="startOCR()">인식</button>
+      <button onclick="passCard()" style="flex:1;border-radius:14px;background:#6b7280;color:#fff;border:none;font-size:15px;font-weight:700;cursor:pointer;touch-action:manipulation;">건너뛰기</button>
+    </div>
   </div>
 </div>
 
