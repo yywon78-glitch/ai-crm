@@ -1,206 +1,206 @@
-ï»¿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>ì„¤ì •</title>
+<title>¼³Á¤</title>
 <link rel="stylesheet" href="shared.css?v=1029">
 </head>
 <body>
 <div class="page">
   <header class="hdr">
-    <div class="hdr-back" onclick="history.back()">â†</div>
-    <span class="hdr-t">ì„¤ì •</span>
+    <div class="hdr-back" onclick="history.back()">¡ç</div>
+    <span class="hdr-t">¼³Á¤</span>
   </header>
   <div class="body">
     <div style="height:8px;"></div>
 
-    <!-- â”€â”€ Google Drive ì—°ë™ â”€â”€ -->
+    <!-- ¦¡¦¡ Google Drive ¿¬µ¿ ¦¡¦¡ -->
     <div class="set-grp">
-      <div class="set-lbl">Google Drive ì—°ë™</div>
+      <div class="set-lbl">Google Drive ¿¬µ¿</div>
 
-      <!-- ë¡œê·¸ì¸ ì „ -->
+      <!-- ·Î±×ÀÎ Àü -->
       <div id="gdrive-login-row" class="set-item" onclick="driveLogin()" style="display:none;">
-        <span class="set-ic">â˜ï¸</span>
+        <span class="set-ic">??</span>
         <div class="set-txt">
-          <div class="set-t">Google ê³„ì •ìœ¼ë¡œ ë¡œê·¸ì¸</div>
-          <div class="set-s">ëª…í•¨Â·ë°©ë¬¸ê¸°ë¡ì„ Driveì— ìë™ ì €ì¥</div>
+          <div class="set-t">Google °èÁ¤À¸·Î ·Î±×ÀÎ</div>
+          <div class="set-s">¸íÇÔ¡¤¹æ¹®±â·ÏÀ» Drive¿¡ ÀÚµ¿ ÀúÀå</div>
         </div>
-        <span class="set-arrow" style="background:#4285f4;color:#fff;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;">ì—°ê²°</span>
+        <span class="set-arrow" style="background:#4285f4;color:#fff;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;">¿¬°á</span>
       </div>
 
-      <!-- ë¡œê·¸ì¸ í›„ -->
+      <!-- ·Î±×ÀÎ ÈÄ -->
       <div id="gdrive-status-row" style="display:none;padding:12px 16px;background:var(--blue-lt);border-radius:12px;margin-bottom:2px;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-          <span style="font-size:22px;">â˜ï¸</span>
+          <span style="font-size:22px;">??</span>
           <div style="flex:1;">
-            <div style="font-size:13px;font-weight:700;color:#1d4ed8;" id="gdrive-email">ì—°ê²°ë¨</div>
-            <div style="font-size:11px;color:#3b82f6;" id="gdrive-lastsync">ë™ê¸°í™” ëŒ€ê¸° ì¤‘</div>
+            <div style="font-size:13px;font-weight:700;color:#1d4ed8;" id="gdrive-email">¿¬°áµÊ</div>
+            <div style="font-size:11px;color:#3b82f6;" id="gdrive-lastsync">µ¿±âÈ­ ´ë±â Áß</div>
           </div>
-          <button onclick="driveLogout()" style="background:#fee2e2;color:#dc2626;border:none;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;">ì—°ê²° í•´ì œ</button>
+          <button onclick="driveLogout()" style="background:#fee2e2;color:#dc2626;border:none;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;">¿¬°á ÇØÁ¦</button>
         </div>
         <div style="display:flex;gap:8px;">
-          <button onclick="driveSyncDown()" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #93c5fd;background:#fff;color:#1d4ed8;font-size:12px;font-weight:700;cursor:pointer;">â¬‡ Drive â†’ ê¸°ê¸°</button>
-          <button onclick="driveSyncUp()" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #93c5fd;background:#fff;color:#1d4ed8;font-size:12px;font-weight:700;cursor:pointer;">â¬† ê¸°ê¸° â†’ Drive</button>
-          <button onclick="openDriveFolder()" style="padding:10px 14px;border-radius:10px;border:1.5px solid #93c5fd;background:#fff;color:#1d4ed8;font-size:12px;font-weight:700;cursor:pointer;">ğŸ“</button>
+          <button onclick="driveSyncDown()" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #93c5fd;background:#fff;color:#1d4ed8;font-size:12px;font-weight:700;cursor:pointer;">? Drive ¡æ ±â±â</button>
+          <button onclick="driveSyncUp()" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #93c5fd;background:#fff;color:#1d4ed8;font-size:12px;font-weight:700;cursor:pointer;">? ±â±â ¡æ Drive</button>
+          <button onclick="openDriveFolder()" style="padding:10px 14px;border-radius:10px;border:1.5px solid #93c5fd;background:#fff;color:#1d4ed8;font-size:12px;font-weight:700;cursor:pointer;">??</button>
         </div>
         <div id="gdrive-storage" style="margin-top:8px;font-size:11px;color:#3b82f6;"></div>
       </div>
 
-      <!-- Client ID ì„¤ì • -->
+      <!-- Client ID ¼³Á¤ -->
       <div class="set-item" onclick="editClientId()">
-        <span class="set-ic">ğŸ”§</span>
+        <span class="set-ic">??</span>
         <div class="set-txt">
-          <div class="set-t">Google Client ID ì„¤ì •</div>
-          <div class="set-s" id="client-id-status">ë¯¸ì„¤ì • â€” Drive ì—°ë™ì— í•„ìš”</div>
+          <div class="set-t">Google Client ID ¼³Á¤</div>
+          <div class="set-s" id="client-id-status">¹Ì¼³Á¤ ? Drive ¿¬µ¿¿¡ ÇÊ¿ä</div>
         </div>
-        <span class="set-arrow">â€º</span>
+        <span class="set-arrow">?</span>
       </div>
     </div>
 
     <div class="set-grp">
-      <div class="set-lbl">API ì—°ë™</div>
+      <div class="set-lbl">API ¿¬µ¿</div>
       <div class="set-item" onclick="editKey()">
-        <span class="set-ic">ğŸ”‘</span>
-        <div class="set-txt"><div class="set-t">Anthropic API í‚¤</div><div class="set-s" id="key-status">ë¯¸ì„¤ì •</div></div>
-        <span class="set-arrow">â€º</span>
+        <span class="set-ic">??</span>
+        <div class="set-txt"><div class="set-t">Anthropic API Å°</div><div class="set-s" id="key-status">¹Ì¼³Á¤</div></div>
+        <span class="set-arrow">?</span>
       </div>
       <div class="set-item" onclick="editWorkspace()">
-        <span class="set-ic">ğŸ·</span>
-        <div class="set-txt"><div class="set-t">Workspace ID</div><div class="set-s" id="ws-status">ë¯¸ì„¤ì • (ì˜¤ë¥˜ ì‹œ í•„ìš”)</div></div>
-        <span class="set-arrow">â€º</span>
+        <span class="set-ic">??</span>
+        <div class="set-txt"><div class="set-t">Workspace ID</div><div class="set-s" id="ws-status">¹Ì¼³Á¤ (¿À·ù ½Ã ÇÊ¿ä)</div></div>
+        <span class="set-arrow">?</span>
       </div>
       <div class="set-item" onclick="editKakaoKey()">
-        <span class="set-ic">ğŸ—ºï¸</span>
-        <div class="set-txt"><div class="set-t">ì¹´ì¹´ì˜¤ë§µ API í‚¤</div><div class="set-s" id="kakao-status">ë¯¸ì„¤ì • â€” ì§€ë„ ê¸°ëŠ¥ì— í•„ìš”</div></div>
-        <span class="set-arrow">â€º</span>
+        <span class="set-ic">???</span>
+        <div class="set-txt"><div class="set-t">Ä«Ä«¿À¸Ê API Å°</div><div class="set-s" id="kakao-status">¹Ì¼³Á¤ ? Áöµµ ±â´É¿¡ ÇÊ¿ä</div></div>
+        <span class="set-arrow">?</span>
       </div>
     </div>
 
-    <!-- â”€â”€ ë°ì´í„° í˜„í™© â”€â”€ -->
+    <!-- ¦¡¦¡ µ¥ÀÌÅÍ ÇöÈ² ¦¡¦¡ -->
     <div class="set-grp">
-      <div class="set-lbl">ë°ì´í„° í˜„í™©</div>
+      <div class="set-lbl">µ¥ÀÌÅÍ ÇöÈ²</div>
       <div style="padding:4px 16px 12px;">
-        <!-- ë¡œì»¬ -->
+        <!-- ·ÎÄÃ -->
         <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--bdr);">
-          <span style="font-size:20px;margin-top:1px;">ğŸ“±</span>
+          <span style="font-size:20px;margin-top:1px;">??</span>
           <div style="flex:1;">
-            <div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:3px;">ê¸°ê¸° ë¡œì»¬</div>
-            <div style="font-size:12px;color:var(--t2);" id="stat-local">í™•ì¸ ì¤‘...</div>
+            <div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:3px;">±â±â ·ÎÄÃ</div>
+            <div style="font-size:12px;color:var(--t2);" id="stat-local">È®ÀÎ Áß...</div>
           </div>
         </div>
-        <!-- Drive ê°œì¸ -->
+        <!-- Drive °³ÀÎ -->
         <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--bdr);">
-          <span style="font-size:20px;margin-top:1px;">â˜ï¸</span>
+          <span style="font-size:20px;margin-top:1px;">??</span>
           <div style="flex:1;">
-            <div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:3px;" id="stat-drive-title">Drive ê°œì¸</div>
-            <div style="font-size:12px;color:var(--t2);" id="stat-drive">ë¡œê·¸ì¸ í›„ í™•ì¸</div>
+            <div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:3px;" id="stat-drive-title">Drive °³ÀÎ</div>
+            <div style="font-size:12px;color:var(--t2);" id="stat-drive">·Î±×ÀÎ ÈÄ È®ÀÎ</div>
           </div>
         </div>
-        <!-- ê³µìš© -->
+        <!-- °ø¿ë -->
         <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;">
-          <span style="font-size:20px;margin-top:1px;">ğŸŒ</span>
+          <span style="font-size:20px;margin-top:1px;">??</span>
           <div style="flex:1;">
-            <div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:3px;">Drive ê³µìš© (ìºì‹œ)</div>
+            <div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:3px;">Drive °ø¿ë (Ä³½Ã)</div>
             <div style="font-size:12px;color:var(--t2);" id="stat-shared">-</div>
           </div>
         </div>
         <button onclick="refreshDataStat()" id="btn-stat-refresh"
           style="width:100%;padding:11px;border-radius:10px;border:1.5px solid var(--bdr);background:var(--bg);color:var(--t1);font-size:13px;font-weight:700;cursor:pointer;margin-top:4px;">
-          ğŸ”„ í˜„í™© ìƒˆë¡œê³ ì¹¨
+          ?? ÇöÈ² »õ·Î°íÄ§
         </button>
       </div>
     </div>
 
-    <!-- â”€â”€ ë°ì´í„° ì •ë¦¬ â”€â”€ -->
+    <!-- ¦¡¦¡ µ¥ÀÌÅÍ Á¤¸® ¦¡¦¡ -->
     <div class="set-grp">
-      <div class="set-lbl">ë°ì´í„° ì •ë¦¬</div>
+      <div class="set-lbl">µ¥ÀÌÅÍ Á¤¸®</div>
 
       <div class="set-item" onclick="cleanEmptyCards()">
-        <span class="set-ic">ğŸ—‘</span>
+        <span class="set-ic">??</span>
         <div class="set-txt">
-          <div class="set-t">ë¹ˆ ëª…í•¨ ì‚­ì œ</div>
-          <div class="set-s" id="clean-empty-s">ì´ë¦„ ì—†ëŠ” ëª…í•¨ ì •ë¦¬</div>
+          <div class="set-t">ºó ¸íÇÔ »èÁ¦</div>
+          <div class="set-s" id="clean-empty-s">ÀÌ¸§ ¾ø´Â ¸íÇÔ Á¤¸®</div>
         </div>
-        <span class="set-arrow">â€º</span>
+        <span class="set-arrow">?</span>
       </div>
 
       <div class="set-item" onclick="cleanDupes()">
-        <span class="set-ic">ğŸ“‹</span>
+        <span class="set-ic">??</span>
         <div class="set-txt">
-          <div class="set-t">ì¤‘ë³µ ëª…í•¨ ì •ë¦¬</div>
-          <div class="set-s" id="clean-dupe-s">ì´ë¦„+íšŒì‚¬ ë™ì¼ í•­ëª©</div>
+          <div class="set-t">Áßº¹ ¸íÇÔ Á¤¸®</div>
+          <div class="set-s" id="clean-dupe-s">ÀÌ¸§+È¸»ç µ¿ÀÏ Ç×¸ñ</div>
         </div>
-        <span class="set-arrow">â€º</span>
+        <span class="set-arrow">?</span>
       </div>
 
       <div class="set-item" onclick="cleanImages()">
-        <span class="set-ic">ğŸ–¼ï¸</span>
+        <span class="set-ic">???</span>
         <div class="set-txt">
-          <div class="set-t">ìŠ¤ìº”ì´ë¯¸ì§€ ì „ì²´ ì‚­ì œ</div>
-          <div class="set-s" id="clean-img-s">IndexedDB ì´ë¯¸ì§€ ì œê±°</div>
+          <div class="set-t">½ºÄµÀÌ¹ÌÁö ÀüÃ¼ »èÁ¦</div>
+          <div class="set-s" id="clean-img-s">IndexedDB ÀÌ¹ÌÁö Á¦°Å</div>
         </div>
-        <span class="set-arrow">â€º</span>
+        <span class="set-arrow">?</span>
       </div>
 
       <div class="set-item" onclick="cleanSharedCache()">
-        <span class="set-ic">ğŸ”„</span>
+        <span class="set-ic">??</span>
         <div class="set-txt">
-          <div class="set-t">ê³µìœ  ìºì‹œ ì´ˆê¸°í™”</div>
-          <div class="set-s" id="clean-shared-s">íƒ€ì¸ ê³µìœ  ëª…í•¨ ìºì‹œ ì œê±°</div>
+          <div class="set-t">°øÀ¯ Ä³½Ã ÃÊ±âÈ­</div>
+          <div class="set-s" id="clean-shared-s">Å¸ÀÎ °øÀ¯ ¸íÇÔ Ä³½Ã Á¦°Å</div>
         </div>
-        <span class="set-arrow">â€º</span>
+        <span class="set-arrow">?</span>
       </div>
 
       <div class="set-item" id="clean-drive-row" style="display:none;" onclick="cleanDriveData()">
-        <span class="set-ic">â˜ï¸</span>
+        <span class="set-ic">??</span>
         <div class="set-txt">
-          <div class="set-t" style="color:#dc2626;">Drive ê°œì¸ ë°ì´í„° ì´ˆê¸°í™”</div>
-          <div class="set-s">Driveì˜ ê°œì¸ ëª…í•¨Â·ë°©ë¬¸ê¸°ë¡ íŒŒì¼ ë¹„ìš°ê¸°</div>
+          <div class="set-t" style="color:#dc2626;">Drive °³ÀÎ µ¥ÀÌÅÍ ÃÊ±âÈ­</div>
+          <div class="set-s">DriveÀÇ °³ÀÎ ¸íÇÔ¡¤¹æ¹®±â·Ï ÆÄÀÏ ºñ¿ì±â</div>
         </div>
-        <span class="set-arrow" style="color:#dc2626;">â€º</span>
+        <span class="set-arrow" style="color:#dc2626;">?</span>
       </div>
 
       <div class="set-item" id="clean-shared-drive-row" style="display:none;" onclick="cleanSharedDriveData()">
-        <span class="set-ic">ğŸŒ</span>
+        <span class="set-ic">??</span>
         <div class="set-txt">
-          <div class="set-t" style="color:#dc2626;">ê³µìš© í´ë” ì „ì²´ ì´ˆê¸°í™”</div>
-          <div class="set-s">CRM_ê³µìš©ì˜ ëª¨ë“  ê³µìœ  ëª…í•¨Â·ë°©ë¬¸ê¸°ë¡ ì‚­ì œ</div>
+          <div class="set-t" style="color:#dc2626;">°ø¿ë Æú´õ ÀüÃ¼ ÃÊ±âÈ­</div>
+          <div class="set-s">CRM_°ø¿ëÀÇ ¸ğµç °øÀ¯ ¸íÇÔ¡¤¹æ¹®±â·Ï »èÁ¦</div>
         </div>
-        <span class="set-arrow" style="color:#dc2626;">â€º</span>
+        <span class="set-arrow" style="color:#dc2626;">?</span>
       </div>
 
       <div style="display:flex;gap:8px;padding:12px 16px 4px;">
-        <button onclick="deleteDummy()" style="flex:1;padding:12px 8px;border-radius:10px;border:1.5px solid #f59e0b;background:#fffbeb;color:#b45309;font-size:13px;font-weight:700;cursor:pointer;">ğŸ—‘ ìƒ˜í”Œë§Œ ì‚­ì œ</button>
-        <button onclick="confirmReset()" style="flex:1;padding:12px 8px;border-radius:10px;border:1.5px solid #dc2626;background:#fef2f2;color:#dc2626;font-size:13px;font-weight:700;cursor:pointer;">âš ï¸ ì „ì²´ ì´ˆê¸°í™”</button>
+        <button onclick="deleteDummy()" style="flex:1;padding:12px 8px;border-radius:10px;border:1.5px solid #f59e0b;background:#fffbeb;color:#b45309;font-size:13px;font-weight:700;cursor:pointer;">?? »ùÇÃ¸¸ »èÁ¦</button>
+        <button onclick="confirmReset()" style="flex:1;padding:12px 8px;border-radius:10px;border:1.5px solid #dc2626;background:#fef2f2;color:#dc2626;font-size:13px;font-weight:700;cursor:pointer;">?? ÀüÃ¼ ÃÊ±âÈ­</button>
       </div>
     </div>
 
     <div class="set-grp">
-      <div class="set-lbl">ë°ì´í„° ë‚´ë³´ë‚´ê¸°</div>
+      <div class="set-lbl">µ¥ÀÌÅÍ ³»º¸³»±â</div>
       <div class="set-item" onclick="exportJSON()">
-        <span class="set-ic">ğŸ“¤</span>
-        <div class="set-txt"><div class="set-t">JSON ë‚´ë³´ë‚´ê¸°</div><div class="set-s">ëª…í•¨Â·ê±°ë˜ì²˜Â·ë°©ë¬¸ê¸°ë¡ ì „ì²´ ë°±ì—…</div></div>
-        <span class="set-arrow">â€º</span>
+        <span class="set-ic">??</span>
+        <div class="set-txt"><div class="set-t">JSON ³»º¸³»±â</div><div class="set-s">¸íÇÔ¡¤°Å·¡Ã³¡¤¹æ¹®±â·Ï ÀüÃ¼ ¹é¾÷</div></div>
+        <span class="set-arrow">?</span>
       </div>
       <div class="set-item" onclick="exportCSV()">
-        <span class="set-ic">ğŸ“Š</span>
-        <div class="set-txt"><div class="set-t">CSV ë‚´ë³´ë‚´ê¸°</div><div class="set-s">ì—‘ì…€ì—ì„œ ì—´ ìˆ˜ ìˆëŠ” í˜•ì‹</div></div>
-        <span class="set-arrow">â€º</span>
+        <span class="set-ic">??</span>
+        <div class="set-txt"><div class="set-t">CSV ³»º¸³»±â</div><div class="set-s">¿¢¼¿¿¡¼­ ¿­ ¼ö ÀÖ´Â Çü½Ä</div></div>
+        <span class="set-arrow">?</span>
       </div>
     </div>
 
     <div class="set-grp">
-      <div class="set-lbl">ì•± ì •ë³´</div>
+      <div class="set-lbl">¾Û Á¤º¸</div>
       <div class="set-item">
-        <span class="set-ic">â„¹ï¸</span>
-        <div class="set-txt"><div class="set-t">ë²„ì „</div><div class="set-s">v17.0 Â· 2026-10-30 Â· ëª…í•¨ëª©ë¡ ê±´ìˆ˜ ì •ë¦¬, í™ˆ ì§‘ê³„ ì œê±°</div></div>
+        <span class="set-ic">??</span>
+        <div class="set-txt"><div class="set-t">¹öÀü</div><div class="set-s">v17.2 ¡¤ 2026-10-30 ¡¤ ¸íÇÔ¸ñ·Ï °Ç¼ö Á¤¸®, È¨ Áı°è Á¦°Å</div></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Google Client ID ëª¨ë‹¬ -->
+<!-- Google Client ID ¸ğ´Ş -->
 <div class="moverlay" id="modal-clientid" onclick="if(event.target===this)closeClientIdModal()">
   <div class="msheet">
     <div class="m-handle"></div>
@@ -208,54 +208,54 @@
     <div class="m-body">
       <div><div class="flb">Client ID</div><input class="finp" id="clientid-inp" placeholder="123456789-xxxx.apps.googleusercontent.com"></div>
       <div style="font-size:12px;color:var(--t2);line-height:1.8;margin-top:4px;">
-        ğŸ“‹ ë°œê¸‰ ë°©ë²•<br>
-        1. <b>console.cloud.google.com</b> â†’ ìƒˆ í”„ë¡œì íŠ¸<br>
-        2. API ë° ì„œë¹„ìŠ¤ â†’ Google Drive API ì‚¬ìš© ì„¤ì •<br>
-        3. ì‚¬ìš©ì ì¸ì¦ ì •ë³´ â†’ OAuth 2.0 í´ë¼ì´ì–¸íŠ¸ ID ìƒì„±<br>
-        4. ìœ í˜•: <b>ì›¹ ì• í”Œë¦¬ì¼€ì´ì…˜</b><br>
-        5. ìŠ¹ì¸ëœ JavaScript ì›ë³¸ ì¶”ê°€:<br>
+        ?? ¹ß±Ş ¹æ¹ı<br>
+        1. <b>console.cloud.google.com</b> ¡æ »õ ÇÁ·ÎÁ§Æ®<br>
+        2. API ¹× ¼­ºñ½º ¡æ Google Drive API »ç¿ë ¼³Á¤<br>
+        3. »ç¿ëÀÚ ÀÎÁõ Á¤º¸ ¡æ OAuth 2.0 Å¬¶óÀÌ¾ğÆ® ID »ı¼º<br>
+        4. À¯Çü: <b>À¥ ¾ÖÇÃ¸®ÄÉÀÌ¼Ç</b><br>
+        5. ½ÂÀÎµÈ JavaScript ¿øº» Ãß°¡:<br>
         &nbsp;&nbsp;&nbsp;<b>https://yywon78-glitch.github.io</b><br>
-        6. ìƒì„±ëœ í´ë¼ì´ì–¸íŠ¸ ID ë³µì‚¬ í›„ ìœ„ì— ì…ë ¥
+        6. »ı¼ºµÈ Å¬¶óÀÌ¾ğÆ® ID º¹»ç ÈÄ À§¿¡ ÀÔ·Â
       </div>
-      <button class="m-btn" onclick="saveClientId()">ì €ì¥</button>
+      <button class="m-btn" onclick="saveClientId()">ÀúÀå</button>
     </div>
   </div>
 </div>
 
-<!-- API í‚¤ í¸ì§‘ ëª¨ë‹¬ -->
+<!-- API Å° ÆíÁı ¸ğ´Ş -->
 <div class="moverlay" id="modal-key" onclick="if(event.target===this)closeKeyModal()">
   <div class="msheet">
     <div class="m-handle"></div>
-    <div class="m-title">Anthropic API í‚¤</div>
+    <div class="m-title">Anthropic API Å°</div>
     <div class="m-body">
-      <div><div class="flb">API í‚¤</div><input class="finp" id="key-inp" type="password" placeholder="sk-ant-..."></div>
-      <div style="font-size:12px;color:var(--t2);">console.anthropic.comì—ì„œ ë°œê¸‰ë°›ì„ ìˆ˜ ìˆìŠµë‹ˆë‹¤.</div>
-      <button class="m-btn" onclick="saveKey()">ì €ì¥</button>
+      <div><div class="flb">API Å°</div><input class="finp" id="key-inp" type="password" placeholder="sk-ant-..."></div>
+      <div style="font-size:12px;color:var(--t2);">console.anthropic.com¿¡¼­ ¹ß±Ş¹ŞÀ» ¼ö ÀÖ½À´Ï´Ù.</div>
+      <button class="m-btn" onclick="saveKey()">ÀúÀå</button>
     </div>
   </div>
 </div>
 
-<!-- ì¹´ì¹´ì˜¤ë§µ API í‚¤ ëª¨ë‹¬ -->
+<!-- Ä«Ä«¿À¸Ê API Å° ¸ğ´Ş -->
 <div class="moverlay" id="modal-kakao" onclick="if(event.target===this)closeKakaoModal()">
   <div class="msheet">
     <div class="m-handle"></div>
-    <div class="m-title">ì¹´ì¹´ì˜¤ë§µ API í‚¤</div>
+    <div class="m-title">Ä«Ä«¿À¸Ê API Å°</div>
     <div class="m-body">
-      <div><div class="flb">JavaScript API í‚¤</div><input class="finp" id="kakao-inp" placeholder="ë°œê¸‰ë°›ì€ í‚¤ ë¶™ì—¬ë„£ê¸°"></div>
+      <div><div class="flb">JavaScript API Å°</div><input class="finp" id="kakao-inp" placeholder="¹ß±Ş¹ŞÀº Å° ºÙ¿©³Ö±â"></div>
       <div style="font-size:12px;color:var(--t2);line-height:1.7;margin-top:4px;">
-        ğŸ“‹ ë°œê¸‰ ë°©ë²• (ë¬´ë£Œ)<br>
-        1. <b>developers.kakao.com</b> ì ‘ì† â†’ ë¡œê·¸ì¸<br>
-        2. ë‚´ ì• í”Œë¦¬ì¼€ì´ì…˜ â†’ ì• í”Œë¦¬ì¼€ì´ì…˜ ì¶”ê°€<br>
-        3. í”Œë«í¼ â†’ Web â†’ ë„ë©”ì¸ ë“±ë¡:<br>
+        ?? ¹ß±Ş ¹æ¹ı (¹«·á)<br>
+        1. <b>developers.kakao.com</b> Á¢¼Ó ¡æ ·Î±×ÀÎ<br>
+        2. ³» ¾ÖÇÃ¸®ÄÉÀÌ¼Ç ¡æ ¾ÖÇÃ¸®ÄÉÀÌ¼Ç Ãß°¡<br>
+        3. ÇÃ·§Æû ¡æ Web ¡æ µµ¸ŞÀÎ µî·Ï:<br>
         &nbsp;&nbsp;&nbsp;<b>https://yywon78-glitch.github.io</b><br>
-        4. ì•± í‚¤ â†’ <b>JavaScript í‚¤</b> ë³µì‚¬ í›„ ìœ„ì— ì…ë ¥
+        4. ¾Û Å° ¡æ <b>JavaScript Å°</b> º¹»ç ÈÄ À§¿¡ ÀÔ·Â
       </div>
-      <button class="m-btn" onclick="saveKakaoKey()">ì €ì¥</button>
+      <button class="m-btn" onclick="saveKakaoKey()">ÀúÀå</button>
     </div>
   </div>
 </div>
 
-<!-- Workspace ID í¸ì§‘ ëª¨ë‹¬ -->
+<!-- Workspace ID ÆíÁı ¸ğ´Ş -->
 <div class="moverlay" id="modal-ws" onclick="if(event.target===this)closeWsModal()">
   <div class="msheet">
     <div class="m-handle"></div>
@@ -263,10 +263,10 @@
     <div class="m-body">
       <div><div class="flb">Workspace ID</div><input class="finp" id="ws-inp" placeholder="wrkspc_..."></div>
       <div style="font-size:12px;color:var(--t2);line-height:1.6;">
-        console.anthropic.com â†’ Settings â†’ Workspacesì—ì„œ í™•ì¸.<br>
-        "API key is not scoped" ì˜¤ë¥˜ ë°œìƒ ì‹œ ì…ë ¥í•˜ì„¸ìš”.
+        console.anthropic.com ¡æ Settings ¡æ Workspaces¿¡¼­ È®ÀÎ.<br>
+        "API key is not scoped" ¿À·ù ¹ß»ı ½Ã ÀÔ·ÂÇÏ¼¼¿ä.
       </div>
-      <button class="m-btn" onclick="saveWorkspace()">ì €ì¥</button>
+      <button class="m-btn" onclick="saveWorkspace()">ÀúÀå</button>
     </div>
   </div>
 </div>
@@ -274,20 +274,20 @@
 <script src="data.js?v=1029"></script>
 <script src="nav.js?v=1029"></script>
 <script>
-/* â”€â”€ Google Drive â”€â”€ */
+/* ¦¡¦¡ Google Drive ¦¡¦¡ */
 function loadDriveStatus(){
   const cid = DB.getGoogleClientId();
   document.getElementById('client-id-status').textContent =
-    cid ? `ì„¤ì •ë¨ (${cid.slice(0,20)}...)` : 'ë¯¸ì„¤ì • â€” Drive ì—°ë™ì— í•„ìš”';
+    cid ? `¼³Á¤µÊ (${cid.slice(0,20)}...)` : '¹Ì¼³Á¤ ? Drive ¿¬µ¿¿¡ ÇÊ¿ä';
 
   if(GoogleAuth.isLoggedIn()){
     document.getElementById('gdrive-login-row').style.display  = 'none';
     document.getElementById('gdrive-status-row').style.display = 'block';
-    document.getElementById('gdrive-email').textContent = GoogleAuth.getUserEmail() || 'ì—°ê²°ë¨';
+    document.getElementById('gdrive-email').textContent = GoogleAuth.getUserEmail() || '¿¬°áµÊ';
     const ls = DriveDB.getLastSync();
     document.getElementById('gdrive-lastsync').textContent = ls
-      ? 'ë§ˆì§€ë§‰ ë™ê¸°í™”: ' + new Date(ls).toLocaleString('ko-KR')
-      : 'ë™ê¸°í™” ì „';
+      ? '¸¶Áö¸· µ¿±âÈ­: ' + new Date(ls).toLocaleString('ko-KR')
+      : 'µ¿±âÈ­ Àü';
     loadStorageInfo();
   } else {
     document.getElementById('gdrive-login-row').style.display  = cid ? 'flex' : 'none';
@@ -305,30 +305,30 @@ async function loadStorageInfo(){
   const totalGB= (total/1024/1024/1024).toFixed(0);
   const pct = total ? Math.round(used/total*100) : 0;
   document.getElementById('gdrive-storage').textContent =
-    `Drive ì €ì¥ìš©ëŸ‰: ${usedMB}MB / ${totalGB}GB ì‚¬ìš© (${pct}%)`;
+    `Drive ÀúÀå¿ë·®: ${usedMB}MB / ${totalGB}GB »ç¿ë (${pct}%)`;
 }
 
 function driveLogin(){
   GoogleAuth.login(async ()=>{
     loadDriveStatus();
-    toast('Google Drive ì—°ê²°ëìŠµë‹ˆë‹¤ âœ“');
+    toast('Google Drive ¿¬°áµÆ½À´Ï´Ù ?');
     if(DB.getKey()){
-      /* API í‚¤ ìˆëŠ” ê¸°ê¸°(ë©”ì¸) â†’ ë¨¼ì € Driveì— ì˜¬ë¦¼ */
+      /* API Å° ÀÖ´Â ±â±â(¸ŞÀÎ) ¡æ ¸ÕÀú Drive¿¡ ¿Ã¸² */
       await DriveDB.syncUp();
-      toast('ì„¤ì •ì„ Driveì— ì €ì¥í–ˆìŠµë‹ˆë‹¤ âœ“');
+      toast('¼³Á¤À» Drive¿¡ ÀúÀåÇß½À´Ï´Ù ?');
     } else {
-      /* API í‚¤ ì—†ëŠ” ê¸°ê¸°(ìƒˆ ê¸°ê¸°) â†’ Driveì—ì„œ ë°›ì•„ì˜´ */
+      /* API Å° ¾ø´Â ±â±â(»õ ±â±â) ¡æ Drive¿¡¼­ ¹Ş¾Æ¿È */
       const ok = await DriveDB.syncDown();
-      if(ok){ load(); toast('ë°ì´í„°ë¥¼ ë¶ˆëŸ¬ì™”ìŠµë‹ˆë‹¤ âœ“'); }
+      if(ok){ load(); toast('µ¥ÀÌÅÍ¸¦ ºÒ·¯¿Ô½À´Ï´Ù ?'); }
     }
   });
 }
 
 function driveLogout(){
-  if(!confirm('Google Drive ì—°ê²°ì„ í•´ì œí•˜ì‹œê² ìŠµë‹ˆê¹Œ?\n(ê¸°ê¸° ë‚´ ë°ì´í„°ëŠ” ìœ ì§€ë©ë‹ˆë‹¤)')) return;
+  if(!confirm('Google Drive ¿¬°áÀ» ÇØÁ¦ÇÏ½Ã°Ú½À´Ï±î?\n(±â±â ³» µ¥ÀÌÅÍ´Â À¯ÁöµË´Ï´Ù)')) return;
   GoogleAuth.logout();
   loadDriveStatus();
-  toast('ì—°ê²° í•´ì œëìŠµë‹ˆë‹¤');
+  toast('¿¬°á ÇØÁ¦µÆ½À´Ï´Ù');
 }
 
 function editClientId(){
@@ -341,29 +341,29 @@ function saveClientId(){
   DB.setGoogleClientId(v);
   closeClientIdModal();
   loadDriveStatus();
-  toast('Client IDê°€ ì €ì¥ëìŠµë‹ˆë‹¤ âœ“');
+  toast('Client ID°¡ ÀúÀåµÆ½À´Ï´Ù ?');
 }
 
 async function driveSyncDown(){
-  if(!GoogleAuth.isLoggedIn()){ toast('ë¨¼ì € Google ë¡œê·¸ì¸ì´ í•„ìš”í•©ë‹ˆë‹¤'); return; }
-  toast('Driveì—ì„œ ë¶ˆëŸ¬ì˜¤ëŠ” ì¤‘...');
+  if(!GoogleAuth.isLoggedIn()){ toast('¸ÕÀú Google ·Î±×ÀÎÀÌ ÇÊ¿äÇÕ´Ï´Ù'); return; }
+  toast('Drive¿¡¼­ ºÒ·¯¿À´Â Áß...');
   const ok = await DriveDB.syncDown();
-  toast(ok ? 'Drive â†’ ê¸°ê¸° ë™ê¸°í™” ì™„ë£Œ âœ“' : 'ë™ê¸°í™” ì‹¤íŒ¨. ë‹¤ì‹œ ì‹œë„í•´ì£¼ì„¸ìš”');
+  toast(ok ? 'Drive ¡æ ±â±â µ¿±âÈ­ ¿Ï·á ?' : 'µ¿±âÈ­ ½ÇÆĞ. ´Ù½Ã ½ÃµµÇØÁÖ¼¼¿ä');
   if(ok) loadDriveStatus();
 }
 
 async function driveSyncUp(){
-  if(!GoogleAuth.isLoggedIn()){ toast('ë¨¼ì € Google ë¡œê·¸ì¸ì´ í•„ìš”í•©ë‹ˆë‹¤'); return; }
-  toast('Driveì— ì €ì¥ ì¤‘...');
+  if(!GoogleAuth.isLoggedIn()){ toast('¸ÕÀú Google ·Î±×ÀÎÀÌ ÇÊ¿äÇÕ´Ï´Ù'); return; }
+  toast('Drive¿¡ ÀúÀå Áß...');
   const ok = await DriveDB.syncUp();
-  toast(ok ? 'ê¸°ê¸° â†’ Drive ì €ì¥ ì™„ë£Œ âœ“' : 'ì €ì¥ ì‹¤íŒ¨. ë‹¤ì‹œ ì‹œë„í•´ì£¼ì„¸ìš”');
+  toast(ok ? '±â±â ¡æ Drive ÀúÀå ¿Ï·á ?' : 'ÀúÀå ½ÇÆĞ. ´Ù½Ã ½ÃµµÇØÁÖ¼¼¿ä');
   if(ok) loadDriveStatus();
 }
 
 function openDriveFolder(){
   const url = DriveDB.getFolderUrl();
   if(url) window.open(url, '_blank');
-  else toast('ë¨¼ì € ë™ê¸°í™”ë¥¼ ì‹¤í–‰í•´ì£¼ì„¸ìš”');
+  else toast('¸ÕÀú µ¿±âÈ­¸¦ ½ÇÇàÇØÁÖ¼¼¿ä');
 }
 
 function editClientId(){
@@ -376,24 +376,24 @@ function saveClientId(){
   DB.setGoogleClientId(v);
   closeClientIdModal();
   loadDriveStatus();
-  toast('Client IDê°€ ì €ì¥ëìŠµë‹ˆë‹¤ âœ“');
+  toast('Client ID°¡ ÀúÀåµÆ½À´Ï´Ù ?');
 }
 
 function load(){
   const k=DB.getKey();
-  document.getElementById('key-status').textContent = k ? `ì„¤ì •ë¨ (${k.slice(0,12)}...)` : 'ë¯¸ì„¤ì •';
+  document.getElementById('key-status').textContent = k ? `¼³Á¤µÊ (${k.slice(0,12)}...)` : '¹Ì¼³Á¤';
   const w=DB.getWorkspace();
-  document.getElementById('ws-status').textContent = w ? `ì„¤ì •ë¨ (${w.slice(0,16)}...)` : 'ë¯¸ì„¤ì • (ì˜¤ë¥˜ ì‹œ í•„ìš”)';
+  document.getElementById('ws-status').textContent = w ? `¼³Á¤µÊ (${w.slice(0,16)}...)` : '¹Ì¼³Á¤ (¿À·ù ½Ã ÇÊ¿ä)';
   const kk=DB.getKakaoKey();
-  document.getElementById('kakao-status').textContent = kk ? `ì„¤ì •ë¨ (${kk.slice(0,8)}...)` : 'ë¯¸ì„¤ì • â€” ì§€ë„ ê¸°ëŠ¥ì— í•„ìš”';
+  document.getElementById('kakao-status').textContent = kk ? `¼³Á¤µÊ (${kk.slice(0,8)}...)` : '¹Ì¼³Á¤ ? Áöµµ ±â´É¿¡ ÇÊ¿ä';
   loadDataStat();
 }
 
 async function refreshDataStat(){
   const btn = document.getElementById('btn-stat-refresh');
-  if(btn) btn.textContent = 'ğŸ”„ ë¡œë”© ì¤‘...';
+  if(btn) btn.textContent = '?? ·Îµù Áß...';
 
-  /* ë¡œì»¬ */
+  /* ·ÎÄÃ */
   const cards  = DB.getCards();
   const cos    = DB.getCos();
   const visits = DB.getVisits();
@@ -405,47 +405,47 @@ async function refreshDataStat(){
   const dupeN  = _findDupes(cards).length;
 
   document.getElementById('stat-local').innerHTML =
-    `ëª…í•¨ <b>${cards.length}</b>ì¥ Â· ê±°ë˜ì²˜ <b>${cos.length}</b>ê°œ Â· ë°©ë¬¸ê¸°ë¡ <b>${visits.length}</b>ê±´`+
-    `<br>ìŠ¤ìº”ì´ë¯¸ì§€ <b>${imgCnt}</b>ê°œ`+
-    (emptyN ? `<br><span style="color:#f59e0b;">âš  ë¹ˆ ëª…í•¨ ${emptyN}ì¥</span>` : '')+
-    (dupeN  ? `<br><span style="color:#f59e0b;">âš  ì¤‘ë³µ ëª…í•¨ ${dupeN}ê±´</span>` : '');
+    `¸íÇÔ <b>${cards.length}</b>Àå ¡¤ °Å·¡Ã³ <b>${cos.length}</b>°³ ¡¤ ¹æ¹®±â·Ï <b>${visits.length}</b>°Ç`+
+    `<br>½ºÄµÀÌ¹ÌÁö <b>${imgCnt}</b>°³`+
+    (emptyN ? `<br><span style="color:#f59e0b;">? ºó ¸íÇÔ ${emptyN}Àå</span>` : '')+
+    (dupeN  ? `<br><span style="color:#f59e0b;">? Áßº¹ ¸íÇÔ ${dupeN}°Ç</span>` : '');
 
   document.getElementById('clean-empty-s').textContent =
-    emptyN ? `ì´ë¦„ ì—†ëŠ” ëª…í•¨ ${emptyN}ì¥` : 'ì—†ìŒ';
+    emptyN ? `ÀÌ¸§ ¾ø´Â ¸íÇÔ ${emptyN}Àå` : '¾øÀ½';
   document.getElementById('clean-dupe-s').textContent =
-    dupeN ? `ì¤‘ë³µ ${dupeN}ê±´ ë°œê²¬` : 'ì—†ìŒ';
+    dupeN ? `Áßº¹ ${dupeN}°Ç ¹ß°ß` : '¾øÀ½';
   document.getElementById('clean-img-s').textContent =
-    `ì´ë¯¸ì§€ ${imgCnt}ê°œ ì œê±°`;
+    `ÀÌ¹ÌÁö ${imgCnt}°³ Á¦°Å`;
   document.getElementById('clean-shared-s').textContent =
-    `ê³µìœ  ìºì‹œ ${shared.length}ì¥`;
+    `°øÀ¯ Ä³½Ã ${shared.length}Àå`;
 
-  /* Drive ê°œì¸ */
+  /* Drive °³ÀÎ */
   if(GoogleAuth.isLoggedIn()){
     document.getElementById('stat-drive-title').textContent =
-      'Drive ê°œì¸ (' + (GoogleAuth.getUserEmail()||'') + ')';
-    document.getElementById('stat-drive').textContent = 'Drive ì¡°íšŒ ì¤‘...';
+      'Drive °³ÀÎ (' + (GoogleAuth.getUserEmail()||'') + ')';
+    document.getElementById('stat-drive').textContent = 'Drive Á¶È¸ Áß...';
     document.getElementById('clean-drive-row').style.display = 'flex';
 
-    /* ê³µìš© í´ë” ì†Œìœ ì(ê´€ë¦¬ì)ë§Œ ì´ˆê¸°í™” ë²„íŠ¼ í‘œì‹œ */
+    /* °ø¿ë Æú´õ ¼ÒÀ¯ÀÚ(°ü¸®ÀÚ)¸¸ ÃÊ±âÈ­ ¹öÆ° Ç¥½Ã */
     SharedDriveDB.isAdmin().then(admin=>{
       document.getElementById('clean-shared-drive-row').style.display = admin ? 'flex' : 'none';
     });
 
     const peek = await DriveDB.peek();
     document.getElementById('stat-drive').innerHTML = peek
-      ? `ëª…í•¨ <b>${peek.cards}</b>ì¥ Â· ë°©ë¬¸ê¸°ë¡ <b>${peek.visits}</b>ê±´`
-      : 'ì¡°íšŒ ì‹¤íŒ¨ (ë„¤íŠ¸ì›Œí¬ í™•ì¸)';
+      ? `¸íÇÔ <b>${peek.cards}</b>Àå ¡¤ ¹æ¹®±â·Ï <b>${peek.visits}</b>°Ç`
+      : 'Á¶È¸ ½ÇÆĞ (³×Æ®¿öÅ© È®ÀÎ)';
   } else {
-    document.getElementById('stat-drive').textContent = 'ë¡œê·¸ì¸ í›„ í™•ì¸';
+    document.getElementById('stat-drive').textContent = '·Î±×ÀÎ ÈÄ È®ÀÎ';
     document.getElementById('clean-drive-row').style.display = 'none';
     document.getElementById('clean-shared-drive-row').style.display = 'none';
   }
 
-  /* ê³µìš© */
+  /* °ø¿ë */
   document.getElementById('stat-shared').innerHTML =
-    `ê³µìœ  ëª…í•¨ ìºì‹œ <b>${shared.length}</b>ì¥`;
+    `°øÀ¯ ¸íÇÔ Ä³½Ã <b>${shared.length}</b>Àå`;
 
-  if(btn) btn.textContent = 'ğŸ”„ í˜„í™© ìƒˆë¡œê³ ì¹¨';
+  if(btn) btn.textContent = '?? ÇöÈ² »õ·Î°íÄ§';
 }
 
 function _findDupes(cards){
@@ -472,7 +472,7 @@ function saveKakaoKey(){
   DB.setKakaoKey(k);
   closeKakaoModal();
   load();
-  toast('ì¹´ì¹´ì˜¤ë§µ API í‚¤ê°€ ì €ì¥ëìŠµë‹ˆë‹¤ âœ“');
+  toast('Ä«Ä«¿À¸Ê API Å°°¡ ÀúÀåµÆ½À´Ï´Ù ?');
 }
 
 function editKey(){
@@ -485,7 +485,7 @@ function saveKey(){
   DB.setKey(k);
   closeKeyModal();
   load();
-  toast('API í‚¤ê°€ ì €ì¥ëìŠµë‹ˆë‹¤ âœ“');
+  toast('API Å°°¡ ÀúÀåµÆ½À´Ï´Ù ?');
 }
 
 function editWorkspace(){
@@ -498,7 +498,7 @@ function saveWorkspace(){
   DB.setWorkspace(k);
   closeWsModal();
   load();
-  toast('Workspace IDê°€ ì €ì¥ëìŠµë‹ˆë‹¤ âœ“');
+  toast('Workspace ID°¡ ÀúÀåµÆ½À´Ï´Ù ?');
 }
 
 function exportJSON(){
@@ -508,83 +508,83 @@ function exportJSON(){
   a.href=URL.createObjectURL(blob);
   a.download=`crm_backup_${new Date().toISOString().split('T')[0]}.json`;
   a.click(); URL.revokeObjectURL(a.href);
-  toast('JSON ë‚´ë³´ë‚´ê¸° ì™„ë£Œ âœ“');
+  toast('JSON ³»º¸³»±â ¿Ï·á ?');
 }
 
 function exportCSV(){
   const cards=DB.getCards();
-  const headers=['ì´ë¦„','íšŒì‚¬','ì§ì±…','íœ´ëŒ€ì „í™”','ìœ ì„ ì „í™”','ì´ë©”ì¼','ì£¼ì†Œ','íƒœê·¸','ì¦ê²¨ì°¾ê¸°'];
+  const headers=['ÀÌ¸§','È¸»ç','Á÷Ã¥','ÈŞ´ëÀüÈ­','À¯¼±ÀüÈ­','ÀÌ¸ŞÀÏ','ÁÖ¼Ò','ÅÂ±×','Áñ°ÜÃ£±â'];
   const rows=cards.map(c=>[c.nm,c.co,c.tl,c.mob,c.ph,c.em,c.addr,c.tag,c.fav?'Y':'N'].map(v=>`"${(v||'').replace(/"/g,'""')}"`).join(','));
-  const csv='ï»¿'+[headers.join(','),...rows].join('\n');
+  const csv='?'+[headers.join(','),...rows].join('\n');
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
   a.download=`crm_cards_${new Date().toISOString().split('T')[0]}.csv`;
   a.click(); URL.revokeObjectURL(a.href);
-  toast('CSV ë‚´ë³´ë‚´ê¸° ì™„ë£Œ âœ“');
+  toast('CSV ³»º¸³»±â ¿Ï·á ?');
 }
 
 function cleanEmptyCards(){
   const cards = DB.getCards();
   const empty = cards.filter(c=>!c.nm?.trim());
-  if(!empty.length){ toast('ë¹ˆ ëª…í•¨ì´ ì—†ìŠµë‹ˆë‹¤'); return; }
-  if(!confirm(`ì´ë¦„ ì—†ëŠ” ëª…í•¨ ${empty.length}ì¥ì„ ì‚­ì œí•©ë‹ˆë‹¤.\nê³„ì†í•˜ì‹œê² ìŠµë‹ˆê¹Œ?`)) return;
+  if(!empty.length){ toast('ºó ¸íÇÔÀÌ ¾ø½À´Ï´Ù'); return; }
+  if(!confirm(`ÀÌ¸§ ¾ø´Â ¸íÇÔ ${empty.length}ÀåÀ» »èÁ¦ÇÕ´Ï´Ù.\n°è¼ÓÇÏ½Ã°Ú½À´Ï±î?`)) return;
   const ids = new Set(empty.map(c=>c.id));
   DB.setCards(cards.filter(c=>!ids.has(c.id)));
   empty.forEach(c=>ImgDB.del(c.id).catch(()=>{}));
-  toast(`ë¹ˆ ëª…í•¨ ${empty.length}ì¥ ì‚­ì œ ì™„ë£Œ âœ“`);
+  toast(`ºó ¸íÇÔ ${empty.length}Àå »èÁ¦ ¿Ï·á ?`);
   refreshDataStat();
 }
 
 function cleanDupes(){
   const cards = DB.getCards();
   const dupeIds = new Set(_findDupes(cards));
-  if(!dupeIds.size){ toast('ì¤‘ë³µ ëª…í•¨ì´ ì—†ìŠµë‹ˆë‹¤'); return; }
-  if(!confirm(`ì¤‘ë³µ ëª…í•¨ ${dupeIds.size}ê±´ì„ ì‚­ì œí•©ë‹ˆë‹¤.\n(ì´ë¦„+íšŒì‚¬ ë™ì¼ ì‹œ ë‚˜ì¤‘ì— ë“±ë¡ëœ ê²ƒ ì‚­ì œ)\nê³„ì†í•˜ì‹œê² ìŠµë‹ˆê¹Œ?`)) return;
+  if(!dupeIds.size){ toast('Áßº¹ ¸íÇÔÀÌ ¾ø½À´Ï´Ù'); return; }
+  if(!confirm(`Áßº¹ ¸íÇÔ ${dupeIds.size}°ÇÀ» »èÁ¦ÇÕ´Ï´Ù.\n(ÀÌ¸§+È¸»ç µ¿ÀÏ ½Ã ³ªÁß¿¡ µî·ÏµÈ °Í »èÁ¦)\n°è¼ÓÇÏ½Ã°Ú½À´Ï±î?`)) return;
   DB.setCards(cards.filter(c=>!dupeIds.has(c.id)));
   dupeIds.forEach(id=>ImgDB.del(id).catch(()=>{}));
-  toast(`ì¤‘ë³µ ëª…í•¨ ${dupeIds.size}ê±´ ì‚­ì œ ì™„ë£Œ âœ“`);
+  toast(`Áßº¹ ¸íÇÔ ${dupeIds.size}°Ç »èÁ¦ ¿Ï·á ?`);
   refreshDataStat();
 }
 
 async function cleanImages(){
   let cnt = 0;
   try{ cnt = await ImgDB.count(); }catch(e){}
-  if(!cnt){ toast('ì €ì¥ëœ ì´ë¯¸ì§€ê°€ ì—†ìŠµë‹ˆë‹¤'); return; }
-  if(!confirm(`ìŠ¤ìº”ì´ë¯¸ì§€ ${cnt}ê°œë¥¼ ì „ë¶€ ì‚­ì œí•©ë‹ˆë‹¤.\nëª…í•¨ ë°ì´í„°ëŠ” ìœ ì§€ë©ë‹ˆë‹¤.\nê³„ì†í•˜ì‹œê² ìŠµë‹ˆê¹Œ?`)) return;
+  if(!cnt){ toast('ÀúÀåµÈ ÀÌ¹ÌÁö°¡ ¾ø½À´Ï´Ù'); return; }
+  if(!confirm(`½ºÄµÀÌ¹ÌÁö ${cnt}°³¸¦ ÀüºÎ »èÁ¦ÇÕ´Ï´Ù.\n¸íÇÔ µ¥ÀÌÅÍ´Â À¯ÁöµË´Ï´Ù.\n°è¼ÓÇÏ½Ã°Ú½À´Ï±î?`)) return;
   try{
     await ImgDB.clear();
-    toast(`ì´ë¯¸ì§€ ${cnt}ê°œ ì‚­ì œ ì™„ë£Œ âœ“`);
+    toast(`ÀÌ¹ÌÁö ${cnt}°³ »èÁ¦ ¿Ï·á ?`);
     refreshDataStat();
-  } catch(e){ toast('ì‚­ì œ ì‹¤íŒ¨: '+e.message); }
+  } catch(e){ toast('»èÁ¦ ½ÇÆĞ: '+e.message); }
 }
 
 function cleanSharedCache(){
   const cnt = DB.getDriveShared().length;
-  if(!confirm(`ê³µìœ  ìºì‹œ ${cnt}ì¥ì„ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.\n(ë‹¤ìŒ ë™ê¸°í™” ì‹œ ìë™ ë³µì›ë©ë‹ˆë‹¤)\nê³„ì†í•˜ì‹œê² ìŠµë‹ˆê¹Œ?`)) return;
+  if(!confirm(`°øÀ¯ Ä³½Ã ${cnt}ÀåÀ» ÃÊ±âÈ­ÇÕ´Ï´Ù.\n(´ÙÀ½ µ¿±âÈ­ ½Ã ÀÚµ¿ º¹¿øµË´Ï´Ù)\n°è¼ÓÇÏ½Ã°Ú½À´Ï±î?`)) return;
   localStorage.removeItem('crm_drive_shared');
   localStorage.removeItem('crm_drive_shared_visits');
-  toast('ê³µìœ  ìºì‹œ ì´ˆê¸°í™” ì™„ë£Œ âœ“');
+  toast('°øÀ¯ Ä³½Ã ÃÊ±âÈ­ ¿Ï·á ?');
   refreshDataStat();
 }
 
 async function cleanSharedDriveData(){
-  if(!GoogleAuth.isLoggedIn()){ toast('ë¡œê·¸ì¸ì´ í•„ìš”í•©ë‹ˆë‹¤'); return; }
+  if(!GoogleAuth.isLoggedIn()){ toast('·Î±×ÀÎÀÌ ÇÊ¿äÇÕ´Ï´Ù'); return; }
   const sharedCnt = DB.getDriveShared().length;
-  if(!confirm(`âš ï¸ ê³µìš© í´ë” ì „ì²´ ì´ˆê¸°í™”\n\ní˜„ì¬ ê³µìœ  ëª…í•¨ ${sharedCnt}ì¥ì„ í¬í•¨í•œ\nëª¨ë“  ê³µìœ  ë°ì´í„°ë¥¼ ì‚­ì œí•©ë‹ˆë‹¤.\n\nëª¨ë“  ê³„ì •ì—ì„œ ê³µìœ  ëª…í•¨ì´ ì‚¬ë¼ì§‘ë‹ˆë‹¤.\nê³„ì†í•˜ì‹œê² ìŠµë‹ˆê¹Œ?`)) return;
-  toast('ê³µìš© í´ë” ì´ˆê¸°í™” ì¤‘...');
+  if(!confirm(`?? °ø¿ë Æú´õ ÀüÃ¼ ÃÊ±âÈ­\n\nÇöÀç °øÀ¯ ¸íÇÔ ${sharedCnt}ÀåÀ» Æ÷ÇÔÇÑ\n¸ğµç °øÀ¯ µ¥ÀÌÅÍ¸¦ »èÁ¦ÇÕ´Ï´Ù.\n\n¸ğµç °èÁ¤¿¡¼­ °øÀ¯ ¸íÇÔÀÌ »ç¶óÁı´Ï´Ù.\n°è¼ÓÇÏ½Ã°Ú½À´Ï±î?`)) return;
+  toast('°ø¿ë Æú´õ ÃÊ±âÈ­ Áß...');
   const ok = await SharedDriveDB.clearShared();
-  toast(ok ? 'ê³µìš© í´ë” ì´ˆê¸°í™” ì™„ë£Œ âœ“' : 'ì´ˆê¸°í™” ì‹¤íŒ¨. ë‹¤ì‹œ ì‹œë„í•´ì£¼ì„¸ìš”');
+  toast(ok ? '°ø¿ë Æú´õ ÃÊ±âÈ­ ¿Ï·á ?' : 'ÃÊ±âÈ­ ½ÇÆĞ. ´Ù½Ã ½ÃµµÇØÁÖ¼¼¿ä');
   if(ok) refreshDataStat();
 }
 
 async function cleanDriveData(){
-  if(!GoogleAuth.isLoggedIn()){ toast('ë¡œê·¸ì¸ì´ í•„ìš”í•©ë‹ˆë‹¤'); return; }
+  if(!GoogleAuth.isLoggedIn()){ toast('·Î±×ÀÎÀÌ ÇÊ¿äÇÕ´Ï´Ù'); return; }
   const email = GoogleAuth.getUserEmail();
-  if(!confirm(`âš ï¸ Drive ê°œì¸ ë°ì´í„° ì´ˆê¸°í™”\n\nê³„ì •: ${email}\n\nDriveì˜ crm_cards.json, crm_visits.jsonì„\në¹ˆ íŒŒì¼ë¡œ ë®ì–´ì”ë‹ˆë‹¤.\n\nê¸°ê¸° ë¡œì»¬ ë°ì´í„°ëŠ” ìœ ì§€ë©ë‹ˆë‹¤.\nê³„ì†í•˜ì‹œê² ìŠµë‹ˆê¹Œ?`)) return;
-  toast('Drive ì´ˆê¸°í™” ì¤‘...');
+  if(!confirm(`?? Drive °³ÀÎ µ¥ÀÌÅÍ ÃÊ±âÈ­\n\n°èÁ¤: ${email}\n\nDriveÀÇ crm_cards.json, crm_visits.jsonÀ»\nºó ÆÄÀÏ·Î µ¤¾î¾¹´Ï´Ù.\n\n±â±â ·ÎÄÃ µ¥ÀÌÅÍ´Â À¯ÁöµË´Ï´Ù.\n°è¼ÓÇÏ½Ã°Ú½À´Ï±î?`)) return;
+  toast('Drive ÃÊ±âÈ­ Áß...');
   const ok = await DriveDB.clearPersonalData();
-  toast(ok ? 'Drive ê°œì¸ ë°ì´í„° ì´ˆê¸°í™” ì™„ë£Œ âœ“' : 'ì´ˆê¸°í™” ì‹¤íŒ¨. ë‹¤ì‹œ ì‹œë„í•´ì£¼ì„¸ìš”');
+  toast(ok ? 'Drive °³ÀÎ µ¥ÀÌÅÍ ÃÊ±âÈ­ ¿Ï·á ?' : 'ÃÊ±âÈ­ ½ÇÆĞ. ´Ù½Ã ½ÃµµÇØÁÖ¼¼¿ä');
   if(ok) refreshDataStat();
 }
 
@@ -592,21 +592,21 @@ function deleteDummy(){
   const cards  = DB.getCards().filter(c=>!c.isDummy);
   const cos    = DB.getCos().filter(c=>!c.isDummy);
   const visits = DB.getVisits().filter(v=>!v.isDummy);
-  if(!confirm(`ìƒ˜í”Œ ë°ì´í„°ë¥¼ ì‚­ì œí•©ë‹ˆë‹¤.\nì‹¤ì œ ë°ì´í„°(ëª…í•¨ ${cards.length}ì¥Â·ê±°ë˜ì²˜ ${cos.length}ê°œÂ·ë°©ë¬¸ê¸°ë¡ ${visits.length}ê±´)ëŠ” ìœ ì§€ë©ë‹ˆë‹¤.\nê³„ì†í•˜ì‹œê² ìŠµë‹ˆê¹Œ?`)) return;
+  if(!confirm(`»ùÇÃ µ¥ÀÌÅÍ¸¦ »èÁ¦ÇÕ´Ï´Ù.\n½ÇÁ¦ µ¥ÀÌÅÍ(¸íÇÔ ${cards.length}Àå¡¤°Å·¡Ã³ ${cos.length}°³¡¤¹æ¹®±â·Ï ${visits.length}°Ç)´Â À¯ÁöµË´Ï´Ù.\n°è¼ÓÇÏ½Ã°Ú½À´Ï±î?`)) return;
   DB.setCards(cards);
   DB.setCos(cos);
   DB.setVisits(visits);
   loadDataStat();
-  toast('ìƒ˜í”Œ ë°ì´í„° ì‚­ì œ ì™„ë£Œ âœ“');
+  toast('»ùÇÃ µ¥ÀÌÅÍ »èÁ¦ ¿Ï·á ?');
 }
 
 function confirmReset(){
-  if(confirm('âš ï¸ ì „ì²´ ì´ˆê¸°í™”\n\nëª¨ë“  ë°ì´í„°(ëª…í•¨Â·ê±°ë˜ì²˜Â·ë°©ë¬¸ê¸°ë¡Â·ì´ë¯¸ì§€)ë¥¼\nì‚­ì œí•˜ê³  ë¹ˆ ìƒíƒœë¡œ ì‹œì‘í•©ë‹ˆë‹¤.\n\nê³„ì†í•˜ì‹œê² ìŠµë‹ˆê¹Œ?')){
+  if(confirm('?? ÀüÃ¼ ÃÊ±âÈ­\n\n¸ğµç µ¥ÀÌÅÍ(¸íÇÔ¡¤°Å·¡Ã³¡¤¹æ¹®±â·Ï¡¤ÀÌ¹ÌÁö)¸¦\n»èÁ¦ÇÏ°í ºó »óÅÂ·Î ½ÃÀÛÇÕ´Ï´Ù.\n\n°è¼ÓÇÏ½Ã°Ú½À´Ï±î?')){
     ['crm_cards','crm_cos','crm_visits','crm_drive_shared','crm_drive_shared_visits'].forEach(k=>localStorage.removeItem(k));
-    localStorage.setItem('crm_needs_sync','1'); /* ë¹ˆ ìƒíƒœë¥¼ Driveì—ë„ ë°˜ì˜ */
+    localStorage.setItem('crm_needs_sync','1'); /* ºó »óÅÂ¸¦ Drive¿¡µµ ¹İ¿µ */
     ImgDB.clear().catch(()=>{});
     refreshDataStat();
-    toast('ì „ì²´ ì´ˆê¸°í™” ì™„ë£Œ âœ“');
+    toast('ÀüÃ¼ ÃÊ±âÈ­ ¿Ï·á ?');
   }
 }
 
