@@ -108,7 +108,7 @@
   <!-- 헤더 -->
   <div class="hw-hdr">
     <span class="hw-hdr-t">명함 CRM</span>
-    <span class="hw-ver" style="font-size:10px;font-weight:700;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);padding:3px 9px;border-radius:20px;color:rgba(255,255,255,.5);">v18.0</span>
+    <span class="hw-ver" style="font-size:10px;font-weight:700;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);padding:3px 9px;border-radius:20px;color:rgba(255,255,255,.5);">v18.1</span>
     <div id="drive-dot" style="display:none;width:8px;height:8px;border-radius:50%;background:#4ade80;margin-right:4px;cursor:pointer;" onclick="_driveDotTap()" title="Google Drive 연결됨"></div>
     <div class="hw-hdr-ic" onclick="location.href='settings.html'">⚙️</div>
   </div>
@@ -234,13 +234,21 @@
   };
   document.getElementById('inp-gal').onchange=function(e){
     const files=[...e.target.files];if(!files.length)return;e.target.value='';
-    Promise.all(files.map(fileToDataUrl)).then(urls=>{
-      sessionStorage.setItem('scan_data',urls[0]);
-      sessionStorage.setItem('scan_back','cards.html');
-      if(urls.length>1)sessionStorage.setItem('scan_queue',JSON.stringify(urls.slice(1)));
-      else sessionStorage.removeItem('scan_queue');
+    Promise.all(files.map(fileToDataUrl)).then(async urls=>{
+      sessionStorage.setItem('scan_data', urls[0]);
+      sessionStorage.setItem('scan_back', 'cards.html');
+      sessionStorage.setItem('scan_idx',  '1');
+      sessionStorage.setItem('scan_total', String(urls.length));
+      sessionStorage.removeItem('scan_queue');
+      /* 나머지 이미지는 IndexedDB에 저장 — sessionStorage 5MB 한도 우회 */
+      if(urls.length > 1){
+        await Promise.all(urls.slice(1).map((url,i)=>ImgDB.set('_sq_'+i, url)));
+        sessionStorage.setItem('scan_queue_idb', String(urls.length-1));
+      } else {
+        sessionStorage.removeItem('scan_queue_idb');
+      }
       location.href='scan.html';
-    });
+    }).catch(()=>{ location.href='scan.html'; });
   };
 })();
 

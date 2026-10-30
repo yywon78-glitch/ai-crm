@@ -121,6 +121,8 @@ let _imgData   = null;
 let _captured  = null;
 let _fromIndex = false;
 let _queue     = [];
+let _idbQueue  = 0; /* IndexedDB 큐 남은 수 */
+let _idbIdx    = 0; /* IDB에서 꺼낸 인덱스 */
 const COLORS   = ['#2563eb','#16a34a','#d97706','#7c3aed','#dc2626','#0891b2'];
 
 /* ── 유틸 ── */
@@ -218,7 +220,9 @@ document.getElementById('inp-gal').onchange = function(e){
 /* ── 진입 경로 결정 ── */
 const _pending = sessionStorage.getItem('scan_data');
 _queue = JSON.parse(sessionStorage.getItem('scan_queue')||'[]');
+_idbQueue = parseInt(sessionStorage.getItem('scan_queue_idb')||'0');
 sessionStorage.removeItem('scan_queue');
+sessionStorage.removeItem('scan_queue_idb');
 if(_pending){
   _fromIndex = true;
   sessionStorage.removeItem('scan_data');
@@ -384,16 +388,30 @@ function saveMulti(){
 
 function _goAfterSave(dest){
   if(_queue.length > 0){
-    /* 토스트 보여준 뒤 다음 명함으로 */
     const next = _queue.shift();
     const idx = (parseInt(sessionStorage.getItem('scan_idx')||'1')) + 1;
     sessionStorage.setItem('scan_idx', idx.toString());
     _captured = null;
     setTimeout(()=>{
       document.getElementById('result-view').classList.remove('show');
-      closeErr();
-      showRotate(next);
+      closeErr(); showRotate(next);
     }, 1200);
+    return;
+  }
+  /* IDB 큐에 남은 이미지가 있으면 꺼냄 */
+  if(_idbQueue > 0){
+    const key = '_sq_' + _idbIdx++;
+    _idbQueue--;
+    const idx = (parseInt(sessionStorage.getItem('scan_idx')||'1')) + 1;
+    sessionStorage.setItem('scan_idx', idx.toString());
+    _captured = null;
+    ImgDB.get(key).then(url=>{
+      ImgDB.del(key).catch(()=>{});
+      setTimeout(()=>{
+        document.getElementById('result-view').classList.remove('show');
+        closeErr(); showRotate(url);
+      }, 1200);
+    });
     return;
   }
   sessionStorage.removeItem('scan_idx');
