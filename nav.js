@@ -351,7 +351,10 @@ function openCoOverlay(coId) {
 }
 
 function closeAllOverlays() {
-  document.querySelectorAll('.overlay').forEach(el=>el.classList.remove('show'));
+  /* 슬라이드 오버레이 + 모달시트 모두 닫기 */
+  document.querySelectorAll('.overlay, .moverlay').forEach(el=>el.classList.remove('show'));
+  /* 동적 생성 모달 제거 */
+  ['_cedit','_coedit'].forEach(id=>{ const el=document.getElementById(id); if(el) el.remove(); });
 }
 
 function closeCoOverlay() {
