@@ -1,30 +1,30 @@
-<!DOCTYPE html>
+ï»¿<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>¸íÇÔ CRM</title>
+<title>ëª…í•¨ CRM</title>
 <link rel="stylesheet" href="shared.css?v=1029">
 <style>
-/* ¦¡¦¡ ´ÙÅ© È¨ ·¹ÀÌ¾Æ¿ô ¦¡¦¡ */
+/* â”€â”€ ë‹¤í¬ í™ˆ ë ˆì´ì•„ì›ƒ â”€â”€ */
 .hw-page{position:fixed;inset:0;display:flex;flex-direction:column;background:#0a0f1e;}
 
-/* Çì´õ */
+/* í—¤ë” */
 .hw-hdr{height:var(--hdr-h);flex-shrink:0;background:rgba(10,15,30,.95);border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;padding:0 16px;gap:8px;backdrop-filter:blur(12px);}
 .hw-hdr-t{font-size:17px;font-weight:800;flex:1;color:#fff;letter-spacing:-.3px;}
 .hw-hdr-ic{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:17px;cursor:pointer;}
 
-/* ½ºÅ©·Ñ ¿µ¿ª */
+/* ìŠ¤í¬ë¡¤ ì˜ì—­ */
 .hw-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 
-/* È÷¾î·Î ¼½¼Ç */
+/* íˆì–´ë¡œ ì„¹ì…˜ */
 .hw-hero{padding:18px 16px 14px;position:relative;}
 .hw-hero-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
 .hw-logo{font-size:10px;font-weight:700;color:rgba(255,255,255,.4);letter-spacing:.8px;}
 .hw-ver{font-size:10px;font-weight:700;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);padding:3px 9px;border-radius:20px;color:rgba(255,255,255,.5);}
 .hw-date{font-size:13px;color:rgba(255,255,255,.55);margin-bottom:14px;}
 
-/* Åë°è Ä«µå */
+/* í†µê³„ ì¹´ë“œ */
 .hw-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
 .hw-stats-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:.5px;padding:6px 0 2px;}
 .hw-stat{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 10px;text-align:center;position:relative;overflow:hidden;}
@@ -35,26 +35,26 @@
 .hw-stat-n{font-size:24px;font-weight:800;color:#fff;line-height:1;}
 .hw-stat-l{font-size:10px;font-weight:600;color:rgba(255,255,255,.4);margin-top:4px;letter-spacing:.3px;}
 
-/* ¿À´Ã ¹æ¹® ¿¹Á¤ */
+/* ì˜¤ëŠ˜ ë°©ë¬¸ ì˜ˆì • */
 .hw-today-wrap{margin:0 16px 4px;}
 .hw-today-item{background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.4);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:6px;}
 .hw-today-ic{font-size:18px;}
 .hw-today-nm{font-size:14px;font-weight:700;color:#fca5a5;}
 .hw-today-sub{font-size:11px;color:rgba(252,165,165,.7);margin-top:1px;}
 
-/* ±¸Á¶µµ ¿µ¿ª */
+/* êµ¬ì¡°ë„ ì˜ì—­ */
 .hw-map{padding:0 16px 16px;}
 
-/* ±¸ºĞ ·¹ÀÌºí */
+/* êµ¬ë¶„ ë ˆì´ë¸” */
 .hw-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:.6px;margin:14px 0 8px;display:flex;align-items:center;gap:8px;}
 .hw-lbl::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08);}
 
-/* ³ëµå °øÅë */
+/* ë…¸ë“œ ê³µí†µ */
 .hw-node{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:18px;cursor:pointer;transition:all .15s;touch-action:manipulation;position:relative;overflow:hidden;}
 .hw-node:active{transform:scale(.97);background:rgba(255,255,255,.08);}
 .hw-node::after{content:'';position:absolute;inset:0;border-radius:18px;opacity:0;background:rgba(255,255,255,.06);transition:opacity .15s;}
 
-/* ½ºÄµ ? °¡·Î 2¿­ */
+/* ìŠ¤ìº” â€” ê°€ë¡œ 2ì—´ */
 .hw-scan-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
 .hw-scan-node{background:linear-gradient(135deg,rgba(37,99,235,.35),rgba(59,130,246,.2));border:1px solid rgba(59,130,246,.45);border-radius:18px;padding:18px 14px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;touch-action:manipulation;transition:all .15s;position:relative;overflow:hidden;}
 .hw-scan-node:active{transform:scale(.96);}
@@ -63,11 +63,11 @@
 .hw-scan-t{font-size:13px;font-weight:700;color:#93c5fd;}
 .hw-scan-s{font-size:10px;color:rgba(147,197,253,.6);text-align:center;line-height:1.4;}
 
-/* Èå¸§ È­»ìÇ¥ */
+/* íë¦„ í™”ì‚´í‘œ */
 .hw-arrow{text-align:center;font-size:11px;font-weight:700;color:rgba(255,255,255,.2);letter-spacing:.5px;margin:4px 0;display:flex;align-items:center;justify-content:center;gap:6px;}
 .hw-arrow::before,.hw-arrow::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08);}
 
-/* 2¿­ ±×¸®µå ³ëµå */
+/* 2ì—´ ê·¸ë¦¬ë“œ ë…¸ë“œ */
 .hw-grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
 .hw-tile{padding:16px 14px 14px;display:flex;flex-direction:column;gap:6px;}
 .hw-tile-ic{font-size:28px;line-height:1;}
@@ -75,7 +75,7 @@
 .hw-tile-s{font-size:10px;color:rgba(255,255,255,.4);line-height:1.4;}
 .hw-tile-badge{position:absolute;top:12px;right:12px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;}
 
-/* »ö»ó º¯Çü */
+/* ìƒ‰ìƒ ë³€í˜• */
 .hw-tile-grn{background:linear-gradient(135deg,rgba(16,185,129,.25),rgba(52,211,153,.12));border-color:rgba(16,185,129,.35)!important;}
 .hw-tile-grn .hw-tile-t{color:#6ee7b7;}
 .hw-tile-grn .hw-tile-badge{background:rgba(16,185,129,.2);color:#34d399;}
@@ -88,14 +88,14 @@
 .hw-tile-blue .hw-tile-t{color:#93c5fd;}
 .hw-tile-blue .hw-tile-badge{background:rgba(37,99,235,.2);color:#60a5fa;}
 
-/* ¼³Á¤ ? ÀÛÀº Çà */
+/* ì„¤ì • â€” ì‘ì€ í–‰ */
 .hw-settings{display:flex;align-items:center;gap:12px;padding:12px 16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;cursor:pointer;touch-action:manipulation;}
 .hw-settings:active{background:rgba(255,255,255,.07);}
 .hw-settings-ic{font-size:20px;}
 .hw-settings-t{font-size:13px;font-weight:600;color:rgba(255,255,255,.5);}
 .hw-settings-arr{margin-left:auto;color:rgba(255,255,255,.2);font-size:15px;}
 
-/* ÅÇ¹Ù ´ÙÅ© */
+/* íƒ­ë°” ë‹¤í¬ */
 .hw-tabbar{height:var(--tab-h);flex-shrink:0;background:rgba(10,15,30,.98);border-top:1px solid rgba(255,255,255,.08);}
 .hw-tabbar .tbi{color:rgba(255,255,255,.3);}
 .hw-tabbar .tbi.on{color:#60a5fa;}
@@ -105,16 +105,16 @@
 <body>
 
 <div class="hw-page">
-  <!-- Çì´õ -->
+  <!-- í—¤ë” -->
   <div class="hw-hdr">
-    <span class="hw-hdr-t">¸íÇÔ CRM</span>
-    <div id="drive-dot" style="display:none;width:8px;height:8px;border-radius:50%;background:#4ade80;margin-right:4px;cursor:pointer;" onclick="_driveDotTap()" title="Google Drive ¿¬°áµÊ"></div>
-    <div class="hw-hdr-ic" onclick="location.href='settings.html'">??</div>
+    <span class="hw-hdr-t">ëª…í•¨ CRM</span>
+    <div id="drive-dot" style="display:none;width:8px;height:8px;border-radius:50%;background:#4ade80;margin-right:4px;cursor:pointer;" onclick="_driveDotTap()" title="Google Drive ì—°ê²°ë¨"></div>
+    <div class="hw-hdr-ic" onclick="location.href='settings.html'">âš™ï¸</div>
   </div>
 
   <div class="hw-scroll">
 
-    <!-- È÷¾î·Î: ³¯Â¥ + Åë°è -->
+    <!-- íˆì–´ë¡œ: ë‚ ì§œ + í†µê³„ -->
     <div class="hw-hero">
       <div class="hw-hero-top">
         <span class="hw-logo">BUSINESS CARD CRM</span>
@@ -123,86 +123,86 @@
       <div class="hw-date" id="today-date"></div>
     </div>
 
-    <!-- ¿À´Ã ¹æ¹® ¿¹Á¤ -->
+    <!-- ì˜¤ëŠ˜ ë°©ë¬¸ ì˜ˆì • -->
     <div id="today-visits-wrap" style="display:none;">
       <div class="hw-today-wrap" id="today-visits"></div>
     </div>
 
-    <!-- ±¸Á¶µµ ¸Ê -->
+    <!-- êµ¬ì¡°ë„ ë§µ -->
     <div class="hw-map">
 
-      <!-- ¨ç ¸íÇÔ ÀÔ·Â -->
-      <div class="hw-lbl">¸íÇÔ ÀÔ·Â</div>
+      <!-- â‘  ëª…í•¨ ì…ë ¥ -->
+      <div class="hw-lbl">ëª…í•¨ ì…ë ¥</div>
       <div class="hw-scan-row">
         <label class="hw-scan-node" for="inp-cam">
-          <div class="hw-scan-ic">??</div>
-          <div class="hw-scan-t">Ä«¸Ş¶ó ½ºÄµ</div>
-          <div class="hw-scan-s">¸íÇÔ ÃÔ¿µ ÈÄ<br>AI ÀÚµ¿ ÀÎ½Ä</div>
+          <div class="hw-scan-ic">ğŸ“·</div>
+          <div class="hw-scan-t">ì¹´ë©”ë¼ ìŠ¤ìº”</div>
+          <div class="hw-scan-s">ëª…í•¨ ì´¬ì˜ í›„<br>AI ìë™ ì¸ì‹</div>
         </label>
         <label class="hw-scan-node" for="inp-gal">
-          <div class="hw-scan-ic">???</div>
-          <div class="hw-scan-t">°¶·¯¸® ½ºÄµ</div>
-          <div class="hw-scan-s">»çÁøÃ¸¿¡¼­<br>¿©·¯ Àå ¼±ÅÃ</div>
+          <div class="hw-scan-ic">ğŸ–¼ï¸</div>
+          <div class="hw-scan-t">ê°¤ëŸ¬ë¦¬ ìŠ¤ìº”</div>
+          <div class="hw-scan-s">ì‚¬ì§„ì²©ì—ì„œ<br>ì—¬ëŸ¬ ì¥ ì„ íƒ</div>
         </label>
       </div>
 
-      <!-- ¡é È­»ìÇ¥ -->
-      <div class="hw-arrow">ÀúÀå ¡¤ °ü¸®</div>
+      <!-- â†“ í™”ì‚´í‘œ -->
+      <div class="hw-arrow">ì €ì¥ Â· ê´€ë¦¬</div>
 
-      <!-- ¨è ¸íÇÔ & °Å·¡Ã³ -->
-      <div class="hw-lbl">°ü¸®</div>
+      <!-- â‘¡ ëª…í•¨ & ê±°ë˜ì²˜ -->
+      <div class="hw-lbl">ê´€ë¦¬</div>
       <div class="hw-grid2">
         <div class="hw-node hw-tile hw-tile-blue" onclick="location.href='cards.html'">
           <span class="hw-tile-badge" id="b-cards"></span>
-          <div class="hw-tile-ic">??</div>
-          <div class="hw-tile-t">¸íÇÔ ¸ñ·Ï</div>
-          <div class="hw-tile-s">ÀÌ¸§¼ø¡¤°Å·¡Ã³¼ø<br>Áñ°ÜÃ£±â¡¤ÃÖ±Ù¼ø</div>
+          <div class="hw-tile-ic">ğŸªª</div>
+          <div class="hw-tile-t">ëª…í•¨ ëª©ë¡</div>
+          <div class="hw-tile-s">ì´ë¦„ìˆœÂ·ê±°ë˜ì²˜ìˆœ<br>ì¦ê²¨ì°¾ê¸°Â·ìµœê·¼ìˆœ</div>
         </div>
         <div class="hw-node hw-tile hw-tile-grn" onclick="location.href='cos.html'">
           <span class="hw-tile-badge" id="b-cos"></span>
-          <div class="hw-tile-ic">??</div>
-          <div class="hw-tile-t">°Å·¡Ã³</div>
-          <div class="hw-tile-s">¼Ò¼Ó ¸íÇÔ<br>¹æ¹® ÀÌ·Â ÅëÇÕ</div>
+          <div class="hw-tile-ic">ğŸ¢</div>
+          <div class="hw-tile-t">ê±°ë˜ì²˜</div>
+          <div class="hw-tile-s">ì†Œì† ëª…í•¨<br>ë°©ë¬¸ ì´ë ¥ í†µí•©</div>
         </div>
       </div>
 
-      <!-- ¡é È­»ìÇ¥ -->
-      <div class="hw-arrow">È°¿ë</div>
+      <!-- â†“ í™”ì‚´í‘œ -->
+      <div class="hw-arrow">í™œìš©</div>
 
-      <!-- ¨é ¹æ¹®±â·Ï & Áöµµ -->
-      <div class="hw-lbl">¿µ¾÷ È°µ¿</div>
+      <!-- â‘¢ ë°©ë¬¸ê¸°ë¡ & ì§€ë„ -->
+      <div class="hw-lbl">ì˜ì—… í™œë™</div>
       <div class="hw-grid2">
         <div class="hw-node hw-tile hw-tile-pur" onclick="location.href='visits.html'">
           <span class="hw-tile-badge" id="b-visits"></span>
-          <div class="hw-tile-ic">??</div>
-          <div class="hw-tile-t">¹æ¹®±â·Ï</div>
-          <div class="hw-tile-s">´Ş·Â¡¤¸ñ·Ï¡¤<br>°Å·¡Ã³º°</div>
+          <div class="hw-tile-ic">ğŸ“‹</div>
+          <div class="hw-tile-t">ë°©ë¬¸ê¸°ë¡</div>
+          <div class="hw-tile-s">ë‹¬ë ¥Â·ëª©ë¡Â·<br>ê±°ë˜ì²˜ë³„</div>
         </div>
         <div class="hw-node hw-tile hw-tile-pur" onclick="location.href='map.html'">
-          <div class="hw-tile-ic">???</div>
-          <div class="hw-tile-t">°Å·¡Ã³ Áöµµ</div>
-          <div class="hw-tile-s">Ä«Ä«¿À¸Ê<br>ÁÖº¯ °Å·¡Ã³</div>
+          <div class="hw-tile-ic">ğŸ—ºï¸</div>
+          <div class="hw-tile-t">ê±°ë˜ì²˜ ì§€ë„</div>
+          <div class="hw-tile-s">ì¹´ì¹´ì˜¤ë§µ<br>ì£¼ë³€ ê±°ë˜ì²˜</div>
         </div>
       </div>
 
-      <!-- ¼³Á¤ / °ü¸®ÀÚ -->
+      <!-- ì„¤ì • / ê´€ë¦¬ì -->
       <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;">
         <div class="hw-settings" onclick="location.href='settings.html'">
-          <span class="hw-settings-ic">??</span>
-          <span class="hw-settings-t">¼³Á¤ ? API Å° ¡¤ µ¥ÀÌÅÍ ¹é¾÷</span>
-          <span class="hw-settings-arr">?</span>
+          <span class="hw-settings-ic">âš™ï¸</span>
+          <span class="hw-settings-t">ì„¤ì • â€” API í‚¤ Â· ë°ì´í„° ë°±ì—…</span>
+          <span class="hw-settings-arr">â€º</span>
         </div>
         <div class="hw-settings" onclick="location.href='admin.html'">
-          <span class="hw-settings-ic">??</span>
-          <span class="hw-settings-t">°ü¸®ÀÚ Áı°è ? °èÁ¤º° ¡¤ °Å·¡Ã³º° ÇöÈ²</span>
-          <span class="hw-settings-arr">?</span>
+          <span class="hw-settings-ic">ğŸ“Š</span>
+          <span class="hw-settings-t">ê´€ë¦¬ì ì§‘ê³„ â€” ê³„ì •ë³„ Â· ê±°ë˜ì²˜ë³„ í˜„í™©</span>
+          <span class="hw-settings-arr">â€º</span>
         </div>
       </div>
 
     </div><!-- /hw-map -->
   </div><!-- /hw-scroll -->
 
-  <!-- ÅÇ¹Ù -->
+  <!-- íƒ­ë°” -->
   <nav class="tabbar hw-tabbar" id="tabbar"></nav>
 </div>
 
@@ -252,13 +252,13 @@
 
 function load(){
   const cards=DB.getCards(),cos=DB.getCos(),visits=DB.getVisits();
-  document.getElementById('b-cards').textContent=cards.length+'Àå';
-  document.getElementById('b-cos').textContent=cos.length+'°³';
-  document.getElementById('b-visits').textContent=visits.length+'°Ç';
+  document.getElementById('b-cards').textContent=cards.length+'ì¥';
+  document.getElementById('b-cos').textContent=cos.length+'ê°œ';
+  document.getElementById('b-visits').textContent=visits.length+'ê±´';
   const now=new Date();
-  const days=['ÀÏ','¿ù','È­','¼ö','¸ñ','±İ','Åä'];
+  const days=['ì¼','ì›”','í™”','ìˆ˜','ëª©','ê¸ˆ','í† '];
   document.getElementById('today-date').textContent=
-    `${now.getFullYear()}³â ${now.getMonth()+1}¿ù ${now.getDate()}ÀÏ (${days[now.getDay()]})`;
+    `${now.getFullYear()}ë…„ ${now.getMonth()+1}ì›” ${now.getDate()}ì¼ (${days[now.getDay()]})`;
 }
 
 function loadTodayVisits(){
@@ -270,8 +270,8 @@ function loadTodayVisits(){
   wrap.style.display='block';
   el.innerHTML=visits.map(v=>`
     <div class="hw-today-item" onclick="location.href='visits.html'">
-      <span class="hw-today-ic">??</span>
-      <div><div class="hw-today-nm">${v.co}</div><div class="hw-today-sub">${v.tp} ¡¤ ¿À´Ã ¹æ¹® ¿¹Á¤</div></div>
+      <span class="hw-today-ic">ğŸ“…</span>
+      <div><div class="hw-today-nm">${v.co}</div><div class="hw-today-sub">${v.tp} Â· ì˜¤ëŠ˜ ë°©ë¬¸ ì˜ˆì •</div></div>
     </div>`).join('');
 }
 
@@ -279,21 +279,21 @@ renderTabBar('home');
 load();
 loadTodayVisits();
 
-/* Drive »óÅÂ Ç¥½Ã ? tryRestore ¾øÀ½ (¹øÂ½ÀÓ Á¦°Å) */
+/* Drive ìƒíƒœ í‘œì‹œ â€” tryRestore ì—†ìŒ (ë²ˆì©ì„ ì œê±°) */
 (function(){
   const dot = document.getElementById('drive-dot');
   if(GoogleAuth.isLoggedIn()){
-    dot.style.background = '#4ade80'; dot.style.display='block'; dot.title='Drive ¿¬°áµÊ';
+    dot.style.background = '#4ade80'; dot.style.display='block'; dot.title='Drive ì—°ê²°ë¨';
     DriveDB.syncDown().then(ok=>{ if(ok){ load(); loadTodayVisits(); } });
     _ensureSettingsUploaded();
   } else if(localStorage.getItem('crm_gemail')){
-    /* ÅäÅ« ¸¸·á ¡æ Á¶¿ëÈ÷ Àç¿¬°á ½Ãµµ */
+    /* í† í° ë§Œë£Œ â†’ ì¡°ìš©íˆ ì¬ì—°ê²° ì‹œë„ */
     GoogleAuth.silentLogin().then(()=>{
       if(GoogleAuth.isLoggedIn()){
-        dot.style.background = '#4ade80'; dot.style.display='block'; dot.title='Drive ¿¬°áµÊ';
+        dot.style.background = '#4ade80'; dot.style.display='block'; dot.title='Drive ì—°ê²°ë¨';
         DriveDB.syncDown().then(ok=>{ if(ok){ load(); loadTodayVisits(); } });
       } else {
-        dot.style.background = '#fb923c'; dot.style.display='block'; dot.title='Drive ÅäÅ« ¸¸·á ? ÅÇÇÏ¿© Àç¿¬°á';
+        dot.style.background = '#fb923c'; dot.style.display='block'; dot.title='Drive í† í° ë§Œë£Œ â€” íƒ­í•˜ì—¬ ì¬ì—°ê²°';
       }
     });
   }
@@ -302,18 +302,18 @@ loadTodayVisits();
 function _driveDotTap(){
   const dot = document.getElementById('drive-dot');
   if(GoogleAuth.isLoggedIn()){
-    DriveDB.syncDown().then(ok=>{ if(ok){ load(); loadTodayVisits(); toast('Drive µ¿±âÈ­ ¿Ï·á ?'); } });
+    DriveDB.syncDown().then(ok=>{ if(ok){ load(); loadTodayVisits(); toast('Drive ë™ê¸°í™” ì™„ë£Œ âœ“'); } });
   } else {
     GoogleAuth.login(()=>{
-      dot.style.background = '#4ade80'; dot.style.display='block'; dot.title='Drive ¿¬°áµÊ';
+      dot.style.background = '#4ade80'; dot.style.display='block'; dot.title='Drive ì—°ê²°ë¨';
       DriveDB.syncDown().then(ok=>{ if(ok){ load(); loadTodayVisits(); } });
       _ensureSettingsUploaded();
-      toast('Drive ¿¬°áµÆ½À´Ï´Ù ?');
+      toast('Drive ì—°ê²°ëìŠµë‹ˆë‹¤ âœ“');
     });
   }
 }
 
-// µÚ·Î°¡±â¡¤ÅÇ ÀüÈ¯À¸·Î µ¹¾Æ¿Ã ¶§µµ Åë°è °»½Å
+// ë’¤ë¡œê°€ê¸°Â·íƒ­ ì „í™˜ìœ¼ë¡œ ëŒì•„ì˜¬ ë•Œë„ í†µê³„ ê°±ì‹ 
 window.addEventListener('pageshow', e => { if(e.persisted){ load(); loadTodayVisits(); } });
 document.addEventListener('visibilitychange', () => { if(!document.hidden){ load(); loadTodayVisits(); } });
 </script>
