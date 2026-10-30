@@ -118,7 +118,7 @@
     <div class="hw-hero">
       <div class="hw-hero-top">
         <span class="hw-logo">BUSINESS CARD CRM</span>
-        <span class="hw-ver">v17.5</span>
+        <span class="hw-ver">v17.6</span>
       </div>
       <div class="hw-date" id="today-date"></div>
     </div>
@@ -153,13 +153,11 @@
       <div class="hw-lbl">관리</div>
       <div class="hw-grid2">
         <div class="hw-node hw-tile hw-tile-blue" onclick="location.href='cards.html'">
-          <span class="hw-tile-badge" id="b-cards"></span>
           <div class="hw-tile-ic">🪪</div>
           <div class="hw-tile-t">명함 목록</div>
           <div class="hw-tile-s">이름순·거래처순<br>즐겨찾기·최근순</div>
         </div>
         <div class="hw-node hw-tile hw-tile-grn" onclick="location.href='cos.html'">
-          <span class="hw-tile-badge" id="b-cos"></span>
           <div class="hw-tile-ic">🏢</div>
           <div class="hw-tile-t">거래처</div>
           <div class="hw-tile-s">소속 명함<br>방문 이력 통합</div>
@@ -173,7 +171,6 @@
       <div class="hw-lbl">영업 활동</div>
       <div class="hw-grid2">
         <div class="hw-node hw-tile hw-tile-pur" onclick="location.href='visits.html'">
-          <span class="hw-tile-badge" id="b-visits"></span>
           <div class="hw-tile-ic">📋</div>
           <div class="hw-tile-t">방문기록</div>
           <div class="hw-tile-s">달력·목록·<br>거래처별</div>
@@ -252,9 +249,6 @@
 
 function load(){
   const cards=DB.getCards(),cos=DB.getCos(),visits=DB.getVisits();
-  document.getElementById('b-cards').textContent=cards.length+'장';
-  document.getElementById('b-cos').textContent=cos.length+'개';
-  document.getElementById('b-visits').textContent=visits.length+'건';
   const now=new Date();
   const days=['일','월','화','수','목','금','토'];
   document.getElementById('today-date').textContent=
