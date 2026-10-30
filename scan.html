@@ -48,6 +48,7 @@
   <header class="hdr" style="flex-shrink:0;background:#111;border-bottom:1px solid #333;">
     <div class="hdr-back" onclick="backToCamera()" style="color:#fff;">←</div>
     <span class="hdr-t" style="color:#fff;" id="rv-title">회전 조정 후 인식</span>
+    <button id="btn-rv-pass" onclick="passCard()" style="background:#6b7280;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;">건너뛰기</button>
   </header>
   <div class="rv-img-wrap">
     <img id="rv-img" src="">
@@ -130,7 +131,7 @@ function showRotate(dataUrl){
   _imgData = dataUrl;
   document.getElementById('rv-img').src = dataUrl;
   document.getElementById('rv-title').textContent =
-    _queue.length > 0 ? `회전 조정 후 인식 (이후 ${_queue.length}장)` : '회전 조정 후 인식';
+    (_queue.length > 0 || _idbQueue > 0) ? `회전 조정 후 인식 (이후 ${_queue.length + _idbQueue}장)` : '회전 조정 후 인식';
   document.getElementById('rotate-view').classList.add('show');
 }
 function hideRotate(){
