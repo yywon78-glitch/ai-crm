@@ -7,17 +7,11 @@ function _navTo(url){
 function renderTabBar(active) {
   const el = document.getElementById('tabbar');
   if(!el) return;
-  /* 명함 건수: 개인 + 공유(개인에 없는 것) */
-  const personalCards = (typeof DB !== 'undefined') ? DB.getCards() : [];
-  const sharedCards   = (typeof DB !== 'undefined') ? DB.getDriveShared().filter(sc=>!personalCards.find(c=>c.id===sc.id)) : [];
-  const cardCnt = personalCards.length + sharedCards.length;
-  /* 거래처 건수: 전체 카드에서 고유 회사명 */
-  const coCnt = new Set([...personalCards, ...sharedCards].map(c=>c.co).filter(Boolean)).size;
   el.innerHTML = `
     <div class="tbi${active==='home'?' on':''}"   onclick="_navTo('index.html')"><span class="ic">🏠</span><span class="lb">홈</span></div>
-    <div class="tbi${active==='cards'?' on':''}"  onclick="_navTo('cards.html')"><span class="ic">🪪</span><span class="lb">명함목록${cardCnt?` <span style="font-size:10px;opacity:.7">${cardCnt}</span>`:''}</span></div>
+    <div class="tbi${active==='cards'?' on':''}"  onclick="_navTo('cards.html')"><span class="ic">🪪</span><span class="lb">명함목록</span></div>
     <div class="tb-scan"><label style="display:flex;flex-direction:column;align-items:center;cursor:pointer;width:100%;"><input type="file" accept="image/*" capture="environment" style="position:fixed;top:-200px;left:-200px;width:1px;height:1px;opacity:0;" onchange="_tbScanHandler(event)"><div class="scan-fab">📷</div><span class="lb">스캔</span></label></div>
-    <div class="tbi${active==='cos'?' on':''}"     onclick="_navTo('cos.html')"><span class="ic">🏢</span><span class="lb">거래처목록${coCnt?` <span style="font-size:10px;opacity:.7">${coCnt}</span>`:''}</span></div>
+    <div class="tbi${active==='cos'?' on':''}"     onclick="_navTo('cos.html')"><span class="ic">🏢</span><span class="lb">거래처목록</span></div>
     <div class="tbi${active==='visits'?' on':''}" onclick="_navTo('visits.html')"><span class="ic">📋</span><span class="lb">방문기록</span></div>
   `;
 }
