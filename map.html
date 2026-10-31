@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>거래처 지도</title>
-<link rel="stylesheet" href="shared.css?v=200">
+<link rel="stylesheet" href="shared.css?v=201">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 html,body{height:100%;margin:0;}
@@ -59,8 +59,8 @@ html,body{height:100%;margin:0;}
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=389a3598c4789e6960b8095f97df7301&libraries=services"></script>
-<script src="data.js?v=200"></script>
-<script src="nav.js?v=200"></script>
+<script src="data.js?v=201"></script>
+<script src="nav.js?v=201"></script>
 <script>
 /* ── 타일 레이어 ── */
 const T = {
@@ -215,10 +215,9 @@ async function geocode(addr){
   /* 3) 카카오 — 정제 주소 */
   if(!v) try{ v = await _kakaoGeocode(cleaned); }catch(e){}
 
-  /* 3) Nominatim 폴백 */
+  /* 4) Nominatim 폴백 */
   if(!v) try{
-    const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(cleaned)}&format=json&limit=1&countrycodes=kr`,
-      {headers:{'Accept-Language':'ko','User-Agent':'CRM-Map/1.0'}});
+    const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(core)}&format=json&limit=1&countrycodes=kr&accept-language=ko`);
     const d=await r.json();
     if(d.length) v={lat:+d[0].lat,lng:+d[0].lon};
   }catch(e){}
