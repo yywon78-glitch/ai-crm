@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>거래처 지도</title>
-<link rel="stylesheet" href="shared.css?v=198">
+<link rel="stylesheet" href="shared.css?v=199">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 html,body{height:100%;margin:0;}
@@ -59,8 +59,8 @@ html,body{height:100%;margin:0;}
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=389a3598c4789e6960b8095f97df7301&libraries=services"></script>
-<script src="data.js?v=198"></script>
-<script src="nav.js?v=198"></script>
+<script src="data.js?v=199"></script>
+<script src="nav.js?v=199"></script>
 <script>
 /* ── 타일 레이어 ── */
 const T = {
@@ -169,17 +169,25 @@ function _cleanAddr(addr){
     .replace(/\s+/g,' ').trim();
 }
 
-/* ── Kakao JS SDK 지오코딩 (브라우저 공식 방식) ── */
-const _geocoder = new kakao.maps.services.Geocoder();
+/* ── Kakao JS SDK 지오코딩 ── */
+let _geocoder = null;
+function _getGeocoder(){
+  if(_geocoder) return _geocoder;
+  try{
+    if(typeof kakao!=='undefined' && kakao.maps && kakao.maps.services)
+      _geocoder = new kakao.maps.services.Geocoder();
+  }catch(e){}
+  return _geocoder;
+}
 
 function _kakaoGeocode(q){
   return new Promise(resolve=>{
-    _geocoder.addressSearch(q, (result,status)=>{
-      if(status===kakao.maps.services.Status.OK && result.length){
+    const gc = _getGeocoder();
+    if(!gc){ resolve(null); return; }
+    gc.addressSearch(q, (result,status)=>{
+      if(status===kakao.maps.services.Status.OK && result.length)
         resolve({lat:+result[0].y, lng:+result[0].x});
-      } else {
-        resolve(null);
-      }
+      else resolve(null);
     });
   });
 }
