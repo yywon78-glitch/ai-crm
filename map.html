@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>거래처 지도</title>
-<link rel="stylesheet" href="shared.css?v=192">
+<link rel="stylesheet" href="shared.css?v=193">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 html,body{height:100%;margin:0;}
@@ -58,8 +58,8 @@ html,body{height:100%;margin:0;}
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="data.js?v=192"></script>
-<script src="nav.js?v=192"></script>
+<script src="data.js?v=193"></script>
+<script src="nav.js?v=193"></script>
 <script>
 /* ── 타일 레이어 ── */
 const T = {
@@ -156,34 +156,62 @@ const GK='crm_geo4';
 function gCache(){try{return JSON.parse(localStorage.getItem(GK)||'{}')}catch(e){return{}}}
 function gSave(a,v){try{const c=gCache();c[a]=v;localStorage.setItem(GK,JSON.stringify(c))}catch(e){}}
 
-/* ── 카카오 지오코딩 (정확도 우선) → Nominatim 폴백 ── */
+/* 주소 정제 — 층/호/건물명 제거 */
+function _cleanAddr(addr){
+  return addr
+    .replace(/^\s*\(우\)?\s*\d{5}\s*/,'')
+    .replace(/^\s*\d{5}\s+/,'')
+    .replace(/\s+\d+층.*$/,'')
+    .replace(/\s+\d+-\d+호.*$/,'')
+    .replace(/\([^)]{2,}\)/g,'')
+    .replace(/,.*$/,'')
+    .replace(/\s+/g,' ').trim();
+}
+
+/* ── 카카오 지오코딩 (주소검색 → 키워드검색) → Nominatim 폴백 ── */
 async function geocode(addr){
   if(!addr) return null;
-  const key = addr.replace(/\s+/g,' ').trim();
-  if(!key) return null;
-  const c=gCache(); if(c[key]) return c[key];
+  const raw = addr.replace(/\s+/g,' ').trim();
+  if(!raw) return null;
+  const c=gCache(); if(c[raw]) return c[raw];
 
-  /* 1) 카카오 지오코딩 */
   const kakaoKey = DB.getKakaoKey();
+
+  /* 1) 카카오 주소 검색 */
   if(kakaoKey){
+    const cleaned = _cleanAddr(raw);
     try{
-      const r = await fetch(`https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(key)}&size=1`,
+      const r = await fetch(`https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(cleaned)}&size=1`,
+        {headers:{Authorization:'KakaoAK '+kakaoKey}});
+      const d = await r.json();
+      const doc = d.documents?.[0];
+      if(doc && (doc.x || doc.address?.x)){
+        const x = doc.x || doc.address?.x, y = doc.y || doc.address?.y;
+        const v = {lat:+y, lng:+x};
+        gSave(raw, v); return v;
+      }
+    }catch(e){}
+
+    /* 2) 카카오 키워드 검색 (주소 검색 실패 시) */
+    try{
+      const r = await fetch(`https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(cleaned)}&size=1`,
         {headers:{Authorization:'KakaoAK '+kakaoKey}});
       const d = await r.json();
       const doc = d.documents?.[0];
       if(doc){
         const v = {lat:+doc.y, lng:+doc.x};
-        gSave(key, v); return v;
+        gSave(raw, v); return v;
       }
     }catch(e){}
   }
 
-  /* 2) Nominatim 폴백 */
+  /* 3) Nominatim 폴백 */
   try{
-    const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(key)}&format=json&limit=1&countrycodes=kr`,
+    const cleaned = _cleanAddr(raw);
+    const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(cleaned)}&format=json&limit=1&countrycodes=kr`,
       {headers:{'Accept-Language':'ko','User-Agent':'CRM-Map/1.0'}});
     const d=await r.json();
-    if(d.length){ const v={lat:+d[0].lat,lng:+d[0].lon}; gSave(key,v); return v; }
+    if(d.length){ const v={lat:+d[0].lat,lng:+d[0].lon}; gSave(raw,v); return v; }
   }catch(e){}
   return null;
 }
@@ -279,25 +307,25 @@ renderTabBar('map');
   const focusAddr = qp('addr');
   const focusNm   = qp('nm');
 
-  /* 특정 거래처로 진입 — 해당 위치 중심으로 주변 거래처 표시 */
+  /* 특정 거래처로 진입 — 마커 즉시 표시 후 주변 거래처 백그라운드 로드 */
   if(focusAddr){
     msg('위치 검색 중...',0);
     const pos = await geocode(focusAddr);
     if(pos){
-      map.setView([pos.lat,pos.lng],14);
-      const m = L.marker([pos.lat,pos.lng],{
+      map.setView([pos.lat,pos.lng],15);
+      const focusMk = L.marker([pos.lat,pos.lng],{
         icon: L.divIcon({
-          html:`<div style="width:42px;height:42px;border-radius:50%;background:#dc2626;border:3px solid #fff;box-shadow:0 2px 12px rgba(220,38,38,.5);display:flex;align-items:center;justify-content:center;font-size:18px;">🏢</div>`,
-          className:'',iconSize:[42,42],iconAnchor:[21,42],popupAnchor:[0,-44]
+          html:`<div style="width:44px;height:44px;border-radius:50%;background:#dc2626;border:3px solid #fff;box-shadow:0 2px 12px rgba(220,38,38,.5);display:flex;align-items:center;justify-content:center;font-size:20px;">🏢</div>`,
+          className:'',iconSize:[44,44],iconAnchor:[22,44],popupAnchor:[0,-46]
         })
       }).addTo(map);
-      m.bindTooltip(focusNm||focusAddr,{permanent:true,direction:'top',offset:[0,-44],opacity:1});
-      m.openPopup();
+      focusMk.bindTooltip(`<b>${focusNm||''}</b>`,{permanent:true,direction:'top',offset:[0,-46],opacity:1});
       msgHide();
-      loadCos(pos.lat, pos.lng); /* 해당 거래처 위치 기준 주변 표시 */
+      /* 주변 거래처는 백그라운드로 — UI 블로킹 없음 */
+      setTimeout(()=>loadCos(pos.lat, pos.lng), 300);
     } else {
       msgHide();
-      loadCos();
+      msg(`주소를 찾을 수 없습니다: ${focusNm||focusAddr}`, 4000);
     }
     return;
   }
