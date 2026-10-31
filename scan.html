@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>명함 스캔</title>
-<link rel="stylesheet" href="shared.css?v=184">
+<link rel="stylesheet" href="shared.css?v=190">
 <style>
 /* ── 회전/인식 화면 ── */
 #rotate-view{display:none;position:fixed;inset:0;z-index:20;flex-direction:column;background:#000;}
@@ -117,8 +117,8 @@
   </div>
 </div>
 
-<script src="data.js?v=184"></script>
-<script src="nav.js?v=184"></script>
+<script src="data.js?v=190"></script>
+<script src="nav.js?v=190"></script>
 <script>
 let _imgData   = null;
 let _captured  = null;
@@ -369,7 +369,8 @@ function saveMulti(){
   selected.forEach(info=>{
     const nm=(info.nm||'').trim(); if(!nm) return;
     const co=(info.co||'').trim();
-    const dup=saved.find(c=>c.nm===nm&&c.co===co);
+    const mob=(info.mob||'').trim();
+    const dup=saved.find(c=>c.nm===nm&&mob&&c.mob===mob);
     if(dup){
       Object.assign(dup,{tl:info.tl||'',mob:info.mob||'',ph:info.ph||'',em:info.em||'',addr:info.addr||''});
       if(_captured) newIds.push(dup.id);
@@ -450,10 +451,11 @@ function saveCard(){
   const nm=document.getElementById('f-nm').value.trim();
   if(!nm){ toast('이름을 입력해주세요'); return; }
   const co=document.getElementById('f-co').value.trim();
+  const mob=document.getElementById('f-mob').value.trim();
   const cards=DB.getCards();
-  const dup=cards.find(c=>c.nm===nm&&c.co===co);
+  const dup=cards.find(c=>c.nm===nm&&mob&&c.mob===mob);
   if(dup){
-    if(!confirm(`이미 등록된 명함입니다.\n\n${nm} / ${co}\n\n업데이트할까요?`)) return;
+    if(!confirm(`이미 등록된 명함입니다.\n\n${nm} / ${mob}\n\n업데이트할까요?`)) return;
     dup.tl=document.getElementById('f-tl').value.trim();
     dup.mob=document.getElementById('f-mob').value.trim();
     dup.ph=document.getElementById('f-ph').value.trim();
