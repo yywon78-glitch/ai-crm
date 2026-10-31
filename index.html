@@ -1,30 +1,30 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>紐낇븿 CRM</title>
+<title>명함 CRM</title>
 <link rel="stylesheet" href="shared.css?v=184">
 <style>
-/* ?? ?ㅽ겕 ???덉씠?꾩썐 ?? */
+/* ── 다크 홈 레이아웃 ── */
 .hw-page{position:fixed;inset:0;display:flex;flex-direction:column;background:#0a0f1e;}
 
-/* ?ㅻ뜑 */
+/* 헤더 */
 .hw-hdr{height:var(--hdr-h);flex-shrink:0;background:rgba(10,15,30,.95);border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;padding:0 16px;gap:8px;backdrop-filter:blur(12px);}
 .hw-hdr-t{font-size:17px;font-weight:800;flex:1;color:#fff;letter-spacing:-.3px;}
 .hw-hdr-ic{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:17px;cursor:pointer;}
 
-/* ?ㅽ겕濡??곸뿭 */
+/* 스크롤 영역 */
 .hw-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 
-/* ?덉뼱濡??뱀뀡 */
+/* 히어로 섹션 */
 .hw-hero{padding:18px 16px 14px;position:relative;}
 .hw-hero-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
 .hw-logo{font-size:10px;font-weight:700;color:rgba(255,255,255,.4);letter-spacing:.8px;}
 .hw-ver{font-size:10px;font-weight:700;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);padding:3px 9px;border-radius:20px;color:rgba(255,255,255,.5);}
 .hw-date{font-size:13px;color:rgba(255,255,255,.55);margin-bottom:14px;}
 
-/* ?듦퀎 移대뱶 */
+/* 통계 카드 */
 .hw-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
 .hw-stats-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:.5px;padding:6px 0 2px;}
 .hw-stat{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 10px;text-align:center;position:relative;overflow:hidden;}
@@ -35,26 +35,26 @@
 .hw-stat-n{font-size:24px;font-weight:800;color:#fff;line-height:1;}
 .hw-stat-l{font-size:10px;font-weight:600;color:rgba(255,255,255,.4);margin-top:4px;letter-spacing:.3px;}
 
-/* ?ㅻ뒛 諛⑸Ц ?덉젙 */
+/* 오늘 방문 예정 */
 .hw-today-wrap{margin:0 16px 4px;}
 .hw-today-item{background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.4);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:6px;}
 .hw-today-ic{font-size:18px;}
 .hw-today-nm{font-size:14px;font-weight:700;color:#fca5a5;}
 .hw-today-sub{font-size:11px;color:rgba(252,165,165,.7);margin-top:1px;}
 
-/* 援ъ“???곸뿭 */
+/* 구조도 영역 */
 .hw-map{padding:0 16px 16px;}
 
-/* 援щ텇 ?덉씠釉?*/
+/* 구분 레이블 */
 .hw-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:.6px;margin:14px 0 8px;display:flex;align-items:center;gap:8px;}
 .hw-lbl::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08);}
 
-/* ?몃뱶 怨듯넻 */
+/* 노드 공통 */
 .hw-node{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:18px;cursor:pointer;transition:all .15s;touch-action:manipulation;position:relative;overflow:hidden;}
 .hw-node:active{transform:scale(.97);background:rgba(255,255,255,.08);}
 .hw-node::after{content:'';position:absolute;inset:0;border-radius:18px;opacity:0;background:rgba(255,255,255,.06);transition:opacity .15s;}
 
-/* ?ㅼ틪 ??媛濡?2??*/
+/* 스캔 — 가로 2열 */
 .hw-scan-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
 .hw-scan-node{background:linear-gradient(135deg,rgba(37,99,235,.35),rgba(59,130,246,.2));border:1px solid rgba(59,130,246,.45);border-radius:18px;padding:18px 14px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;touch-action:manipulation;transition:all .15s;position:relative;overflow:hidden;}
 .hw-scan-node:active{transform:scale(.96);}
@@ -63,11 +63,11 @@
 .hw-scan-t{font-size:13px;font-weight:700;color:#93c5fd;}
 .hw-scan-s{font-size:10px;color:rgba(147,197,253,.6);text-align:center;line-height:1.4;}
 
-/* ?먮쫫 ?붿궡??*/
+/* 흐름 화살표 */
 .hw-arrow{text-align:center;font-size:11px;font-weight:700;color:rgba(255,255,255,.2);letter-spacing:.5px;margin:4px 0;display:flex;align-items:center;justify-content:center;gap:6px;}
 .hw-arrow::before,.hw-arrow::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08);}
 
-/* 2??洹몃━???몃뱶 */
+/* 2열 그리드 노드 */
 .hw-grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
 .hw-tile{padding:16px 14px 14px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;}
 .hw-tile-ic{font-size:28px;line-height:1;}
@@ -75,7 +75,7 @@
 .hw-tile-s{font-size:10px;color:rgba(255,255,255,.4);line-height:1.4;}
 .hw-tile-badge{position:absolute;top:12px;right:12px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;}
 
-/* ?됱긽 蹂??*/
+/* 색상 변형 */
 .hw-tile-grn{background:linear-gradient(135deg,rgba(16,185,129,.25),rgba(52,211,153,.12));border-color:rgba(16,185,129,.35)!important;}
 .hw-tile-grn .hw-tile-t{color:#6ee7b7;}
 .hw-tile-grn .hw-tile-badge{background:rgba(16,185,129,.2);color:#34d399;}
@@ -88,14 +88,14 @@
 .hw-tile-blue .hw-tile-t{color:#93c5fd;}
 .hw-tile-blue .hw-tile-badge{background:rgba(37,99,235,.2);color:#60a5fa;}
 
-/* ?ㅼ젙 ???묒? ??*/
+/* 설정 — 작은 행 */
 .hw-settings{display:flex;align-items:center;gap:12px;padding:12px 16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;cursor:pointer;touch-action:manipulation;}
 .hw-settings:active{background:rgba(255,255,255,.07);}
 .hw-settings-ic{font-size:20px;}
 .hw-settings-t{font-size:13px;font-weight:600;color:rgba(255,255,255,.5);}
 .hw-settings-arr{margin-left:auto;color:rgba(255,255,255,.2);font-size:15px;}
 
-/* ??컮 ?ㅽ겕 */
+/* 탭바 다크 */
 .hw-tabbar{height:var(--tab-h);flex-shrink:0;background:rgba(10,15,30,.98);border-top:1px solid rgba(255,255,255,.08);}
 .hw-tabbar .tbi{color:rgba(255,255,255,.3);}
 .hw-tabbar .tbi.on{color:#60a5fa;}
@@ -105,98 +105,98 @@
 <body>
 
 <div class="hw-page">
-  <!-- ?ㅻ뜑 -->
+  <!-- 헤더 -->
   <div class="hw-hdr">
-    <span class="hw-hdr-t">紐낇븿 CRM</span>
+    <span class="hw-hdr-t">명함 CRM</span>
     <span class="hw-ver" style="font-size:10px;font-weight:700;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);padding:3px 9px;border-radius:20px;color:rgba(255,255,255,.5);">v19.4</span>
-    <div id="drive-dot" style="display:none;width:8px;height:8px;border-radius:50%;background:#4ade80;margin-right:4px;cursor:pointer;" onclick="_driveDotTap()" title="Google Drive ?곌껐??></div>
-    <div class="hw-hdr-ic" onclick="location.href='settings.html'">?숋툘</div>
+    <div id="drive-dot" style="display:none;width:8px;height:8px;border-radius:50%;background:#4ade80;margin-right:4px;cursor:pointer;" onclick="_driveDotTap()" title="Google Drive 연결됨"></div>
+    <div class="hw-hdr-ic" onclick="location.href='settings.html'">⚙️</div>
   </div>
 
   <div class="hw-scroll">
 
-    <!-- ?덉뼱濡? ?좎쭨 -->
+    <!-- 히어로: 날짜 -->
     <div class="hw-hero" style="padding:8px 16px 4px;">
       <div class="hw-date" id="today-date" style="margin-bottom:0;"></div>
     </div>
 
-    <!-- ?ㅻ뒛 諛⑸Ц ?덉젙 -->
+    <!-- 오늘 방문 예정 -->
     <div id="today-visits-wrap" style="display:none;">
       <div class="hw-today-wrap" id="today-visits"></div>
     </div>
 
-    <!-- 援ъ“??留?-->
+    <!-- 구조도 맵 -->
     <div class="hw-map">
 
-      <!-- ??紐낇븿 ?낅젰 -->
-      <div class="hw-lbl">紐낇븿 ?낅젰</div>
+      <!-- ① 명함 입력 -->
+      <div class="hw-lbl">명함 입력</div>
       <div class="hw-scan-row">
         <label class="hw-scan-node" for="inp-cam">
-          <div class="hw-scan-ic">?벜</div>
-          <div class="hw-scan-t">移대찓???ㅼ틪</div>
-          <div class="hw-scan-s">紐낇븿 珥ъ쁺 ??br>AI ?먮룞 ?몄떇</div>
+          <div class="hw-scan-ic">📷</div>
+          <div class="hw-scan-t">카메라 스캔</div>
+          <div class="hw-scan-s">명함 촬영 후<br>AI 자동 인식</div>
         </label>
         <label class="hw-scan-node" for="inp-gal">
-          <div class="hw-scan-ic">?뼹截?/div>
-          <div class="hw-scan-t">媛ㅻ윭由??ㅼ틪</div>
-          <div class="hw-scan-s">?ъ쭊泥⑹뿉??br>?щ윭 ???좏깮</div>
+          <div class="hw-scan-ic">🖼️</div>
+          <div class="hw-scan-t">갤러리 스캔</div>
+          <div class="hw-scan-s">사진첩에서<br>여러 장 선택</div>
         </label>
       </div>
 
-      <!-- ???붿궡??-->
-      <div class="hw-arrow">???쨌 愿由?/div>
+      <!-- ↓ 화살표 -->
+      <div class="hw-arrow">저장 · 관리</div>
 
-      <!-- ??紐낇븿 & 嫄곕옒泥?-->
-      <div class="hw-lbl">愿由?/div>
+      <!-- ② 명함 & 거래처 -->
+      <div class="hw-lbl">관리</div>
       <div class="hw-grid2">
         <div class="hw-node hw-tile hw-tile-blue" onclick="location.href='cards.html'">
-          <div class="hw-tile-ic">?お</div>
-          <div class="hw-tile-t">紐낇븿 紐⑸줉</div>
-          <div class="hw-tile-s">?대쫫?쑣룰굅?섏쿂??br>利먭꺼李얘린쨌理쒓렐??/div>
+          <div class="hw-tile-ic">🪪</div>
+          <div class="hw-tile-t">명함 목록</div>
+          <div class="hw-tile-s">이름순·거래처순<br>즐겨찾기·최근순</div>
         </div>
         <div class="hw-node hw-tile hw-tile-grn" onclick="location.href='cos.html'">
-          <div class="hw-tile-ic">?룫</div>
-          <div class="hw-tile-t">嫄곕옒泥?/div>
-          <div class="hw-tile-s">?뚯냽 紐낇븿<br>諛⑸Ц ?대젰 ?듯빀</div>
+          <div class="hw-tile-ic">🏢</div>
+          <div class="hw-tile-t">거래처</div>
+          <div class="hw-tile-s">소속 명함<br>방문 이력 통합</div>
         </div>
       </div>
 
-      <!-- ???붿궡??-->
-      <div class="hw-arrow">?쒖슜</div>
+      <!-- ↓ 화살표 -->
+      <div class="hw-arrow">활용</div>
 
-      <!-- ??諛⑸Ц湲곕줉 & 吏??-->
-      <div class="hw-lbl">?곸뾽 ?쒕룞</div>
+      <!-- ③ 방문기록 & 지도 -->
+      <div class="hw-lbl">영업 활동</div>
       <div class="hw-grid2">
         <div class="hw-node hw-tile hw-tile-pur" onclick="location.href='visits.html'">
-          <div class="hw-tile-ic">?뱥</div>
-          <div class="hw-tile-t">諛⑸Ц湲곕줉</div>
-          <div class="hw-tile-s">?щ젰쨌紐⑸줉쨌<br>嫄곕옒泥섎퀎</div>
+          <div class="hw-tile-ic">📋</div>
+          <div class="hw-tile-t">방문기록</div>
+          <div class="hw-tile-s">달력·목록·<br>거래처별</div>
         </div>
         <div class="hw-node hw-tile hw-tile-pur" onclick="location.href='map.html'">
-          <div class="hw-tile-ic">?뿺截?/div>
-          <div class="hw-tile-t">嫄곕옒泥?吏??/div>
-          <div class="hw-tile-s">移댁뭅?ㅻ㏊<br>二쇰? 嫄곕옒泥?/div>
+          <div class="hw-tile-ic">🗺️</div>
+          <div class="hw-tile-t">거래처 지도</div>
+          <div class="hw-tile-s">카카오맵<br>주변 거래처</div>
         </div>
       </div>
 
-      <!-- ?ㅼ젙 / 愿由ъ옄 -->
+      <!-- 설정 / 관리자 -->
       <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;">
         <div class="hw-settings" onclick="location.href='settings.html'">
-          <span class="hw-settings-ic">?숋툘</span>
-          <span class="hw-settings-t">?ㅼ젙 ??API ??쨌 ?곗씠??諛깆뾽</span>
-          <span class="hw-settings-arr">??/span>
+          <span class="hw-settings-ic">⚙️</span>
+          <span class="hw-settings-t">설정 — API 키 · 데이터 백업</span>
+          <span class="hw-settings-arr">›</span>
         </div>
         <div class="hw-settings" onclick="location.href='admin.html'">
-          <span class="hw-settings-ic">?뱤</span>
-          <span class="hw-settings-t">愿由ъ옄 吏묎퀎 ??怨꾩젙蹂?쨌 嫄곕옒泥섎퀎 ?꾪솴</span>
-          <span class="hw-settings-arr">??/span>
+          <span class="hw-settings-ic">📊</span>
+          <span class="hw-settings-t">관리자 집계 — 계정별 · 거래처별 현황</span>
+          <span class="hw-settings-arr">›</span>
         </div>
       </div>
 
     </div><!-- /hw-map -->
   </div><!-- /hw-scroll -->
 
-  <!-- ??컮 -->
+  <!-- 탭바 -->
   <nav class="tabbar hw-tabbar" id="tabbar"></nav>
 </div>
 
@@ -240,7 +240,7 @@
       sessionStorage.setItem('scan_idx',  '1');
       sessionStorage.setItem('scan_total', String(urls.length));
       sessionStorage.removeItem('scan_queue');
-      /* ?섎㉧吏 ?대?吏??IndexedDB???????sessionStorage 5MB ?쒕룄 ?고쉶 */
+      /* 나머지 이미지는 IndexedDB에 저장 — sessionStorage 5MB 한도 우회 */
       if(urls.length > 1){
         await Promise.all(urls.slice(1).map((url,i)=>ImgDB.set('_sq_'+i, url)));
         sessionStorage.setItem('scan_queue_idb', String(urls.length-1));
@@ -255,9 +255,9 @@
 function load(){
   const cards=DB.getCards(),cos=DB.getCos(),visits=DB.getVisits();
   const now=new Date();
-  const days=['??,'??,'??,'??,'紐?,'湲?,'??];
+  const days=['일','월','화','수','목','금','토'];
   document.getElementById('today-date').textContent=
-    `${now.getFullYear()}??${now.getMonth()+1}??${now.getDate()}??(${days[now.getDay()]})`;
+    `${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 (${days[now.getDay()]})`;
 }
 
 function loadTodayVisits(){
@@ -269,8 +269,8 @@ function loadTodayVisits(){
   wrap.style.display='block';
   el.innerHTML=visits.map(v=>`
     <div class="hw-today-item" onclick="location.href='visits.html'">
-      <span class="hw-today-ic">?뱟</span>
-      <div><div class="hw-today-nm">${v.co}</div><div class="hw-today-sub">${v.tp} 쨌 ?ㅻ뒛 諛⑸Ц ?덉젙</div></div>
+      <span class="hw-today-ic">📅</span>
+      <div><div class="hw-today-nm">${v.co}</div><div class="hw-today-sub">${v.tp} · 오늘 방문 예정</div></div>
     </div>`).join('');
 }
 
@@ -278,21 +278,21 @@ renderTabBar('home');
 load();
 loadTodayVisits();
 
-/* Drive ?곹깭 ?쒖떆 ??tryRestore ?놁쓬 (踰덉찉???쒓굅) */
+/* Drive 상태 표시 — tryRestore 없음 (번쩍임 제거) */
 (function(){
   const dot = document.getElementById('drive-dot');
   if(GoogleAuth.isLoggedIn()){
-    dot.style.background = '#4ade80'; dot.style.display='block'; dot.title='Drive ?곌껐??;
+    dot.style.background = '#4ade80'; dot.style.display='block'; dot.title='Drive 연결됨';
     DriveDB.syncDown().then(ok=>{ if(ok){ load(); loadTodayVisits(); } });
     _ensureSettingsUploaded();
   } else if(localStorage.getItem('crm_gemail')){
-    /* ?좏겙 留뚮즺 ??議곗슜???ъ뿰寃??쒕룄 */
+    /* 토큰 만료 → 조용히 재연결 시도 */
     GoogleAuth.silentLogin().then(()=>{
       if(GoogleAuth.isLoggedIn()){
-        dot.style.background = '#4ade80'; dot.style.display='block'; dot.title='Drive ?곌껐??;
+        dot.style.background = '#4ade80'; dot.style.display='block'; dot.title='Drive 연결됨';
         DriveDB.syncDown().then(ok=>{ if(ok){ load(); loadTodayVisits(); } });
       } else {
-        dot.style.background = '#fb923c'; dot.style.display='block'; dot.title='Drive ?좏겙 留뚮즺 ????븯???ъ뿰寃?;
+        dot.style.background = '#fb923c'; dot.style.display='block'; dot.title='Drive 토큰 만료 — 탭하여 재연결';
       }
     });
   }
@@ -301,21 +301,20 @@ loadTodayVisits();
 function _driveDotTap(){
   const dot = document.getElementById('drive-dot');
   if(GoogleAuth.isLoggedIn()){
-    DriveDB.syncDown().then(ok=>{ if(ok){ load(); loadTodayVisits(); toast('Drive ?숆린???꾨즺 ??); } });
+    DriveDB.syncDown().then(ok=>{ if(ok){ load(); loadTodayVisits(); toast('Drive 동기화 완료 ✓'); } });
   } else {
     GoogleAuth.login(()=>{
-      dot.style.background = '#4ade80'; dot.style.display='block'; dot.title='Drive ?곌껐??;
+      dot.style.background = '#4ade80'; dot.style.display='block'; dot.title='Drive 연결됨';
       DriveDB.syncDown().then(ok=>{ if(ok){ load(); loadTodayVisits(); } });
       _ensureSettingsUploaded();
-      toast('Drive ?곌껐?먯뒿?덈떎 ??);
+      toast('Drive 연결됐습니다 ✓');
     });
   }
 }
 
-// ?ㅻ줈媛湲걔룻꺆 ?꾪솚?쇰줈 ?뚯븘???뚮룄 ?듦퀎 媛깆떊
+// 뒤로가기·탭 전환으로 돌아올 때도 통계 갱신
 window.addEventListener('pageshow', e => { if(e.persisted){ load(); loadTodayVisits(); } });
 document.addEventListener('visibilitychange', () => { if(!document.hidden){ load(); loadTodayVisits(); } });
 </script>
 </body>
 </html>
-
