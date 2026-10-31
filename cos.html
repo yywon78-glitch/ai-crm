@@ -16,12 +16,16 @@
   <div class="srch-wrap">
     <input class="srch" id="srch" placeholder="🔍  거래처명 검색" oninput="render()">
   </div>
-  <div style="display:flex;align-items:center;background:var(--card);border-bottom:1px solid var(--bdr);padding:0 8px;gap:6px;">
-    <div style="display:flex;gap:4px;flex-shrink:0;">
-      <button id="btn-owner-all"  onclick="setOwner('all',this)"  style="padding:5px 10px;border-radius:8px;border:1px solid var(--blue);background:var(--blue);color:#fff;font-size:11px;font-weight:700;cursor:pointer;">전체</button>
-      <button id="btn-owner-mine" onclick="setOwner('mine',this)" style="padding:5px 10px;border-radius:8px;border:1px solid var(--bdr);background:transparent;color:var(--t3);font-size:11px;font-weight:700;cursor:pointer;">내것만</button>
+  <div style="display:flex;align-items:center;background:var(--card);border-bottom:1px solid var(--bdr);padding:0 12px;gap:16px;">
+    <div onclick="setOwner('all')" style="display:flex;align-items:center;gap:5px;cursor:pointer;padding:8px 0;flex-shrink:0;">
+      <span id="radio-all" style="font-size:15px;color:var(--blue);">●</span>
+      <span id="radio-all-t" style="font-size:12px;font-weight:700;color:var(--t1);">전체</span>
     </div>
-    <div class="pills" id="stat-pills" style="flex:1;border-bottom:none;min-width:0;"></div>
+    <div onclick="setOwner('mine')" style="display:flex;align-items:center;gap:5px;cursor:pointer;padding:8px 0;flex-shrink:0;">
+      <span id="radio-mine" style="font-size:15px;color:var(--t3);">○</span>
+      <span id="radio-mine-t" style="font-size:12px;font-weight:700;color:var(--t3);">내것만</span>
+    </div>
+    <div id="stat-pills" style="flex:1;font-size:12px;color:var(--t3);"></div>
   </div>
   <div class="body"><div class="bp" id="list"></div></div>
   <nav class="tabbar" id="tabbar"></nav>
@@ -70,12 +74,14 @@ let ownerFilter = 'all';
 const stLbl = {active:'활성',potential:'잠재',dormant:'휴면'};
 const stCls  = {active:'b-gn',potential:'b-am',dormant:'b-rd'};
 
-function setOwner(f, el) {
+function setOwner(f) {
   ownerFilter = f;
-  document.getElementById('btn-owner-all').style.background  = f==='all'  ? 'var(--blue)' : 'transparent';
-  document.getElementById('btn-owner-all').style.color       = f==='all'  ? '#fff' : 'var(--t3)';
-  document.getElementById('btn-owner-mine').style.background = f==='mine' ? 'var(--blue)' : 'transparent';
-  document.getElementById('btn-owner-mine').style.color      = f==='mine' ? '#fff' : 'var(--t3)';
+  document.getElementById('radio-all').textContent  = f==='all'  ? '●' : '○';
+  document.getElementById('radio-all').style.color  = f==='all'  ? 'var(--blue)' : 'var(--t3)';
+  document.getElementById('radio-all-t').style.color= f==='all'  ? 'var(--t1)' : 'var(--t3)';
+  document.getElementById('radio-mine').textContent = f==='mine' ? '●' : '○';
+  document.getElementById('radio-mine').style.color = f==='mine' ? 'var(--blue)' : 'var(--t3)';
+  document.getElementById('radio-mine-t').style.color=f==='mine' ? 'var(--t1)' : 'var(--t3)';
   render();
 }
 
@@ -119,7 +125,7 @@ function render() {
 
   /* 건수 pill */
   document.getElementById('stat-pills').innerHTML =
-    `<div class="pill">전체 ${allList.length}개</div><div class="pill">내것 ${mineList.length}개</div>`;
+    `전체 <b>${allList.length}</b>&nbsp;&nbsp;내것 <b>${mineList.length}</b>`;
 
   let list = ownerFilter==='mine' ? mineList : allList;
   if(q) list=list.filter(c=>c.nm.includes(q)||(c.addr||'').includes(q));
