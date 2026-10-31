@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>명함</title>
-<link rel="stylesheet" href="shared.css?v=189">
+<link rel="stylesheet" href="shared.css?v=192">
 <style>
 /* 체크박스 (미공유 카드) */
 .share-chk {
@@ -94,8 +94,8 @@
   </div>
 </div>
 
-<script src="data.js?v=189"></script>
-<script src="nav.js?v=189"></script>
+<script src="data.js?v=192"></script>
+<script src="nav.js?v=192"></script>
 <script>
 let mode = 'name';
 let ownerFilter = 'all'; /* 전체(all) / 내명함(mine) */
@@ -267,7 +267,7 @@ function openCardOverlay(id) {
     card.mob && {ic:'📱',lbl:'휴대전화',val:card.mob,action:'전화',href:`tel:${card.mob}`},
     card.ph  && {ic:'📞',lbl:'유선전화',val:card.ph, action:'전화',href:`tel:${card.ph}`},
     card.em  && {ic:'✉️',lbl:'이메일',  val:card.em, action:'메일',href:`mailto:${card.em}`},
-    card.addr&& {ic:'📍',lbl:'주소',    val:card.addr,action:'지도',href:`https://map.kakao.com/?q=${encodeURIComponent(card.addr)}`},
+    card.addr&& {ic:'📍',lbl:'주소',    val:card.addr,action:'지도',href:`map.html?addr=${encodeURIComponent(card.addr)}&nm=${encodeURIComponent(card.co||card.nm)}`},
   ].filter(Boolean);
 
   const visits = DB.getVisits().filter(v=>{

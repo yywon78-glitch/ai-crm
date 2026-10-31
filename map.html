@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>거래처 지도</title>
-<link rel="stylesheet" href="shared.css?v=191">
+<link rel="stylesheet" href="shared.css?v=192">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 html,body{height:100%;margin:0;}
@@ -58,8 +58,8 @@ html,body{height:100%;margin:0;}
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="data.js?v=191"></script>
-<script src="nav.js?v=191"></script>
+<script src="data.js?v=192"></script>
+<script src="nav.js?v=192"></script>
 <script>
 /* ── 타일 레이어 ── */
 const T = {
@@ -279,12 +279,12 @@ renderTabBar('map');
   const focusAddr = qp('addr');
   const focusNm   = qp('nm');
 
-  /* 특정 거래처로 진입 */
+  /* 특정 거래처로 진입 — 해당 위치 중심으로 주변 거래처 표시 */
   if(focusAddr){
     msg('위치 검색 중...',0);
     const pos = await geocode(focusAddr);
     if(pos){
-      map.setView([pos.lat,pos.lng],16);
+      map.setView([pos.lat,pos.lng],14);
       const m = L.marker([pos.lat,pos.lng],{
         icon: L.divIcon({
           html:`<div style="width:42px;height:42px;border-radius:50%;background:#dc2626;border:3px solid #fff;box-shadow:0 2px 12px rgba(220,38,38,.5);display:flex;align-items:center;justify-content:center;font-size:18px;">🏢</div>`,
@@ -293,9 +293,12 @@ renderTabBar('map');
       }).addTo(map);
       m.bindTooltip(focusNm||focusAddr,{permanent:true,direction:'top',offset:[0,-44],opacity:1});
       m.openPopup();
+      msgHide();
+      loadCos(pos.lat, pos.lng); /* 해당 거래처 위치 기준 주변 표시 */
+    } else {
+      msgHide();
+      loadCos();
     }
-    msgHide();
-    loadCos();
     return;
   }
 
