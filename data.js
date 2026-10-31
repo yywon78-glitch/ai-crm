@@ -69,7 +69,7 @@ const DB = {
   setKey:       k => { localStorage.setItem('crm_key', k); _scheduleSyncUp(); },
   getWorkspace: ()=> localStorage.getItem('crm_workspace')||'',
   setWorkspace: k => { localStorage.setItem('crm_workspace', k); _scheduleSyncUp(); },
-  getKakaoKey:  ()=> localStorage.getItem('crm_kakao_key')||'',
+  getKakaoKey:  ()=> localStorage.getItem('crm_kakao_key')||'715709b66045eb4545e1efffcf11c09e',
   setKakaoKey:  k => { localStorage.setItem('crm_kakao_key', k); _scheduleSyncUp(); },
 
   getCards:  ()=> JSON.parse(localStorage.getItem('crm_cards')||'null') || [..._CARDS],
