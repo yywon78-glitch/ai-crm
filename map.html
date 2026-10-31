@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>거래처 지도</title>
-<link rel="stylesheet" href="shared.css?v=199">
+<link rel="stylesheet" href="shared.css?v=200">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 html,body{height:100%;margin:0;}
@@ -59,8 +59,8 @@ html,body{height:100%;margin:0;}
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=389a3598c4789e6960b8095f97df7301&libraries=services"></script>
-<script src="data.js?v=199"></script>
-<script src="nav.js?v=199"></script>
+<script src="data.js?v=200"></script>
+<script src="nav.js?v=200"></script>
 <script>
 /* ── 타일 레이어 ── */
 const T = {
@@ -157,7 +157,7 @@ const GK='crm_geo4';
 function gCache(){try{return JSON.parse(localStorage.getItem(GK)||'{}')}catch(e){return{}}}
 function gSave(a,v){try{const c=gCache();c[a]=v;localStorage.setItem(GK,JSON.stringify(c))}catch(e){}}
 
-/* 주소 정제 — 층/호/건물명 제거 */
+/* 주소 정제 — 우편번호/층/호 제거 */
 function _cleanAddr(addr){
   return addr
     .replace(/^\s*\(우\)?\s*\d{5}\s*/,'')
@@ -167,6 +167,12 @@ function _cleanAddr(addr){
     .replace(/\([^)]{2,}\)/g,'')
     .replace(/,.*$/,'')
     .replace(/\s+/g,' ').trim();
+}
+
+/* 도로명주소 핵심부 추출 — "시민대로 230" 뒤 건물명/호실 제거 */
+function _coreAddr(addr){
+  const m = addr.match(/^(.+?(?:로|길|대로|가)\s+\d+(?:-\d+)?)/);
+  return m ? m[1].trim() : _cleanAddr(addr);
 }
 
 /* ── Kakao JS SDK 지오코딩 ── */
@@ -199,11 +205,14 @@ async function geocode(addr){
   const c=gCache(); if(c[raw]) return c[raw];
 
   const cleaned = _cleanAddr(raw);
+  const core    = _coreAddr(raw);
   let v = null;
 
-  /* 1) 카카오 JS SDK — 원본 주소 */
+  /* 1) 카카오 — 원본 */
   try{ v = await _kakaoGeocode(raw); }catch(e){}
-  /* 2) 카카오 JS SDK — 정제 주소 */
+  /* 2) 카카오 — 핵심 도로명주소 (건물명/호실 제거) */
+  if(!v && core!==raw) try{ v = await _kakaoGeocode(core); }catch(e){}
+  /* 3) 카카오 — 정제 주소 */
   if(!v) try{ v = await _kakaoGeocode(cleaned); }catch(e){}
 
   /* 3) Nominatim 폴백 */
