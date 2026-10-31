@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>거래처 지도</title>
-<link rel="stylesheet" href="shared.css?v=196">
+<link rel="stylesheet" href="shared.css?v=197">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 html,body{height:100%;margin:0;}
@@ -58,8 +58,8 @@ html,body{height:100%;margin:0;}
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="data.js?v=196"></script>
-<script src="nav.js?v=196"></script>
+<script src="data.js?v=197"></script>
+<script src="nav.js?v=197"></script>
 <script>
 /* ── 타일 레이어 ── */
 const T = {
@@ -186,12 +186,11 @@ async function _kakaoKw(q, key){
   return doc ? {lat:+doc.y, lng:+doc.x} : null;
 }
 
-async function geocode(addr, hint=''){
+async function geocode(addr){
   if(!addr) return null;
   const raw = addr.replace(/\s+/g,' ').trim();
   if(!raw) return null;
-  const cacheKey = hint ? `${hint}|${raw}` : raw;
-  const c=gCache(); if(c[cacheKey]) return c[cacheKey];
+  const c=gCache(); if(c[raw]) return c[raw];
 
   const kakaoKey = DB.getKakaoKey();
   const cleaned  = _cleanAddr(raw);
@@ -202,13 +201,11 @@ async function geocode(addr, hint=''){
     try{ v = await _kakaoAddr(raw, kakaoKey); }catch(e){}
     /* 2) 카카오 주소검색 — 정제 */
     if(!v) try{ v = await _kakaoAddr(cleaned, kakaoKey); }catch(e){}
-    /* 3) 카카오 키워드 — 회사명+주소 */
-    if(!v && hint) try{ v = await _kakaoKw(`${hint} ${cleaned}`, kakaoKey); }catch(e){}
-    /* 4) 카카오 키워드 — 주소만 */
+    /* 3) 카카오 키워드 — 주소 */
     if(!v) try{ v = await _kakaoKw(cleaned, kakaoKey); }catch(e){}
   }
 
-  /* 5) Nominatim 폴백 */
+  /* 4) Nominatim 폴백 */
   if(!v) try{
     const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(cleaned)}&format=json&limit=1&countrycodes=kr`,
       {headers:{'Accept-Language':'ko','User-Agent':'CRM-Map/1.0'}});
@@ -274,7 +271,7 @@ async function loadCos(centerLat, centerLng){
   let found=0;
   for(let i=0;i<cos.length && found<MAX_COS;i++){
     const co=cos[i];
-    const pos=await geocode(co.addr, co.nm);
+    const pos=await geocode(co.addr);
     if(!pos) continue;
 
     /* 위치 있을 때만 거리 필터 */
@@ -314,7 +311,7 @@ renderTabBar('map');
   /* 특정 거래처로 진입 — 마커 즉시 표시 후 주변 거래처 백그라운드 로드 */
   if(focusAddr){
     msg('위치 검색 중...',0);
-    const pos = await geocode(focusAddr, focusNm);
+    const pos = await geocode(focusAddr);
     if(pos){
       map.setView([pos.lat,pos.lng],15);
       const focusMk = L.marker([pos.lat,pos.lng],{
