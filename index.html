@@ -104,22 +104,11 @@
 </head>
 <body>
 
-<!-- 연결 강제 오버레이 -->
-<div id="auth-wall" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:32px;">
-  <div style="font-size:48px;">☁️</div>
-  <div style="color:#fff;font-size:20px;font-weight:700;">Google Drive 연결 필요</div>
-  <div id="auth-wall-msg" style="color:#94a3b8;font-size:14px;text-align:center;line-height:1.6;">데이터 동기화를 위해<br>Google 계정 연결이 필요합니다.</div>
-  <button id="auth-wall-btn" onclick="_authWallLogin()"
-    style="margin-top:8px;padding:14px 36px;background:#2563eb;color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;width:100%;max-width:280px;">
-    Google 연결하기
-  </button>
-</div>
-
 <div class="hw-page">
   <!-- 헤더 -->
   <div class="hw-hdr">
     <span class="hw-hdr-t">명함 CRM</span>
-    <span class="hw-ver" style="font-size:10px;font-weight:700;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);padding:3px 9px;border-radius:20px;color:rgba(255,255,255,.5);">v22.0</span>
+    <span class="hw-ver" style="font-size:10px;font-weight:700;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);padding:3px 9px;border-radius:20px;color:rgba(255,255,255,.5);">v22.1</span>
     <div id="drive-badge" onclick="_driveDotTap()" style="cursor:pointer;display:flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);">
       <span id="drive-badge-dot" style="width:7px;height:7px;border-radius:50%;background:#64748b;flex-shrink:0;"></span>
       <span id="drive-badge-txt">Drive</span>
@@ -332,36 +321,17 @@ async function _driveConnect(){
   _updateDriveBadge('ok');
 }
 
-function _showAuthWall(msg){
-  const wall = document.getElementById('auth-wall');
-  if(msg) document.getElementById('auth-wall-msg').innerHTML = msg;
-  wall.style.display = 'flex';
-}
-function _hideAuthWall(){ document.getElementById('auth-wall').style.display = 'none'; }
-
-function _authWallLogin(){
-  document.getElementById('auth-wall-btn').textContent = '연결 중...';
-  GoogleAuth.login(()=>{
-    _hideAuthWall();
-    _driveConnect();
-    toast('Drive 연결됐습니다 ✓');
-  });
-}
-
 (function(){
   if(GoogleAuth.isLoggedIn()){
     _driveConnect();
   } else if(localStorage.getItem('crm_gemail')){
-    /* 이전 계정 있음 → 자동 재연결 시도 (최대 6초) */
     _updateDriveBadge('expired');
     GoogleAuth.silentLogin().then(ok=>{
-      if(ok && GoogleAuth.isLoggedIn()){ _driveConnect(); }
-      else { _showAuthWall('이전 연결이 만료됐습니다.<br>다시 연결해 주세요.'); }
+      if(ok && GoogleAuth.isLoggedIn()) _driveConnect();
+      else _updateDriveBadge('expired');
     });
   } else {
-    /* 한 번도 연결 안 한 기기 */
     _updateDriveBadge('disconnected');
-    _showAuthWall('데이터 동기화를 위해<br>Google 계정 연결이 필요합니다.');
   }
 })();
 
@@ -372,7 +342,10 @@ function _driveDotTap(){
     SharedDriveDB.load().then(()=>{ load(); toast('Drive 동기화 완료 ✓'); });
     _updateDriveBadge('ok');
   } else {
-    _authWallLogin();
+    GoogleAuth.login(()=>{
+      _driveConnect();
+      toast('Drive 연결됐습니다 ✓');
+    });
   }
 }
 
