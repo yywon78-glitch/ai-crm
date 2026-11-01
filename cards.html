@@ -379,6 +379,8 @@ function goToCoFromCard(cardId) {
   if(!card||!card.co) return;
   const co = DB.getCos().find(c=>c.nm===card.co);
   if(!co){ toast('등록된 거래처가 없습니다'); return; }
+  /* 명함 오버레이 닫고(히스토리 유지) 거래처 오버레이 열기 → 뒤로가기 시 명함으로 복귀 */
+  document.getElementById('overlay-card').classList.remove('show');
   openCoOverlay(co.id);
 }
 
