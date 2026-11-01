@@ -448,6 +448,18 @@ const SharedDriveDB = (function(){
         return false;
       }
     },
+    /* 단일 카드 메타데이터만 업데이트 — 이미지 재업로드 없음, 빠름 */
+    async syncCard(card){
+      if(!GoogleAuth.isLoggedIn()) return false;
+      try{
+        const meta = {...card}; delete meta._img; /* 이미지 제외 */
+        await _sharedUpload(FILE_NAME, [meta], FOLDER_ID);
+        return true;
+      } catch(e){
+        console.error('SharedDriveDB.syncCard 실패:', e.message || e);
+        return false;
+      }
+    },
     /* CRM_공용 → 공유 명함 불러오기 (GAS 경유 — 로그인 불필요) */
     async load(){
       try{

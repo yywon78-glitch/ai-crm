@@ -155,10 +155,13 @@ function saveCardEdit(id) {
   const colorEl = [...document.querySelectorAll('#ce-colors div')].find(d=>d.dataset.sel);
   if(colorEl) c.cl = colorEl._color;
   DB.setCards(cards);
-  /* 내 공유 명함이면 Drive도 업데이트 */
+  /* 내 공유 명함이면 Drive도 업데이트 (단일 카드만, 빠름) */
   const me = typeof GoogleAuth!=='undefined' ? GoogleAuth.getUserEmail() : '';
   if(c.shared && c.sharedBy === me){
-    SharedDriveDB.sync().then(ok=>{ if(ok) toast('저장 + 공유 업데이트 ✓'); });
+    SharedDriveDB.syncCard(c).then(ok=>{
+      if(ok) toast('☁️ 공유 업데이트 완료 ✓');
+      else   toast('⚠️ 공유 업데이트 실패 — Drive 연결 확인');
+    });
   }
   _removeModal('_cedit');
   toast('저장됐습니다 ✓');
