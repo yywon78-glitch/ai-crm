@@ -221,9 +221,10 @@ function _kakaoSdk(q){
 
 function _stripZip(addr){
   return addr
-    .replace(/^\s*\(우\)?\s*\d{5}\s*/,'')
-    .replace(/^\s*\d{5}\s+/,'')
-    .replace(/\s+\d{5}\s*$/,'')
+    .replace(/^\s*\(우\)?\s*\d{5}\s*/,'')   /* (우)12345 */
+    .replace(/^\s*\d{5}\s+/,'')              /* 12345 주소 */
+    .replace(/^\s*\d{3}-\d{3}\s+/,'')        /* 152-879 구형 우편번호 */
+    .replace(/\s+\d{5}\s*$/,'')              /* 주소 12345 */
     .replace(/\s+/g,' ').trim();
 }
 
