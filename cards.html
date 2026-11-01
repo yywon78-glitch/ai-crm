@@ -399,8 +399,17 @@ if(_initSort === 'recent'){
 renderTabBar('cards');
 render();
 if(GoogleAuth.isLoggedIn()) refreshSharedCards();
-window.addEventListener('pageshow', e => { if(e.persisted){ closeAllOverlays(); render(); } });
-document.addEventListener('visibilitychange', () => { if(!document.hidden){ closeAllOverlays(); render(); } });
+
+let _lastSharedRefresh = 0;
+function _maybeRefreshShared(){
+  if(!GoogleAuth.isLoggedIn()) return;
+  const now = Date.now();
+  if(now - _lastSharedRefresh < 60000) return; /* 1분 이내 재요청 생략 */
+  _lastSharedRefresh = now;
+  refreshSharedCards();
+}
+window.addEventListener('pageshow', e => { closeAllOverlays(); render(); if(e.persisted) _maybeRefreshShared(); });
+document.addEventListener('visibilitychange', () => { if(!document.hidden){ closeAllOverlays(); render(); _maybeRefreshShared(); } });
 
 /* ── 오버레이 히스토리 복원 (popstate) ── */
 window.addEventListener('popstate', function(e) {
