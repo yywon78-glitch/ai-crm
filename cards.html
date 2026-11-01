@@ -138,7 +138,7 @@ function render() {
   const sharedCnt   = myCards.filter(c => c.shared).length;
   const unsharedCnt = myCards.filter(c => !c.shared).length;
   document.getElementById('stat-pills').innerHTML =
-    `전체 <b>${cards.length}</b>&nbsp;&nbsp;내명함 <b>${myCards.length}</b> <span style="font-size:11px;color:var(--t3);">(공유 ${sharedCnt} / 미공유 ${unsharedCnt})</span>`;
+    `전체 <b>${cards.length}</b>&nbsp;&nbsp;내명함 <b>${myCards.length}</b> <span style="font-size:11px;color:var(--t3);">(${sharedCnt}/${unsharedCnt})</span>`;
 
   /* 전체/내명함 필터 */
   let baseList = ownerFilter === 'mine'
