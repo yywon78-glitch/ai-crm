@@ -165,33 +165,33 @@ const GK='crm_geo4';
 function gCache(){try{return JSON.parse(localStorage.getItem(GK)||'{}')}catch(e){return{}}}
 function gSave(a,v){try{const c=gCache();c[a]=v;localStorage.setItem(GK,JSON.stringify(c))}catch(e){}}
 
-/* ── 주소 정제 로직 (복원용 참조 — 현재 미사용) ──────────────────────
-function _cleanAddr(addr){
-  return addr
-    .replace(/^\s*\(우\)?\s*\d{5}\s*/,'')
-    .replace(/^\s*\d{5}\s+/,'')
-    .replace(/\s+\d+층.*$/,'')
-    .replace(/\s+\d+-\d+호.*$/,'')
-    .replace(/\([^)]{2,}\)/g,'')
-    .replace(/,.*$/,'')
-    .replace(/\s+/g,' ').trim();
-}
-function _coreAddr(addr){
-  const m = addr.match(/^(.+?(?:대로\s*\d*길|로\s*\d*길|길|대로|로|가)\s+\d+(?:-\d+)?)/);
-  return m ? m[1].trim() : _cleanAddr(addr);
-}
-function _expandCity(addr){
-  return addr
-    .replace(/^서울(\s|구)/, '서울특별시$1')
-    .replace(/^부산(\s|구)/, '부산광역시$1')
-    .replace(/^인천(\s|구)/, '인천광역시$1')
-    .replace(/^대구(\s|구)/, '대구광역시$1')
-    .replace(/^대전(\s|구)/, '대전광역시$1')
-    .replace(/^광주(\s|구)/, '광주광역시$1')
-    .replace(/^울산(\s|구)/, '울산광역시$1')
-    .replace(/^세종(\s|구)/, '세종특별자치시$1');
-}
-──────────────────────────────────────────────────────────────────── */
+// ── 주소 정제 로직 (복원용 참조 — 현재 미사용) ─────────────────────
+// function _cleanAddr(addr){
+//   return addr
+//     .replace(/^\s*\(우\)?\s*\d{5}\s*/,'')
+//     .replace(/^\s*\d{5}\s+/,'')
+//     .replace(/\s+\d+층.*$/,'')
+//     .replace(/\s+\d+-\d+호.*$/,'')
+//     .replace(/\([^)]{2,}\)/g,'')
+//     .replace(/,.*$/,'')
+//     .replace(/\s+/g,' ').trim();
+// }
+// function _coreAddr(addr){
+//   const m = addr.match(/^(.+?(?:대로\s*\d*길|로\s*\d*길|길|대로|로|가)\s+\d+(?:-\d+)?)/);
+//   return m ? m[1].trim() : _cleanAddr(addr);
+// }
+// function _expandCity(addr){
+//   return addr
+//     .replace(/^서울(\s|구)/, '서울특별시$1')
+//     .replace(/^부산(\s|구)/, '부산광역시$1')
+//     .replace(/^인천(\s|구)/, '인천광역시$1')
+//     .replace(/^대구(\s|구)/, '대구광역시$1')
+//     .replace(/^대전(\s|구)/, '대전광역시$1')
+//     .replace(/^광주(\s|구)/, '광주광역시$1')
+//     .replace(/^울산(\s|구)/, '울산광역시$1')
+//     .replace(/^세종(\s|구)/, '세종특별자치시$1');
+// }
+// ─────────────────────────────────────────────────────────────────
 
 /* ── 지오코딩: Kakao REST API → Kakao JS SDK → Nominatim ── */
 const KAKAO_REST = '715709b66045eb4545e1efffcf11c09e';
