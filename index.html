@@ -108,8 +108,11 @@
   <!-- 헤더 -->
   <div class="hw-hdr">
     <span class="hw-hdr-t">명함 CRM</span>
-    <span class="hw-ver" style="font-size:10px;font-weight:700;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);padding:3px 9px;border-radius:20px;color:rgba(255,255,255,.5);">v21.3</span>
-    <div id="drive-dot" style="display:none;width:8px;height:8px;border-radius:50%;background:#4ade80;margin-right:4px;cursor:pointer;" onclick="_driveDotTap()" title="Google Drive 연결됨"></div>
+    <span class="hw-ver" style="font-size:10px;font-weight:700;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);padding:3px 9px;border-radius:20px;color:rgba(255,255,255,.5);">v21.4</span>
+    <div id="drive-badge" onclick="_driveDotTap()" style="cursor:pointer;display:flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);">
+      <span id="drive-badge-dot" style="width:7px;height:7px;border-radius:50%;background:#64748b;flex-shrink:0;"></span>
+      <span id="drive-badge-txt">Drive</span>
+    </div>
     <div class="hw-hdr-ic" onclick="location.href='settings.html'">⚙️</div>
   </div>
 
@@ -278,35 +281,69 @@ renderTabBar('home');
 load();
 loadTodayVisits();
 
-/* Drive 상태 표시 — tryRestore 없음 (번쩍임 제거) */
+/* Drive 배지 업데이트 */
+function _updateDriveBadge(state){
+  const dot = document.getElementById('drive-badge-dot');
+  const txt = document.getElementById('drive-badge-txt');
+  const badge = document.getElementById('drive-badge');
+  if(!dot||!txt) return;
+  if(state==='ok'){
+    dot.style.background='#4ade80';
+    const last = localStorage.getItem('crm_gdrive_lastsync');
+    const ago  = last ? _syncAgo(last) : '';
+    txt.textContent = '연결됨' + (ago?' · '+ago:'');
+    badge.style.color='rgba(255,255,255,.85)';
+    badge.style.borderColor='rgba(74,222,128,.4)';
+  } else if(state==='expired'){
+    dot.style.background='#fb923c';
+    txt.textContent='재연결 필요 ▶';
+    badge.style.color='#fb923c';
+    badge.style.borderColor='rgba(251,146,60,.5)';
+  } else {
+    dot.style.background='#f87171';
+    txt.textContent='Drive 미연결 ▶';
+    badge.style.color='#f87171';
+    badge.style.borderColor='rgba(248,113,113,.5)';
+  }
+}
+function _syncAgo(iso){
+  const s = Math.floor((Date.now()-new Date(iso))/1000);
+  if(s<60) return '방금';
+  if(s<3600) return Math.floor(s/60)+'분 전';
+  if(s<86400) return Math.floor(s/3600)+'시간 전';
+  return Math.floor(s/86400)+'일 전';
+}
+
+async function _driveConnect(){
+  DriveDB.syncDown().then(ok=>{ if(ok){ load(); loadTodayVisits(); } });
+  SharedDriveDB.load().then(()=>{ load(); });
+  _ensureSettingsUploaded();
+  _updateDriveBadge('ok');
+}
+
 (function(){
-  const dot = document.getElementById('drive-dot');
   if(GoogleAuth.isLoggedIn()){
-    dot.style.background = '#4ade80'; dot.style.display='block'; dot.title='Drive 연결됨';
-    DriveDB.syncDown().then(ok=>{ if(ok){ load(); loadTodayVisits(); } });
-    _ensureSettingsUploaded();
+    _driveConnect();
   } else if(localStorage.getItem('crm_gemail')){
-    /* 토큰 만료 → 조용히 재연결 시도 */
+    _updateDriveBadge('expired');
     GoogleAuth.silentLogin().then(()=>{
-      if(GoogleAuth.isLoggedIn()){
-        dot.style.background = '#4ade80'; dot.style.display='block'; dot.title='Drive 연결됨';
-        DriveDB.syncDown().then(ok=>{ if(ok){ load(); loadTodayVisits(); } });
-      } else {
-        dot.style.background = '#fb923c'; dot.style.display='block'; dot.title='Drive 토큰 만료 — 탭하여 재연결';
-      }
+      if(GoogleAuth.isLoggedIn()) _driveConnect();
+      else _updateDriveBadge('expired');
     });
+  } else {
+    _updateDriveBadge('disconnected');
   }
 })();
 
 function _driveDotTap(){
-  const dot = document.getElementById('drive-dot');
   if(GoogleAuth.isLoggedIn()){
-    DriveDB.syncDown().then(ok=>{ if(ok){ load(); loadTodayVisits(); toast('Drive 동기화 완료 ✓'); } });
+    toast('동기화 중...');
+    DriveDB.syncDown().then(ok=>{ if(ok){ load(); loadTodayVisits(); } });
+    SharedDriveDB.load().then(()=>{ load(); toast('Drive 동기화 완료 ✓'); });
+    _updateDriveBadge('ok');
   } else {
     GoogleAuth.login(()=>{
-      dot.style.background = '#4ade80'; dot.style.display='block'; dot.title='Drive 연결됨';
-      DriveDB.syncDown().then(ok=>{ if(ok){ load(); loadTodayVisits(); } });
-      _ensureSettingsUploaded();
+      _driveConnect();
       toast('Drive 연결됐습니다 ✓');
     });
   }
