@@ -219,20 +219,29 @@ function _kakaoSdk(q){
   });
 }
 
+function _stripZip(addr){
+  return addr
+    .replace(/^\s*\(우\)?\s*\d{5}\s*/,'')
+    .replace(/^\s*\d{5}\s+/,'')
+    .replace(/\s+\d{5}\s*$/,'')
+    .replace(/\s+/g,' ').trim();
+}
+
 async function geocode(addr){
   if(!addr) return null;
   const raw = addr.replace(/\s+/g,' ').trim();
   if(!raw) return null;
   const c=gCache(); if(c[raw]) return c[raw];
+  const q = _stripZip(raw);
 
   let v=null;
-  /* 1) Kakao REST API — 원본주소 그대로 */
-  try{ v=await _kakaoRest(raw); }catch(e){}
+  /* 1) Kakao REST API — 우편번호 제거 주소 */
+  try{ v=await _kakaoRest(q); }catch(e){}
   /* 2) Kakao JS SDK */
-  if(!v) try{ v=await _kakaoSdk(raw); }catch(e){}
+  if(!v) try{ v=await _kakaoSdk(q); }catch(e){}
   /* 3) Nominatim 폴백 */
   if(!v) try{
-    const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(raw)}&format=json&limit=1&countrycodes=kr&accept-language=ko`);
+    const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&countrycodes=kr&accept-language=ko`);
     const d=await r.json();
     if(d.length) v={lat:+d[0].lat,lng:+d[0].lon};
   }catch(e){}
