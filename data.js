@@ -161,27 +161,30 @@ const GoogleAuth = (function(){
       _client.requestAccessToken({prompt: _token ? '' : 'consent'});
     },
 
-    /* 앱 시작 시 조용히 재연결 — UI 없음 */
-    async silentLogin(){
+    /* 앱 시작 시 조용히 재연결 — 콜백 완료까지 대기 (최대 6초) */
+    silentLogin(){
       const email = GoogleAuth.getUserEmail();
-      if(!email) return; /* 한 번도 로그인 안 한 기기 */
-      if(GoogleAuth.isLoggedIn()) return; /* 토큰 아직 유효 */
+      if(!email || GoogleAuth.isLoggedIn()) return Promise.resolve();
       const cid = DB.getGoogleClientId();
-      if(!cid) return;
-      try{
-        await _loadGIS();
-        const c = google.accounts.oauth2.initTokenClient({
-          client_id: cid, scope: SCOPE,
-          hint: email,
-          callback: async resp => {
-            if(resp.error){ return; }
-            _saveToken(resp);
-            /* 재연결 후 미업로드 데이터 있으면 바로 올림 */
-            if(localStorage.getItem('crm_needs_sync')==='1') DriveDB.syncUp();
-          }
-        });
-        c.requestAccessToken({prompt:''});
-      } catch(e){}
+      if(!cid) return Promise.resolve();
+      return new Promise(async resolve => {
+        const done = (ok) => { clearTimeout(timer); resolve(ok); };
+        const timer = setTimeout(() => resolve(false), 6000); /* 6초 타임아웃 */
+        try{
+          await _loadGIS();
+          google.accounts.oauth2.initTokenClient({
+            client_id: cid, scope: SCOPE, hint: email,
+            callback: async resp => {
+              if(!resp.error){
+                _saveToken(resp);
+                if(localStorage.getItem('crm_needs_sync')==='1') DriveDB.syncUp();
+                done(true);
+              } else { done(false); }
+            },
+            error_callback: () => done(false)
+          }).requestAccessToken({prompt:''});
+        } catch(e){ done(false); }
+      });
     },
 
     logout(){

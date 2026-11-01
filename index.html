@@ -119,7 +119,7 @@
   <!-- 헤더 -->
   <div class="hw-hdr">
     <span class="hw-hdr-t">명함 CRM</span>
-    <span class="hw-ver" style="font-size:10px;font-weight:700;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);padding:3px 9px;border-radius:20px;color:rgba(255,255,255,.5);">v21.9</span>
+    <span class="hw-ver" style="font-size:10px;font-weight:700;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);padding:3px 9px;border-radius:20px;color:rgba(255,255,255,.5);">v22.0</span>
     <div id="drive-badge" onclick="_driveDotTap()" style="cursor:pointer;display:flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);">
       <span id="drive-badge-dot" style="width:7px;height:7px;border-radius:50%;background:#64748b;flex-shrink:0;"></span>
       <span id="drive-badge-txt">Drive</span>
@@ -352,12 +352,11 @@ function _authWallLogin(){
   if(GoogleAuth.isLoggedIn()){
     _driveConnect();
   } else if(localStorage.getItem('crm_gemail')){
-    /* 토큰 만료 → 조용히 재연결 시도 */
+    /* 이전 계정 있음 → 자동 재연결 시도 (최대 6초) */
     _updateDriveBadge('expired');
-    _showAuthWall('이전 연결이 만료됐습니다.<br>다시 연결해 주세요.');
-    GoogleAuth.silentLogin().then(()=>{
-      if(GoogleAuth.isLoggedIn()){ _hideAuthWall(); _driveConnect(); }
-      /* silentLogin 실패해도 auth-wall이 이미 떠 있음 */
+    GoogleAuth.silentLogin().then(ok=>{
+      if(ok && GoogleAuth.isLoggedIn()){ _driveConnect(); }
+      else { _showAuthWall('이전 연결이 만료됐습니다.<br>다시 연결해 주세요.'); }
     });
   } else {
     /* 한 번도 연결 안 한 기기 */
