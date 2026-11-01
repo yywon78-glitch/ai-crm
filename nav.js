@@ -155,6 +155,11 @@ function saveCardEdit(id) {
   const colorEl = [...document.querySelectorAll('#ce-colors div')].find(d=>d.dataset.sel);
   if(colorEl) c.cl = colorEl._color;
   DB.setCards(cards);
+  /* 내 공유 명함이면 Drive도 업데이트 */
+  const me = typeof GoogleAuth!=='undefined' ? GoogleAuth.getUserEmail() : '';
+  if(c.shared && c.sharedBy === me){
+    SharedDriveDB.sync().then(ok=>{ if(ok) toast('저장 + 공유 업데이트 ✓'); });
+  }
   _removeModal('_cedit');
   toast('저장됐습니다 ✓');
   if(typeof openCardOverlay==='function') openCardOverlay(id);
@@ -164,9 +169,14 @@ function saveCardEdit(id) {
 
 function deleteCard(id) {
   if(!confirm('이 명함을 삭제하시겠습니까?')) return;
+  const me = typeof GoogleAuth!=='undefined' ? GoogleAuth.getUserEmail() : '';
+  const target = DB.getCards().find(c=>c.id===id);
+  const wasMyShared = target?.shared && target?.sharedBy === me;
   const cards = DB.getCards().filter(c=>c.id!==id);
   DB.setCards(cards);
   ImgDB.del(id).catch(()=>{});
+  /* 내 공유 명함이면 Drive에서도 삭제 */
+  if(wasMyShared) SharedDriveDB.removeCards([id]);
   _removeModal('_cedit');
   closeAllOverlays();
   toast('명함이 삭제됐습니다');
