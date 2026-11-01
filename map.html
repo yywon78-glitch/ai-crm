@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>거래처 지도</title>
-<link rel="stylesheet" href="shared.css?v=205">
+<link rel="stylesheet" href="shared.css?v=206">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 html,body{height:100%;margin:0;}
@@ -67,8 +67,8 @@ html,body{height:100%;margin:0;}
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=389a3598c4789e6960b8095f97df7301&libraries=services"></script>
-<script src="data.js?v=205"></script>
-<script src="nav.js?v=205"></script>
+<script src="data.js?v=206"></script>
+<script src="nav.js?v=206"></script>
 <script>
 /* ── 타일 레이어 ── */
 const T = {
@@ -177,10 +177,23 @@ function _cleanAddr(addr){
     .replace(/\s+/g,' ').trim();
 }
 
-/* 도로명주소 핵심부 추출 — "시민대로 230" 뒤 건물명/호실 제거 */
+/* 도로명주소 핵심부 추출 */
 function _coreAddr(addr){
   const m = addr.match(/^(.+?(?:로|길|대로|가)\s+\d+(?:-\d+)?)/);
   return m ? m[1].trim() : _cleanAddr(addr);
+}
+
+/* 약식 지명 → 공식명 (Nominatim 정확도 향상) */
+function _expandCity(addr){
+  return addr
+    .replace(/^서울(\s|구)/, '서울특별시$1')
+    .replace(/^부산(\s|구)/, '부산광역시$1')
+    .replace(/^인천(\s|구)/, '인천광역시$1')
+    .replace(/^대구(\s|구)/, '대구광역시$1')
+    .replace(/^대전(\s|구)/, '대전광역시$1')
+    .replace(/^광주(\s|구)/, '광주광역시$1')
+    .replace(/^울산(\s|구)/, '울산광역시$1')
+    .replace(/^세종(\s|구)/, '세종특별자치시$1');
 }
 
 /* ── 지오코딩: Kakao JS SDK → Nominatim ── */
@@ -207,11 +220,20 @@ async function geocode(addr){
   v = await _kakaoGeocode(core);
   /* 2) Kakao — 원본주소 */
   if(!v && core!==raw) v = await _kakaoGeocode(raw);
-  /* 3) Nominatim 폴백 */
+  /* 3) Nominatim — 핵심주소 */
   if(!v) try{
     const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(core)}&format=json&limit=1&countrycodes=kr&accept-language=ko`);
     const d = await r.json();
     if(d.length) v = {lat:+d[0].lat, lng:+d[0].lon};
+  }catch(e){}
+  /* 4) Nominatim — 공식 지명으로 확장 */
+  if(!v) try{
+    const expanded = _expandCity(core);
+    if(expanded !== core){
+      const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(expanded)}&format=json&limit=1&countrycodes=kr&accept-language=ko`);
+      const d = await r.json();
+      if(d.length) v = {lat:+d[0].lat, lng:+d[0].lon};
+    }
   }catch(e){}
 
   if(v) gSave(raw, v);
