@@ -227,6 +227,12 @@ function _stripZip(addr){
     .replace(/\s+/g,' ').trim();
 }
 
+function _wrapDetail(addr){
+  const m = addr.match(/^(.+?\d+(?:-\d+)?)\s+([^(].+)$/);
+  if(!m) return addr;
+  return `${m[1].replace(/,\s*$/,'').trim()} (${m[2].trim()})`;
+}
+
 async function geocode(addr){
   if(!addr) return null;
   const raw = addr.replace(/\s+/g,' ').trim();
@@ -235,11 +241,13 @@ async function geocode(addr){
   const q = _stripZip(raw);
 
   let v=null;
-  /* 1) Kakao REST API — 우편번호 제거 주소 */
+  /* 1) Kakao REST — 우편번호 제거 */
   try{ v=await _kakaoRest(q); }catch(e){}
-  /* 2) Kakao JS SDK */
+  /* 2) Kakao REST — 상세주소 괄호 처리 후 재시도 */
+  if(!v){ const q2=_wrapDetail(q); if(q2!==q) try{ v=await _kakaoRest(q2); }catch(e){} }
+  /* 3) Kakao JS SDK */
   if(!v) try{ v=await _kakaoSdk(q); }catch(e){}
-  /* 3) Nominatim 폴백 */
+  /* 4) Nominatim 폴백 */
   if(!v) try{
     const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&countrycodes=kr&accept-language=ko`);
     const d=await r.json();
