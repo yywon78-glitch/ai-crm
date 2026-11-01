@@ -133,9 +133,12 @@ function render() {
   /* 다른 계정이 공유한 명함 (내 목록에 없는 것만 추가) */
   const otherShared = DB.getDriveShared().filter(c=>!_personalIds.has(c.id));
   const cards = [...personal, ...otherShared];
-  const mineCnt = personal.filter(c => !c.shared || !c.sharedBy || c.sharedBy === GoogleAuth.getUserEmail()).length;
+  const me = GoogleAuth.getUserEmail();
+  const myCards   = personal.filter(c => !c.shared || !c.sharedBy || c.sharedBy === me);
+  const sharedCnt   = myCards.filter(c => c.shared).length;
+  const unsharedCnt = myCards.filter(c => !c.shared).length;
   document.getElementById('stat-pills').innerHTML =
-    `전체 <b>${cards.length}</b>&nbsp;&nbsp;내명함 <b>${mineCnt}</b>`;
+    `전체 <b>${cards.length}</b>&nbsp;&nbsp;내명함 <b>${myCards.length}</b> <span style="font-size:11px;color:var(--t3);">(공유 ${sharedCnt} / 미공유 ${unsharedCnt})</span>`;
 
   /* 전체/내명함 필터 */
   let baseList = ownerFilter === 'mine'
