@@ -405,10 +405,12 @@ const SharedDriveDB = (function(){
         if(Array.isArray(d)) d.forEach(c => { map[c.id] = c; });
       } catch(e){}
     }
-    /* mob 기준 중복 제거: 같은 휴대폰번호 카드가 있으면 기존 ID/sharedBy 유지하고 데이터만 업데이트 */
+    /* 중복 제거: 이름+전화번호+회사명 3개 모두 같을 때만 중복으로 판단 */
     newItems.forEach(c => {
-      if(c.mob){
-        const dup = Object.values(map).find(x => x.mob === c.mob && x.id !== c.id);
+      if(c.mob && c.nm){
+        const dup = Object.values(map).find(x =>
+          x.mob === c.mob && x.nm === c.nm && (x.co||'') === (c.co||'') && x.id !== c.id
+        );
         if(dup){ map[dup.id] = {...c, id: dup.id, sharedBy: dup.sharedBy}; return; }
       }
       map[c.id] = c;
