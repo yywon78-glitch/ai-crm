@@ -385,7 +385,7 @@ const SharedDriveDB = (function(){
 
   /* GAS 경유 읽기 — API 키 불필요, 로그인 불필요 */
   async function _gasGet(type){
-    const res = await fetch(`${GAS_URL}?type=${type}`);
+    const res = await fetch(`${GAS_URL}?type=${type}&t=${Date.now()}`, {cache:'no-store'});
     if(!res.ok) throw new Error('GAS GET ' + res.status);
     return await res.json();
   }
