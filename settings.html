@@ -194,7 +194,7 @@
       <div class="set-lbl">앱 정보</div>
       <div class="set-item">
         <span class="set-ic">ℹ️</span>
-        <div class="set-txt"><div class="set-t">버전</div><div class="set-s">v19.6 · 2026-10-31 · 지도 회사명+주소 복합검색, 5단계 폴백</div></div>
+        <div class="set-txt"><div class="set-t">버전</div><div class="set-s">v21.0 · 2026-10-31 · CSV 공유명함 포함, 지도 Kakao 활성화</div></div>
       </div>
     </div>
   </div>
@@ -512,16 +512,19 @@ function exportJSON(){
 }
 
 function exportCSV(){
-  const cards=DB.getCards();
-  const headers=['이름','회사','직책','휴대전화','유선전화','이메일','주소','태그','즐겨찾기'];
-  const rows=cards.map(c=>[c.nm,c.co,c.tl,c.mob,c.ph,c.em,c.addr,c.tag,c.fav?'Y':'N'].map(v=>`"${(v||'').replace(/"/g,'""')}"`).join(','));
+  const personal = DB.getCards();
+  const personalIds = new Set(personal.map(c=>c.id));
+  const shared = DB.getDriveShared().filter(c=>!personalIds.has(c.id));
+  const cards = [...personal, ...shared];
+  const headers=['이름','회사','직책','휴대전화','유선전화','이메일','주소','태그','즐겨찾기','공유'];
+  const rows=cards.map(c=>[c.nm,c.co,c.tl,c.mob,c.ph,c.em,c.addr,c.tag,c.fav?'Y':'N',c.shared?'Y':'N'].map(v=>`"${(v||'').replace(/"/g,'""')}"`).join(','));
   const csv='﻿'+[headers.join(','),...rows].join('\n');
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
   a.download=`crm_cards_${new Date().toISOString().split('T')[0]}.csv`;
   a.click(); URL.revokeObjectURL(a.href);
-  toast('CSV 내보내기 완료 ✓');
+  toast(`CSV 내보내기 완료 — ${cards.length}장 ✓`);
 }
 
 function cleanEmptyCards(){
