@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>거래처 지도</title>
-<link rel="stylesheet" href="shared.css?v=207">
+<link rel="stylesheet" href="shared.css?v=209">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 html,body{height:100%;margin:0;}
@@ -67,8 +67,8 @@ html,body{height:100%;margin:0;}
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=389a3598c4789e6960b8095f97df7301&libraries=services"></script>
-<script src="data.js?v=207"></script>
-<script src="nav.js?v=207"></script>
+<script src="data.js?v=209"></script>
+<script src="nav.js?v=209"></script>
 <script>
 /* ── 타일 레이어 ── */
 const T = {
@@ -197,47 +197,55 @@ function _expandCity(addr){
     .replace(/^세종(\s|구)/, '세종특별자치시$1');
 }
 
-/* ── 지오코딩: Kakao JS SDK → Nominatim ── */
-function _kakaoGeocode(q){
+/* ── 지오코딩: Kakao REST API → Kakao JS SDK → Nominatim ── */
+const KAKAO_REST = '715709b66045eb4545e1efffcf11c09e';
+
+async function _kakaoRest(q){
+  const r = await fetch(
+    `https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(q)}&size=1`,
+    {headers:{Authorization:'KakaoAK '+KAKAO_REST}}
+  );
+  const d = await r.json();
+  const doc = d.documents?.[0];
+  if(!doc) return null;
+  const x = doc.x||doc.address?.x, y = doc.y||doc.address?.y;
+  return (x&&y) ? {lat:+y,lng:+x} : null;
+}
+
+function _kakaoSdk(q){
   return new Promise(resolve=>{
     try{
-      if(typeof kakao==='undefined' || !kakao.maps?.services){ resolve(null); return; }
-      new kakao.maps.services.Geocoder().addressSearch(q, (r,s)=>{
-        resolve(s===kakao.maps.services.Status.OK && r.length ? {lat:+r[0].y, lng:+r[0].x} : null);
+      if(typeof kakao==='undefined'||!kakao.maps?.services){resolve(null);return;}
+      new kakao.maps.services.Geocoder().addressSearch(q,(r,s)=>{
+        resolve(s===kakao.maps.services.Status.OK&&r.length?{lat:+r[0].y,lng:+r[0].x}:null);
       });
-    }catch(e){ resolve(null); }
+    }catch(e){resolve(null);}
   });
 }
 
 async function geocode(addr){
   if(!addr) return null;
-  const raw  = addr.replace(/\s+/g,' ').trim();
+  const raw = addr.replace(/\s+/g,' ').trim();
   if(!raw) return null;
-  const c = gCache(); if(c[raw]) return c[raw];
+  const c=gCache(); if(c[raw]) return c[raw];
   const core = _coreAddr(raw);
 
-  let v = null;
-  /* 1) Kakao — 핵심주소 */
-  v = await _kakaoGeocode(core);
-  /* 2) Kakao — 원본주소 */
-  if(!v && core!==raw) v = await _kakaoGeocode(raw);
-  /* 3) Nominatim — 핵심주소 */
-  if(!v) try{
-    const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(core)}&format=json&limit=1&countrycodes=kr&accept-language=ko`);
-    const d = await r.json();
-    if(d.length) v = {lat:+d[0].lat, lng:+d[0].lon};
-  }catch(e){}
-  /* 4) Nominatim — 공식 지명으로 확장 */
+  let v=null;
+  /* 1) Kakao REST API — 핵심주소 (서비스 활성화됨) */
+  try{ v=await _kakaoRest(core); }catch(e){}
+  /* 2) Kakao REST API — 원본주소 */
+  if(!v&&core!==raw) try{ v=await _kakaoRest(raw); }catch(e){}
+  /* 3) Kakao JS SDK */
+  if(!v) try{ v=await _kakaoSdk(core); }catch(e){}
+  /* 4) Nominatim 폴백 */
   if(!v) try{
     const expanded = _expandCity(core);
-    if(expanded !== core){
-      const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(expanded)}&format=json&limit=1&countrycodes=kr&accept-language=ko`);
-      const d = await r.json();
-      if(d.length) v = {lat:+d[0].lat, lng:+d[0].lon};
-    }
+    const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(expanded)}&format=json&limit=1&countrycodes=kr&accept-language=ko`);
+    const d=await r.json();
+    if(d.length) v={lat:+d[0].lat,lng:+d[0].lon};
   }catch(e){}
 
-  if(v) gSave(raw, v);
+  if(v) gSave(raw,v);
   return v;
 }
 
