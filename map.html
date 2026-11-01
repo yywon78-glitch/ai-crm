@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>거래처 지도</title>
-<link rel="stylesheet" href="shared.css?v=206">
+<link rel="stylesheet" href="shared.css?v=207">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 html,body{height:100%;margin:0;}
@@ -67,8 +67,8 @@ html,body{height:100%;margin:0;}
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=389a3598c4789e6960b8095f97df7301&libraries=services"></script>
-<script src="data.js?v=206"></script>
-<script src="nav.js?v=206"></script>
+<script src="data.js?v=207"></script>
+<script src="nav.js?v=207"></script>
 <script>
 /* ── 타일 레이어 ── */
 const T = {
@@ -177,9 +177,10 @@ function _cleanAddr(addr){
     .replace(/\s+/g,' ').trim();
 }
 
-/* 도로명주소 핵심부 추출 */
+/* 도로명주소 핵심부 추출 — 로N길 패턴 포함 */
 function _coreAddr(addr){
-  const m = addr.match(/^(.+?(?:로|길|대로|가)\s+\d+(?:-\d+)?)/);
+  /* "대로\d*길" / "로\d*길" / "길" / "대로" / "로" / "가" 순서로 매칭 */
+  const m = addr.match(/^(.+?(?:대로\s*\d*길|로\s*\d*길|길|대로|로|가)\s+\d+(?:-\d+)?)/);
   return m ? m[1].trim() : _cleanAddr(addr);
 }
 
