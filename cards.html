@@ -398,13 +398,12 @@ if(_initSort === 'recent'){
 }
 renderTabBar('cards');
 render();
-if(GoogleAuth.isLoggedIn()) refreshSharedCards();
+refreshSharedCards(); /* 공유 데이터 읽기는 로그인 불필요 (GAS 공개 엔드포인트) */
 
-let _lastSharedRefresh = 0;
+let _lastSharedRefresh = Date.now();
 function _maybeRefreshShared(){
-  if(!GoogleAuth.isLoggedIn()) return;
   const now = Date.now();
-  if(now - _lastSharedRefresh < 60000) return; /* 1분 이내 재요청 생략 */
+  if(now - _lastSharedRefresh < 60000) return;
   _lastSharedRefresh = now;
   refreshSharedCards();
 }
