@@ -165,7 +165,7 @@ const GK='crm_geo4';
 function gCache(){try{return JSON.parse(localStorage.getItem(GK)||'{}')}catch(e){return{}}}
 function gSave(a,v){try{const c=gCache();c[a]=v;localStorage.setItem(GK,JSON.stringify(c))}catch(e){}}
 
-/* 주소 정제 — 우편번호/층/호 제거 */
+/* ── 주소 정제 로직 (복원용 참조 — 현재 미사용) ──────────────────────
 function _cleanAddr(addr){
   return addr
     .replace(/^\s*\(우\)?\s*\d{5}\s*/,'')
@@ -176,15 +176,10 @@ function _cleanAddr(addr){
     .replace(/,.*$/,'')
     .replace(/\s+/g,' ').trim();
 }
-
-/* 도로명주소 핵심부 추출 — 로N길 패턴 포함 */
 function _coreAddr(addr){
-  /* "대로\d*길" / "로\d*길" / "길" / "대로" / "로" / "가" 순서로 매칭 */
   const m = addr.match(/^(.+?(?:대로\s*\d*길|로\s*\d*길|길|대로|로|가)\s+\d+(?:-\d+)?)/);
   return m ? m[1].trim() : _cleanAddr(addr);
 }
-
-/* 약식 지명 → 공식명 (Nominatim 정확도 향상) */
 function _expandCity(addr){
   return addr
     .replace(/^서울(\s|구)/, '서울특별시$1')
@@ -196,6 +191,7 @@ function _expandCity(addr){
     .replace(/^울산(\s|구)/, '울산광역시$1')
     .replace(/^세종(\s|구)/, '세종특별자치시$1');
 }
+──────────────────────────────────────────────────────────────────── */
 
 /* ── 지오코딩: Kakao REST API → Kakao JS SDK → Nominatim ── */
 const KAKAO_REST = '715709b66045eb4545e1efffcf11c09e';
@@ -228,19 +224,15 @@ async function geocode(addr){
   const raw = addr.replace(/\s+/g,' ').trim();
   if(!raw) return null;
   const c=gCache(); if(c[raw]) return c[raw];
-  const core = _coreAddr(raw);
 
   let v=null;
-  /* 1) Kakao REST API — 핵심주소 (서비스 활성화됨) */
-  try{ v=await _kakaoRest(core); }catch(e){}
-  /* 2) Kakao REST API — 원본주소 */
-  if(!v&&core!==raw) try{ v=await _kakaoRest(raw); }catch(e){}
-  /* 3) Kakao JS SDK */
-  if(!v) try{ v=await _kakaoSdk(core); }catch(e){}
-  /* 4) Nominatim 폴백 */
+  /* 1) Kakao REST API — 원본주소 그대로 */
+  try{ v=await _kakaoRest(raw); }catch(e){}
+  /* 2) Kakao JS SDK */
+  if(!v) try{ v=await _kakaoSdk(raw); }catch(e){}
+  /* 3) Nominatim 폴백 */
   if(!v) try{
-    const expanded = _expandCity(core);
-    const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(expanded)}&format=json&limit=1&countrycodes=kr&accept-language=ko`);
+    const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(raw)}&format=json&limit=1&countrycodes=kr&accept-language=ko`);
     const d=await r.json();
     if(d.length) v={lat:+d[0].lat,lng:+d[0].lon};
   }catch(e){}
