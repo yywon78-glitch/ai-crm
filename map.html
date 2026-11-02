@@ -286,9 +286,39 @@ function spreadPos(lat, lng){
   return [lat + 0.00028 * Math.cos(angle), lng + 0.00028 * Math.sin(angle)];
 }
 
-/* ── 거래처 로드 — 현재 위치 기준 반경 내만 표시 ── */
-const RADIUS_KM = 20; /* 반경 20km */
-const MAX_COS   = 30; /* 최대 표시 수 */
+/* ── 거래처 로드 — 시/도 텍스트 필터 → geocode → 20km 필터 ── */
+const RADIUS_KM = 20;
+const MAX_COS   = 30;
+
+/* 시/도 약칭 정규화 (주소 텍스트 매칭용) */
+const _REGION_KEYS = [
+  ['서울','서울'],['경기','경기'],['인천','인천'],['강원','강원'],
+  ['충북','충북'],['충남','충남'],['세종','세종'],['대전','대전'],
+  ['전북','전북'],['전남','전남'],['광주','광주'],['경북','경북'],
+  ['경남','경남'],['대구','대구'],['울산','울산'],['부산','부산'],['제주','제주']
+];
+
+/* 좌표 → 시/도 키 (Kakao SDK coord2RegionCode) */
+function _getRegionKey(lat, lng){
+  return new Promise(resolve=>{
+    try{
+      if(typeof kakao==='undefined'||!kakao.maps?.services){ resolve(null); return; }
+      new kakao.maps.services.Geocoder().coord2RegionCode(lng, lat, (r,s)=>{
+        if(s!==kakao.maps.services.Status.OK||!r.length){ resolve(null); return; }
+        const name = r[0].region_1depth_name || '';
+        const key  = _REGION_KEYS.find(([k])=>name.startsWith(k));
+        resolve(key ? key[1] : null);
+      });
+    } catch(e){ resolve(null); }
+  });
+}
+
+/* 주소에서 시/도 키 추출 */
+function _addrRegionKey(addr){
+  const a = addr.replace(/^\s*\d{3}-\d{3}\s+/,'').replace(/^\s*\d{5}\s+/,'').trim();
+  const key = _REGION_KEYS.find(([k])=>a.startsWith(k)||a.includes(k+'특별')||a.includes(k+'광역')||a.includes(k+'특별자치'));
+  return key ? key[1] : null;
+}
 
 async function loadCos(centerLat, centerLng){
   const personal = DB.getCards();
@@ -303,20 +333,34 @@ async function loadCos(centerLat, centerLng){
   });
   DB.getCos().filter(c=>c.addr).forEach(c=>{ coMap[c.nm]={...c}; });
 
-  const cos = Object.values(coMap);
-  if(!cos.length){msg('주소가 있는 거래처가 없습니다');return;}
+  let cos = Object.values(coMap);
+  if(!cos.length){ msg('주소가 있는 거래처가 없습니다'); return; }
 
-  const label = centerLat ? `현위치 ${RADIUS_KM}km 내 검색 중...` : `거래처 검색 중...`;
+  /* ── 1단계: 시/도 텍스트 필터 (API 호출 없음) ── */
+  if(centerLat){
+    msg('현위치 시/도 확인 중...', 0);
+    const regionKey = await _getRegionKey(centerLat, centerLng);
+    if(regionKey){
+      const regionFiltered = cos.filter(c=>_addrRegionKey(c.addr)===regionKey);
+      /* 같은 시/도 결과가 있으면 그것만 사용, 없으면 전체 대상 */
+      if(regionFiltered.length > 0){
+        cos = regionFiltered;
+        msg(`${regionKey} 지역 ${cos.length}곳 → geocode 시작...`, 0);
+      }
+    }
+  }
+
+  /* ── 2단계: 후보만 geocode → 20km 필터 ── */
+  const label = centerLat ? `${RADIUS_KM}km 내 검색 중...` : `거래처 검색 중...`;
   msg(label, 0);
 
-  const bounds=[], _markers=[];
-  let found=0;
-  for(let i=0;i<cos.length && found<MAX_COS;i++){
-    const co=cos[i];
-    const pos=await geocode(co.addr);
+  const bounds = [];
+  let found = 0;
+  for(let i=0; i<cos.length && found<MAX_COS; i++){
+    const co = cos[i];
+    const pos = await geocode(co.addr);
     if(!pos) continue;
 
-    /* 위치 있을 때만 거리 필터 */
     if(centerLat){
       const km = _dist(centerLat, centerLng, pos.lat, pos.lng);
       if(km > RADIUS_KM) continue;
@@ -324,7 +368,7 @@ async function loadCos(centerLat, centerLng){
 
     found++;
     const [slat,slng] = spreadPos(pos.lat, pos.lng);
-    const m=L.marker([slat,slng],{icon:mkIcon(SC[co.st]||'#2563eb')}).addTo(map);
+    const m = L.marker([slat,slng],{icon:mkIcon(SC[co.st]||'#2563eb')}).addTo(map);
     m.bindTooltip(co.nm,{permanent:true,direction:'top',offset:[0,-36],opacity:1});
     m.bindPopup(`
       <div style="font-size:14px;font-weight:700;margin-bottom:3px;">${co.nm}</div>
