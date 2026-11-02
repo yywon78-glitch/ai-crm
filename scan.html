@@ -263,7 +263,7 @@ function resizeImage(dataUrl, maxW, quality){
     img.src=dataUrl;
   });
 }
-function resizeForOCR(dataUrl){ return resizeImage(dataUrl,1600,0.9); }
+function resizeForOCR(dataUrl){ return resizeImage(dataUrl,2400,0.9); }
 function resizeForStore(dataUrl){ return resizeImage(dataUrl,480,0.60); }
 
 async function processImage(dataUrl){
