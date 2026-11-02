@@ -181,8 +181,8 @@ function cardHTML(c){
   return `<div class="li" onclick="openCardOverlay('${c.id}')">
     <div class="av card-av" id="av-${c.id}" style="background:${c.cl}18;color:${c.cl}">${c.nm[0]}</div>
     <div class="li-info">
-      <div class="li-name">${c.nm}${c.fav?' ⭐':''}</div>
-      <div class="li-sub">${c.tl?c.tl+' · ':''}${c.co||''}</div>
+      <div class="li-name">${c.nm}${c.tl?' / '+c.tl:''}${c.fav?' ⭐':''}</div>
+      <div class="li-sub">${c.co||''}</div>
     </div>
     <div class="li-r">${shareEl}<span class="bx ${tagCls[c.tag]||'b-bl'}">${c.tag}</span><span class="chev">›</span></div>
   </div>`;
