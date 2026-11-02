@@ -136,8 +136,8 @@ function render() {
     <div class="li" onclick="openCoOverlay('${c.id}')">
       <div class="av" style="background:var(--blue-lt);color:var(--blue);font-size:22px;">🏢</div>
       <div class="li-info">
-        <div class="li-name">${c.nm}</div>
-        <div class="li-sub">${c.ind||''} · 명함 ${c.cnt}장 · ${c.last}</div>
+        <div class="li-name">${c.nm} <span style="font-size:13px;font-weight:400;color:var(--t2);">/ ${c.cnt}장</span></div>
+        <div class="li-sub">${c.addr||''}</div>
       </div>
       <div class="li-r"><span class="bx ${stCls[c.st]||'b-bl'}">${stLbl[c.st]||c.st}</span><span class="chev">›</span></div>
     </div>`).join('');
