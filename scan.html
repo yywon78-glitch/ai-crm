@@ -25,50 +25,9 @@
 .fgrp{padding:0 14px;margin-bottom:12px;}
 #multi-box{display:none;position:fixed;inset:0;z-index:300;background:var(--bg);flex-direction:column;}
 #multi-box.show{display:flex;}
-
-/* ── 갤러리 검토 화면 ── */
-#gal-review{display:none;position:fixed;inset:0;z-index:50;background:var(--bg);flex-direction:column;}
-#gal-review.show{display:flex;}
-#gal-review .gr-body{flex:1;overflow-y:auto;padding:12px;}
-#gal-review .gr-sec-hdr{font-size:13px;font-weight:700;color:var(--t2);padding:8px 0 6px;margin-top:4px;}
-#gal-review .gr-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
-#gal-review .gr-img-item{position:relative;border-radius:10px;overflow:hidden;border:2.5px solid var(--blue);background:#111;aspect-ratio:3/2;}
-#gal-review .gr-img-item.unchecked{border-color:var(--bdr);opacity:.45;}
-#gal-review .gr-img-item img{width:100%;height:100%;object-fit:cover;display:block;}
-#gal-review .gr-chk{position:absolute;top:6px;left:6px;width:22px;height:22px;border-radius:50%;background:var(--blue);border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,.3);}
-#gal-review .gr-img-item.unchecked .gr-chk{background:#9ca3af;}
-#gal-review .gr-card-item{border-radius:10px;overflow:hidden;border:1px solid var(--bdr);background:var(--card);}
-#gal-review .gr-card-item img{width:100%;aspect-ratio:3/2;object-fit:cover;display:block;background:#eee;}
-#gal-review .gr-card-nm{font-size:12px;font-weight:700;padding:5px 7px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-#gal-review .gr-card-co{font-size:11px;color:var(--t2);padding:0 7px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-#gal-review .gr-card-noimg{width:100%;aspect-ratio:3/2;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:28px;color:var(--t3);}
-#gal-review .gr-srch{width:100%;padding:9px 12px;border-radius:10px;border:1px solid var(--bdr);font-size:14px;background:var(--bg);color:var(--t1);box-sizing:border-box;margin-bottom:8px;}
-#gal-review .gr-footer{flex-shrink:0;padding:12px 16px 28px;background:var(--card);border-top:1px solid var(--bdr);}
-#gal-review .gr-start-btn{width:100%;padding:18px;border-radius:14px;background:var(--blue);color:#fff;border:none;font-size:18px;font-weight:700;cursor:pointer;touch-action:manipulation;}
-#gal-review .gr-start-btn:disabled{background:#9ca3af;}
 </style>
 </head>
 <body>
-
-<!-- 갤러리 검토 화면 -->
-<div id="gal-review">
-  <header class="hdr">
-    <div class="hdr-back" onclick="_galReviewClose()">←</div>
-    <span class="hdr-t" id="gr-title">갤러리 검토</span>
-  </header>
-  <div class="gr-body">
-    <!-- 선택한 이미지 -->
-    <div class="gr-sec-hdr">📷 선택한 이미지 — <span id="gr-sel-cnt">0</span>장 선택됨</div>
-    <div class="gr-grid" id="gr-img-grid"></div>
-    <!-- 등록된 명함 -->
-    <div class="gr-sec-hdr">🪪 등록된 명함 — <span id="gr-card-cnt">0</span>장</div>
-    <input class="gr-srch" id="gr-srch" placeholder="🔍 이름, 회사 검색" oninput="_grSearch(this.value)">
-    <div class="gr-grid" id="gr-card-grid"></div>
-  </div>
-  <div class="gr-footer">
-    <button class="gr-start-btn" id="gr-start-btn" onclick="_galReviewStart()">인식 시작</button>
-  </div>
-</div>
 
 <!-- 파일 input (위치기반 숨김 — display:none 사용 안 함) -->
 <input type="file" id="inp-cam" accept="image/*" capture="environment"
@@ -237,11 +196,7 @@ function onFile(e){
 }
 document.getElementById('inp-cam').onchange = onFile;
 
-/* 갤러리: 여러 장 선택 → 검토 화면 표시 */
-let _galUrls = []; /* 검토 화면용 전체 URL 배열 */
-let _grChecked = []; /* 체크 상태 */
-let _grAllCards = []; /* 등록된 명함 캐시 */
-
+/* 갤러리: 여러 장 선택 지원 */
 document.getElementById('inp-gal').onchange = function(e){
   const files = [...e.target.files];
   e.target.value = '';
@@ -253,132 +208,32 @@ document.getElementById('inp-gal').onchange = function(e){
     r.readAsDataURL(f);
   }));
   Promise.all(readAll).then(urls=>{
-    _galUrls = urls;
-    _grChecked = urls.map(()=>true);
-    _showGalReview();
+    sessionStorage.setItem('scan_idx',   '1');
+    sessionStorage.setItem('scan_total', urls.length.toString());
+    if(urls.length === 1){
+      showRotate(urls[0]);
+    } else {
+      _queue = urls.slice(1);
+      toast(`${urls.length}장 선택됨 — 순서대로 처리합니다`);
+      showRotate(urls[0]);
+    }
   });
-};
-
-/* ── 갤러리 검토 화면 ── */
-function _showGalReview(){
-  /* 선택 이미지 그리드 */
-  const imgGrid = document.getElementById('gr-img-grid');
-  imgGrid.innerHTML = _galUrls.map((url,i)=>`
-    <div id="gr-img-${i}" class="gr-img-item${_grChecked[i]?'':' unchecked'}" onclick="_grToggle(${i})">
-      <img src="${url}" loading="lazy">
-      <div class="gr-chk">${_grChecked[i]?'✓':'○'}</div>
-    </div>`).join('');
-  _grUpdateSelCnt();
-
-  /* 등록된 명함 그리드 */
-  _grAllCards = DB.getCards();
-  document.getElementById('gr-card-cnt').textContent = _grAllCards.length;
-  _grRenderCards(_grAllCards);
-
-  document.getElementById('gr-srch').value = '';
-  document.getElementById('gal-review').classList.add('show');
-}
-
-function _grToggle(i){
-  _grChecked[i] = !_grChecked[i];
-  const item = document.getElementById(`gr-img-${i}`);
-  item.classList.toggle('unchecked', !_grChecked[i]);
-  item.querySelector('.gr-chk').textContent = _grChecked[i]?'✓':'○';
-  _grUpdateSelCnt();
-}
-
-function _grUpdateSelCnt(){
-  const cnt = _grChecked.filter(Boolean).length;
-  document.getElementById('gr-sel-cnt').textContent = cnt;
-  document.getElementById('gr-start-btn').disabled = cnt === 0;
-  document.getElementById('gr-start-btn').textContent = cnt > 0 ? `인식 시작 (${cnt}장)` : '선택된 이미지 없음';
-}
-
-function _grRenderCards(cards){
-  const grid = document.getElementById('gr-card-grid');
-  grid.innerHTML = cards.map(c=>`
-    <div class="gr-card-item">
-      <div class="gr-card-noimg" id="gr-th-${c.id}">🪪</div>
-      <div class="gr-card-nm">${c.nm||'(이름없음)'}</div>
-      <div class="gr-card-co">${c.co||''}</div>
-    </div>`).join('');
-  /* 썸네일 비동기 로드 */
-  cards.forEach(c=>{
-    ImgDB.get(c.id).then(data=>{
-      const el = document.getElementById(`gr-th-${c.id}`);
-      if(!el||!data) return;
-      el.outerHTML = `<img src="${data}" loading="lazy" style="width:100%;aspect-ratio:3/2;object-fit:cover;display:block;">`;
-    }).catch(()=>{});
-  });
-}
-
-function _grSearch(q){
-  const kw = q.trim().toLowerCase();
-  const filtered = kw ? _grAllCards.filter(c=>(c.nm||'').toLowerCase().includes(kw)||(c.co||'').toLowerCase().includes(kw)) : _grAllCards;
-  document.getElementById('gr-card-cnt').textContent = filtered.length;
-  _grRenderCards(filtered);
-}
-
-function _galReviewClose(){
-  document.getElementById('gal-review').classList.remove('show');
-  document.getElementById('cam-trigger').style.display = 'flex';
-}
-
-function _galReviewStart(){
-  const selected = _galUrls.filter((_,i)=>_grChecked[i]);
-  if(!selected.length) return;
-  document.getElementById('gal-review').classList.remove('show');
-  sessionStorage.setItem('scan_idx',   '1');
-  sessionStorage.setItem('scan_total', selected.length.toString());
-  if(selected.length === 1){
-    showRotate(selected[0]);
-  } else {
-    _queue = selected.slice(1);
-    toast(`${selected.length}장 인식을 시작합니다`);
-    showRotate(selected[0]);
-  }
 };
 
 /* ── 진입 경로 결정 ── */
-const _params  = new URLSearchParams(location.search);
 const _pending = sessionStorage.getItem('scan_data');
 _queue = JSON.parse(sessionStorage.getItem('scan_queue')||'[]');
 _idbQueue = parseInt(sessionStorage.getItem('scan_queue_idb')||'0');
 sessionStorage.removeItem('scan_queue');
 sessionStorage.removeItem('scan_queue_idb');
-
-if(_params.has('review')){
-  /* 갤러리 검토 모드 — IDB에서 이미지 로드 후 검토화면 표시 */
-  const total = parseInt(sessionStorage.getItem('scan_rev_total')||'0');
-  sessionStorage.removeItem('scan_rev_total');
-  if(total > 0){
-    (async()=>{
-      const urls=[];
-      for(let i=0;i<total;i++){
-        try{ const u=await ImgDB.get('_rev_'+i); if(u) urls.push(u); ImgDB.del('_rev_'+i); }
-        catch(e){ console.warn('IDB read _rev_'+i, e); }
-      }
-      if(urls.length > 0){
-        _galUrls   = urls;
-        _grChecked = urls.map(()=>true);
-        _fromIndex = true;
-        _showGalReview();
-      } else {
-        /* IDB 읽기 실패 → 일반 화면 */
-        document.getElementById('cam-trigger').style.display = 'flex';
-      }
-    })();
-  } else {
-    document.getElementById('cam-trigger').style.display = 'flex';
-  }
-} else if(_pending){
+if(_pending){
   _fromIndex = true;
   sessionStorage.removeItem('scan_data');
   sessionStorage.removeItem('scan_mode');
   showRotate(_pending);
 } else {
   // 직접 진입 — 갤러리 모드 체크
-  if(_params.has('gal')){
+  if(new URLSearchParams(location.search).get('gal')){
     document.getElementById('cam-trigger').setAttribute('for','inp-gal');
     document.getElementById('trig-ic').textContent  = '🖼️';
     document.getElementById('trig-t1').textContent  = '탭하여 갤러리 선택';
