@@ -238,19 +238,21 @@
   document.getElementById('inp-gal').onchange=function(e){
     const files=[...e.target.files];if(!files.length)return;e.target.value='';
     Promise.all(files.map(fileToDataUrl)).then(async urls=>{
-      sessionStorage.setItem('scan_data', urls[0]);
       sessionStorage.setItem('scan_back', 'cards.html');
-      sessionStorage.setItem('scan_idx',  '1');
-      sessionStorage.setItem('scan_total', String(urls.length));
-      sessionStorage.removeItem('scan_queue');
-      /* 나머지 이미지는 IndexedDB에 저장 — sessionStorage 5MB 한도 우회 */
+      /* 여러 장 → 검토 화면 경유 */
       if(urls.length > 1){
-        await Promise.all(urls.slice(1).map((url,i)=>ImgDB.set('_sq_'+i, url)));
-        sessionStorage.setItem('scan_queue_idb', String(urls.length-1));
+        /* 전체 이미지 IDB에 저장 후 review 모드로 이동 */
+        await Promise.all(urls.map((url,i)=>ImgDB.set('_rev_'+i, url)));
+        sessionStorage.setItem('scan_rev_total', String(urls.length));
+        location.href='scan.html?review';
       } else {
+        sessionStorage.setItem('scan_data', urls[0]);
+        sessionStorage.setItem('scan_idx',  '1');
+        sessionStorage.setItem('scan_total', '1');
+        sessionStorage.removeItem('scan_queue');
         sessionStorage.removeItem('scan_queue_idb');
+        location.href='scan.html';
       }
-      location.href='scan.html';
     }).catch(()=>{ location.href='scan.html'; });
   };
 })();

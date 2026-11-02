@@ -340,19 +340,36 @@ function _galReviewStart(){
 };
 
 /* ── 진입 경로 결정 ── */
+const _params  = new URLSearchParams(location.search);
 const _pending = sessionStorage.getItem('scan_data');
 _queue = JSON.parse(sessionStorage.getItem('scan_queue')||'[]');
 _idbQueue = parseInt(sessionStorage.getItem('scan_queue_idb')||'0');
 sessionStorage.removeItem('scan_queue');
 sessionStorage.removeItem('scan_queue_idb');
-if(_pending){
+
+if(_params.get('review')){
+  /* 갤러리 검토 모드 — IDB에서 이미지 로드 후 검토화면 표시 */
+  const total = parseInt(sessionStorage.getItem('scan_rev_total')||'0');
+  sessionStorage.removeItem('scan_rev_total');
+  if(total > 0){
+    Promise.all(Array.from({length:total},(_,i)=>ImgDB.get('_rev_'+i).then(u=>{ImgDB.del('_rev_'+i);return u;})))
+      .then(urls=>{
+        _galUrls    = urls.filter(Boolean);
+        _grChecked  = _galUrls.map(()=>true);
+        _fromIndex  = true;
+        _showGalReview();
+      });
+  } else {
+    document.getElementById('cam-trigger').style.display = 'flex';
+  }
+} else if(_pending){
   _fromIndex = true;
   sessionStorage.removeItem('scan_data');
   sessionStorage.removeItem('scan_mode');
   showRotate(_pending);
 } else {
   // 직접 진입 — 갤러리 모드 체크
-  if(new URLSearchParams(location.search).get('gal')){
+  if(_params.get('gal')){
     document.getElementById('cam-trigger').setAttribute('for','inp-gal');
     document.getElementById('trig-ic').textContent  = '🖼️';
     document.getElementById('trig-t1').textContent  = '탭하여 갤러리 선택';
