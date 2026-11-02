@@ -370,7 +370,7 @@ function saveMulti(){
     const nm=(info.nm||'').trim(); if(!nm) return;
     const co=(info.co||'').trim();
     const mob=(info.mob||'').trim();
-    const dup=saved.find(c=>c.nm===nm&&mob&&c.mob===mob);
+    const dup=saved.find(c=>c.nm===nm&&mob&&c.mob===mob&&(c.co||'')===(co||''));
     if(dup){
       Object.assign(dup,{tl:info.tl||'',mob:info.mob||'',ph:info.ph||'',em:info.em||'',addr:info.addr||''});
       if(_captured) newIds.push(dup.id);
@@ -453,9 +453,9 @@ function saveCard(){
   const co=document.getElementById('f-co').value.trim();
   const mob=document.getElementById('f-mob').value.trim();
   const cards=DB.getCards();
-  const dup=cards.find(c=>c.nm===nm&&mob&&c.mob===mob);
+  const dup=cards.find(c=>c.nm===nm&&mob&&c.mob===mob&&(c.co||'')===(co||''));
   if(dup){
-    if(!confirm(`이미 등록된 명함입니다.\n\n${nm} / ${mob}\n\n업데이트할까요?`)) return;
+    if(!confirm(`이미 등록된 명함입니다.\n\n${nm} / ${mob} / ${co}\n\n업데이트할까요?`)) return;
     dup.tl=document.getElementById('f-tl').value.trim();
     dup.mob=document.getElementById('f-mob').value.trim();
     dup.ph=document.getElementById('f-ph').value.trim();
