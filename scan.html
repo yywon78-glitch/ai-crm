@@ -347,7 +347,7 @@ _idbQueue = parseInt(sessionStorage.getItem('scan_queue_idb')||'0');
 sessionStorage.removeItem('scan_queue');
 sessionStorage.removeItem('scan_queue_idb');
 
-if(_params.get('review')){
+if(_params.has('review')){
   /* 갤러리 검토 모드 — IDB에서 이미지 로드 후 검토화면 표시 */
   const total = parseInt(sessionStorage.getItem('scan_rev_total')||'0');
   sessionStorage.removeItem('scan_rev_total');
@@ -369,7 +369,7 @@ if(_params.get('review')){
   showRotate(_pending);
 } else {
   // 직접 진입 — 갤러리 모드 체크
-  if(_params.get('gal')){
+  if(_params.has('gal')){
     document.getElementById('cam-trigger').setAttribute('for','inp-gal');
     document.getElementById('trig-ic').textContent  = '🖼️';
     document.getElementById('trig-t1').textContent  = '탭하여 갤러리 선택';
