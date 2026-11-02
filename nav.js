@@ -428,8 +428,8 @@ window.addEventListener('popstate', function(e) {
     openCoOverlay(s.coId);
     _noCoState = false;
   } else {
-    /* co 오버레이만 닫기 (card 오버레이는 cards.html popstate에서 처리) */
-    const coEl = document.getElementById('overlay-co');
-    if(coEl) coEl.classList.remove('show');
+    /* 모든 오버레이·모달 닫기 — 방문기록 모달 등 moverlay 포함
+       card 오버레이 복원은 cards.html popstate에서 처리 */
+    closeAllOverlays();
   }
 });
