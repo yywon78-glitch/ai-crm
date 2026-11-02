@@ -234,6 +234,11 @@ function _wrapDetail(addr){
   return `${m[1].replace(/,\s*$/,'').trim()} (${m[2].trim()})`;
 }
 
+/* 행정동(방배3동) → 법정동(방배동) 변환 — 원본 데이터 유지, 검색 시만 적용 */
+function _toLegalDong(addr){
+  return addr.replace(/([가-힣]+)\d+동/g, '$1동');
+}
+
 async function geocode(addr){
   if(!addr) return null;
   const raw = addr.replace(/\s+/g,' ').trim();
@@ -244,11 +249,13 @@ async function geocode(addr){
   let v=null;
   /* 1) Kakao REST — 우편번호 제거 */
   try{ v=await _kakaoRest(q); }catch(e){}
-  /* 2) Kakao REST — 상세주소 괄호 처리 후 재시도 */
-  if(!v){ const q2=_wrapDetail(q); if(q2!==q) try{ v=await _kakaoRest(q2); }catch(e){} }
-  /* 3) Kakao JS SDK */
+  /* 2) Kakao REST — 행정동→법정동 변환 후 재시도 */
+  if(!v){ const q2=_toLegalDong(q); if(q2!==q) try{ v=await _kakaoRest(q2); }catch(e){} }
+  /* 3) Kakao REST — 상세주소 괄호 처리 후 재시도 */
+  if(!v){ const q3=_wrapDetail(q); if(q3!==q) try{ v=await _kakaoRest(q3); }catch(e){} }
+  /* 4) Kakao JS SDK */
   if(!v) try{ v=await _kakaoSdk(q); }catch(e){}
-  /* 4) Nominatim 폴백 */
+  /* 5) Nominatim 폴백 */
   if(!v) try{
     const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&countrycodes=kr&accept-language=ko`);
     const d=await r.json();
