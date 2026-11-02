@@ -352,13 +352,22 @@ if(_params.has('review')){
   const total = parseInt(sessionStorage.getItem('scan_rev_total')||'0');
   sessionStorage.removeItem('scan_rev_total');
   if(total > 0){
-    Promise.all(Array.from({length:total},(_,i)=>ImgDB.get('_rev_'+i).then(u=>{ImgDB.del('_rev_'+i);return u;})))
-      .then(urls=>{
-        _galUrls    = urls.filter(Boolean);
-        _grChecked  = _galUrls.map(()=>true);
-        _fromIndex  = true;
+    (async()=>{
+      const urls=[];
+      for(let i=0;i<total;i++){
+        try{ const u=await ImgDB.get('_rev_'+i); if(u) urls.push(u); ImgDB.del('_rev_'+i); }
+        catch(e){ console.warn('IDB read _rev_'+i, e); }
+      }
+      if(urls.length > 0){
+        _galUrls   = urls;
+        _grChecked = urls.map(()=>true);
+        _fromIndex = true;
         _showGalReview();
-      });
+      } else {
+        /* IDB 읽기 실패 → 일반 화면 */
+        document.getElementById('cam-trigger').style.display = 'flex';
+      }
+    })();
   } else {
     document.getElementById('cam-trigger').style.display = 'flex';
   }
