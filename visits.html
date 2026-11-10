@@ -521,8 +521,6 @@ function selectDate(ds){
     const coNm=_calCo.startsWith('_nm_')?_calCo.slice(4):null;
     src=coNm ? src.filter(v=>v.co===coNm) : src.filter(v=>v.coId===_calCo);
   }
-  if(_calFilter==='month'){const now=new Date();const ym=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;src=src.filter(v=>v.dt.startsWith(ym));}
-  else if(_calFilter!=='all') src=src.filter(v=>v.tp.includes(_calFilter));
   // 해당 날짜: 방문 완료 + 오늘 이후 예정
   const list=src.filter(v=>v.dt===ds||(v.next===ds&&ds>=TODAY))
     .sort((a,b)=>(b.dt+(b.time||''))>(a.dt+(a.time||''))?1:-1);
