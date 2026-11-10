@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>거래처 지도</title>
+<link rel="stylesheet" href="shared.css?v=209">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+html,body{height:100%;margin:0;}
+.page{height:100%;display:flex;flex-direction:column;}
+#map-wrap{flex:1;position:relative;overflow:hidden;}
+#map{width:100%;height:100%;}
+
+/* 우측 FAB */
+.fab-col{position:absolute;right:10px;bottom:14px;z-index:900;display:flex;flex-direction:column;gap:8px;}
+.fab{width:44px;height:44px;border-radius:50%;border:none;
+     box-shadow:0 2px 8px rgba(0,0,0,.22);cursor:pointer;background:#fff;
+     display:flex;flex-direction:column;align-items:center;justify-content:center;
+     font-size:17px;touch-action:manipulation;color:#111;}
+.fab.blue{background:#2563eb;color:#fff;}
+.fab.red {background:#dc2626;color:#fff;}
+.fab small{font-size:9px;font-weight:700;display:block;line-height:1.1;margin-top:1px;}
+
+/* 상태 메시지 */
+.map-msg{position:absolute;top:10px;left:50%;transform:translateX(-50%);
+         z-index:900;background:rgba(0,0,0,.72);color:#fff;font-size:12px;
+         padding:5px 16px;border-radius:20px;white-space:normal;text-align:center;
+         pointer-events:none;display:none;max-width:88vw;line-height:1.5;}
+.map-msg.on{display:block;}
+
+/* Leaflet 줌 위치 */
+.leaflet-top.leaflet-left{top:8px;left:8px;}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="hdr" style="flex-shrink:0;">
+    <div class="hdr-back" onclick="history.back()">←</div>
+    <span class="hdr-t">거래처 지도</span>
+  </header>
+
+  <!-- 주소 검색창 -->
+  <div style="padding:6px 10px;background:var(--card);border-bottom:1px solid var(--bdr);display:flex;gap:6px;flex-shrink:0;">
+    <input id="map-srch" placeholder="🔍 주소 또는 장소 검색" style="flex:1;padding:8px 12px;border-radius:10px;border:1px solid var(--bdr);font-size:14px;background:var(--bg);color:var(--t1);"
+      onkeydown="if(event.key==='Enter')mapSearch()">
+    <button onclick="mapSearch()" style="padding:8px 14px;border-radius:10px;background:var(--blue);color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;">검색</button>
+  </div>
+
+  <div id="map-wrap">
+    <div id="map"></div>
+    <div class="map-msg" id="map-msg"></div>
+
+    <div class="fab-col">
+      <button class="fab blue" onclick="locateMe()">📍<small>내위치</small></button>
+      <button class="fab" id="fab-layer" onclick="toggleLayer()">
+        <span id="layer-ic">🛰️</span><small id="layer-lbl">위성</small>
+      </button>
+      <button class="fab" id="fab-dist" onclick="toggleMeasure()">
+        📏<small>거리재기</small>
+      </button>
+    </div>
+  </div>
+
+  <nav class="tabbar" id="tabbar" style="flex-shrink:0;"></nav>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=389a3598c4789e6960b8095f97df7301&libraries=services"></script>
+<script src="data.js?v=209"></script>
+<script src="nav.js?v=209"></script>
+<script>
+/* ── 타일 레이어 ── */
+const T = {
+  street: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'© OpenStreetMap', maxZoom:19
+  }),
+  sat: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
+    attribution:'© Esri World Imagery', maxZoom:19
+  })
+};
+
+const map = L.map('map',{zoomControl:true}).setView([37.5665,126.9780],11);
+T.street.addTo(map);
+let _curTile = 'street';
+
+function toggleLayer(){
+  const next = _curTile==='street' ? 'sat' : 'street';
+  map.removeLayer(T[_curTile]);
+  T[next].addTo(map);
+  _curTile = next;
+  document.getElementById('layer-ic').textContent = next==='sat' ? '🗺️' : '🛰️';
+  document.getElementById('layer-lbl').textContent = next==='sat' ? '일반' : '위성';
+}
+
+/* ── 상태 메시지 ── */
+let _mt;
+function msg(txt,dur=3000){
+  const el=document.getElementById('map-msg');
+  el.textContent=txt; el.classList.add('on');
+  clearTimeout(_mt);
+  if(dur>0) _mt=setTimeout(()=>el.classList.remove('on'),dur);
+}
+function msgHide(){ document.getElementById('map-msg').classList.remove('on'); }
+
+/* ── 내 위치 ── */
+let _myMk=null;
+function locateMe(){
+  msg('위치 확인 중...',0);
+  if(!navigator.geolocation){ msg('위치 기능을 지원하지 않습니다'); return; }
+  navigator.geolocation.getCurrentPosition(
+    pos=>{
+      const {latitude:lat,longitude:lng}=pos.coords;
+      if(_myMk) map.removeLayer(_myMk);
+      _myMk=L.circleMarker([lat,lng],{radius:9,fillColor:'#2563eb',color:'#fff',weight:2.5,fillOpacity:1})
+        .addTo(map).bindTooltip('📍 현재 위치');
+      map.setView([lat,lng],14);
+      msgHide();
+    },
+    err=>{
+      if(err.code===1){
+        const ios=/iPhone|iPad|iPod/.test(navigator.userAgent);
+        msg(ios
+          ? '⚠️ 설정 → 개인정보보호 → 위치서비스 → Safari → "앱 사용 중" 선택'
+          : '⚠️ 주소창 🔒 아이콘 → 위치 → 허용 선택',
+          7000);
+      } else { msg('위치를 가져올 수 없습니다'); }
+    },
+    {enableHighAccuracy:true,timeout:10000}
+  );
+}
+
+/* ── 거리재기 ── */
+let _measuring=false, _pts=[], _line=null, _lbls=[];
+function toggleMeasure(){
+  _measuring=!_measuring;
+  const btn=document.getElementById('fab-dist');
+  btn.classList.toggle('red',_measuring);
+  if(!_measuring){
+    if(_line) map.removeLayer(_line);
+    _lbls.forEach(l=>map.removeLayer(l));
+    _pts=[]; _line=null; _lbls=[];
+    msgHide();
+  } else { msg('지도를 탭해서 거리를 재세요  ·  다시 누르면 종료',4000); }
+}
+map.on('click',e=>{
+  if(!_measuring) return;
+  _pts.push(e.latlng);
+  if(_line) map.removeLayer(_line);
+  _line=L.polyline(_pts,{color:'#dc2626',weight:3,opacity:.9}).addTo(map);
+  if(_pts.length>1){
+    let d=0;
+    for(let i=1;i<_pts.length;i++) d+=_pts[i-1].distanceTo(_pts[i]);
+    const lbl=d>=1000?`${(d/1000).toFixed(2)}km`:`${Math.round(d)}m`;
+    const ov=L.marker(_pts[_pts.length-1],{
+      icon:L.divIcon({html:`<div style="background:#dc2626;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;white-space:nowrap;">${lbl}</div>`,className:'',iconAnchor:[0,20]})
+    }).addTo(map);
+    _lbls.push(ov);
+    msg(`📏 총 ${lbl}`,0);
+  }
+});
+
+/* ── 지오코딩 캐시 ── */
+const GK='crm_geo4';
+function gCache(){try{return JSON.parse(localStorage.getItem(GK)||'{}')}catch(e){return{}}}
+function gSave(a,v){try{const c=gCache();c[a]=v;localStorage.setItem(GK,JSON.stringify(c))}catch(e){}}
+
+// ── 주소 정제 로직 (복원용 참조 — 현재 미사용) ─────────────────────
+// function _cleanAddr(addr){
+//   return addr
+//     .replace(/^\s*\(우\)?\s*\d{5}\s*/,'')
+//     .replace(/^\s*\d{5}\s+/,'')
+//     .replace(/\s+\d+층.*$/,'')
+//     .replace(/\s+\d+-\d+호.*$/,'')
+//     .replace(/\([^)]{2,}\)/g,'')
+//     .replace(/,.*$/,'')
+//     .replace(/\s+/g,' ').trim();
+// }
+// function _coreAddr(addr){
+//   const m = addr.match(/^(.+?(?:대로\s*\d*길|로\s*\d*길|길|대로|로|가)\s+\d+(?:-\d+)?)/);
+//   return m ? m[1].trim() : _cleanAddr(addr);
+// }
+// function _expandCity(addr){
+//   return addr
+//     .replace(/^서울(\s|구)/, '서울특별시$1')
+//     .replace(/^부산(\s|구)/, '부산광역시$1')
+//     .replace(/^인천(\s|구)/, '인천광역시$1')
+//     .replace(/^대구(\s|구)/, '대구광역시$1')
+//     .replace(/^대전(\s|구)/, '대전광역시$1')
+//     .replace(/^광주(\s|구)/, '광주광역시$1')
+//     .replace(/^울산(\s|구)/, '울산광역시$1')
+//     .replace(/^세종(\s|구)/, '세종특별자치시$1');
+// }
+// ─────────────────────────────────────────────────────────────────
+
+/* ── 지오코딩: Kakao REST API → Kakao JS SDK → Nominatim ── */
+const KAKAO_REST = '715709b66045eb4545e1efffcf11c09e';
+
+async function _kakaoRest(q){
+  const r = await fetch(
+    `https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(q)}&size=1`,
+    {headers:{Authorization:'KakaoAK '+KAKAO_REST}}
+  );
+  const d = await r.json();
+  const doc = d.documents?.[0];
+  if(!doc) return null;
+  const x = doc.x||doc.address?.x, y = doc.y||doc.address?.y;
+  return (x&&y) ? {lat:+y,lng:+x} : null;
+}
+
+function _kakaoSdk(q){
+  return new Promise(resolve=>{
+    try{
+      if(typeof kakao==='undefined'||!kakao.maps?.services){resolve(null);return;}
+      new kakao.maps.services.Geocoder().addressSearch(q,(r,s)=>{
+        resolve(s===kakao.maps.services.Status.OK&&r.length?{lat:+r[0].y,lng:+r[0].x}:null);
+      });
+    }catch(e){resolve(null);}
+  });
+}
+
+function _stripZip(addr){
+  return addr
+    .replace(/^\s*\(우\)?\s*\d{5}\s*/,'')   /* (우)12345 */
+    .replace(/^\s*\d{5}\s+/,'')              /* 12345 주소 */
+    .replace(/^\s*\d{3}-\d{3}\s+/,'')        /* 152-879 구형 우편번호 */
+    .replace(/\s+\d{5}\s*$/,'')              /* 주소 12345 */
+    .replace(/\s+/g,' ').trim();
+}
+
+function _wrapDetail(addr){
+  const m = addr.match(/^(.+?\d+(?:-\d+)?)\s+([^(].+)$/);
+  if(!m) return addr;
+  return `${m[1].replace(/,\s*$/,'').trim()} (${m[2].trim()})`;
+}
+
+/* 행정동(방배3동) → 법정동(방배동) 변환 — 원본 데이터 유지, 검색 시만 적용 */
+function _toLegalDong(addr){
+  return addr.replace(/([가-힣]+)\d+동/g, '$1동');
+}
+
+async function geocode(addr, forceRefresh=false){
+  if(!addr) return null;
+  const raw = addr.replace(/\s+/g,' ').trim();
+  if(!raw) return null;
+  const c=gCache(); if(!forceRefresh && c[raw]) return c[raw];
+  const q = _stripZip(raw);
+
+  let v=null;
+  /* 1) Kakao REST — 우편번호 제거 */
+  try{ v=await _kakaoRest(q); }catch(e){}
+  /* 2) Kakao REST — 행정동→법정동 변환 후 재시도 */
+  if(!v){ const q2=_toLegalDong(q); if(q2!==q) try{ v=await _kakaoRest(q2); }catch(e){} }
+  /* 3) Kakao REST — 상세주소 괄호 처리 후 재시도 */
+  if(!v){ const q3=_wrapDetail(q); if(q3!==q) try{ v=await _kakaoRest(q3); }catch(e){} }
+  /* 4) Kakao JS SDK */
+  if(!v) try{ v=await _kakaoSdk(q); }catch(e){}
+  /* 5) Nominatim 폴백 */
+  if(!v) try{
+    const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&countrycodes=kr&accept-language=ko`);
+    const d=await r.json();
+    if(d.length) v={lat:+d[0].lat,lng:+d[0].lon};
+  }catch(e){}
+
+  if(v) gSave(raw,v);
+  return v;
+}
+
+/* 두 좌표 간 거리(km) */
+function _dist(lat1,lng1,lat2,lng2){
+  const R=6371, dLat=(lat2-lat1)*Math.PI/180, dLng=(lng2-lng1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+/* ── 마커 아이콘 ── */
+const SC={active:'#2563eb',potential:'#d97706',dormant:'#9ca3af'};
+function mkIcon(color){
+  return L.divIcon({
+    html:`<div style="width:34px;height:34px;border-radius:50%;background:${color};border:2.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;font-size:15px;">🏢</div>`,
+    className:'',iconSize:[34,34],iconAnchor:[17,34],popupAnchor:[0,-36]
+  });
+}
+
+/* 같은 좌표 마커 분산 */
+const _posCount = {};
+function spreadPos(lat, lng){
+  const k = `${lat.toFixed(4)},${lng.toFixed(4)}`;
+  const n = (_posCount[k] = (_posCount[k]||0) + 1);
+  if(n === 1) return [lat, lng];
+  /* n번째부터 원형 배치 (반경 약 30m) */
+  const angle = ((n - 2) * 60) * Math.PI / 180;
+  return [lat + 0.00028 * Math.cos(angle), lng + 0.00028 * Math.sin(angle)];
+}
+
+/* ── 거래처 로드 — 시/도 텍스트 필터 → geocode → 20km 필터 ── */
+const RADIUS_KM = 20;
+const MAX_COS   = 30;
+
+/* 시/도 약칭 정규화 (주소 텍스트 매칭용) */
+const _REGION_KEYS = [
+  ['서울','서울'],['경기','경기'],['인천','인천'],['강원','강원'],
+  ['충북','충북'],['충남','충남'],['세종','세종'],['대전','대전'],
+  ['전북','전북'],['전남','전남'],['광주','광주'],['경북','경북'],
+  ['경남','경남'],['대구','대구'],['울산','울산'],['부산','부산'],['제주','제주']
+];
+
+/* 좌표 → 시/도 키 (Kakao SDK coord2RegionCode) */
+function _getRegionKey(lat, lng){
+  return new Promise(resolve=>{
+    try{
+      if(typeof kakao==='undefined'||!kakao.maps?.services){ resolve(null); return; }
+      new kakao.maps.services.Geocoder().coord2RegionCode(lng, lat, (r,s)=>{
+        if(s!==kakao.maps.services.Status.OK||!r.length){ resolve(null); return; }
+        const name = r[0].region_1depth_name || '';
+        const key  = _REGION_KEYS.find(([k])=>name.startsWith(k));
+        resolve(key ? key[1] : null);
+      });
+    } catch(e){ resolve(null); }
+  });
+}
+
+/* 주소에서 시/도 키 추출 */
+function _addrRegionKey(addr){
+  const a = addr.replace(/^\s*\d{3}-\d{3}\s+/,'').replace(/^\s*\d{5}\s+/,'').trim();
+  const key = _REGION_KEYS.find(([k])=>a.startsWith(k)||a.includes(k+'특별')||a.includes(k+'광역')||a.includes(k+'특별자치'));
+  return key ? key[1] : null;
+}
+
+async function loadCos(centerLat, centerLng){
+  const personal = DB.getCards();
+  const personalIds = new Set(personal.map(c=>c.id));
+  const sharedCards = DB.getDriveShared().filter(c=>!personalIds.has(c.id));
+  const allCards = [...personal, ...sharedCards];
+
+  const coMap = {};
+  allCards.forEach(c=>{
+    if(c.co && c.addr && !coMap[c.co])
+      coMap[c.co] = {nm:c.co, addr:c.addr, id:'_sc_'+c.co, st:'active'};
+  });
+  DB.getCos().filter(c=>c.addr).forEach(c=>{ coMap[c.nm]={...c}; });
+
+  let cos = Object.values(coMap);
+  if(!cos.length){ msg('주소가 있는 거래처가 없습니다'); return; }
+
+  /* ── 1단계: 시/도 텍스트 필터 (API 호출 없음) ── */
+  if(centerLat){
+    msg('현위치 시/도 확인 중...', 0);
+    const regionKey = await _getRegionKey(centerLat, centerLng);
+    if(regionKey){
+      const regionFiltered = cos.filter(c=>_addrRegionKey(c.addr)===regionKey);
+      /* 같은 시/도 결과가 있으면 그것만 사용, 없으면 전체 대상 */
+      if(regionFiltered.length > 0){
+        cos = regionFiltered;
+        msg(`${regionKey} 지역 ${cos.length}곳 → geocode 시작...`, 0);
+      }
+    }
+  }
+
+  /* ── 2단계: 후보만 geocode → 20km 필터 ── */
+  const label = centerLat ? `${RADIUS_KM}km 내 검색 중...` : `거래처 검색 중...`;
+  msg(label, 0);
+
+  const bounds = [];
+  let found = 0;
+  for(let i=0; i<cos.length && found<MAX_COS; i++){
+    const co = cos[i];
+    const pos = await geocode(co.addr);
+    if(!pos) continue;
+
+    if(centerLat){
+      const km = _dist(centerLat, centerLng, pos.lat, pos.lng);
+      if(km > RADIUS_KM) continue;
+    }
+
+    found++;
+    const [slat,slng] = spreadPos(pos.lat, pos.lng);
+    const m = L.marker([slat,slng],{icon:mkIcon(SC[co.st]||'#2563eb')}).addTo(map);
+    m.bindTooltip(co.nm,{permanent:true,direction:'top',offset:[0,-36],opacity:1});
+    m.bindPopup(`
+      <div style="font-size:14px;font-weight:700;margin-bottom:3px;">${co.nm}</div>
+      <div style="font-size:11px;color:#666;margin-bottom:10px;">${co.addr}</div>
+      <button onclick="location.href='co.html?id=${encodeURIComponent(co.id)}'"
+        style="display:block;width:100%;padding:8px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">
+        거래처 상세 →
+      </button>`);
+    bounds.push([slat,slng]);
+    msg(`검색 중... ${found}곳 찾음`, 0);
+  }
+
+  msgHide();
+  if(found===0){ msg(centerLat ? `${RADIUS_KM}km 내 거래처가 없습니다` : '주소를 찾을 수 없습니다'); return; }
+  msg(`주변 거래처 ${found}곳`, 2500);
+  if(bounds.length>1) map.fitBounds(bounds,{padding:[50,50]});
+  else if(bounds.length===1) map.setView(bounds[0],15);
+}
+
+
+/* ── 지도 검색 ── */
+let _searchMk = null;
+async function mapSearch(){
+  const q = document.getElementById('map-srch').value.trim();
+  if(!q) return;
+  msg('검색 중...', 0);
+  const pos = await geocode(q, true); /* 수동 검색 시 캐시 무시 → 항상 새로 검색 */
+  if(!pos){ msg('위치를 찾을 수 없습니다', 3000); return; }
+  if(_searchMk) map.removeLayer(_searchMk);
+  _searchMk = L.marker([pos.lat, pos.lng], {
+    icon: L.divIcon({
+      html:`<div style="width:36px;height:36px;border-radius:50%;background:#7c3aed;border:2.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;font-size:16px;">📍</div>`,
+      className:'', iconSize:[36,36], iconAnchor:[18,36]
+    })
+  }).addTo(map).bindTooltip(q, {permanent:true, direction:'top', offset:[0,-38]});
+  map.setView([pos.lat, pos.lng], 15);
+  msgHide();
+}
+
+renderTabBar('map');
+
+(async function(){
+  const focusAddr = qp('addr');
+  const focusNm   = qp('nm');
+
+  /* 특정 거래처로 진입 */
+  if(focusAddr){
+    /* 검색창에 주소 표시 — 못 찾으면 수정 후 재검색 가능 */
+    document.getElementById('map-srch').value = focusAddr;
+    msg('위치 검색 중...',0);
+    const pos = await geocode(focusAddr);
+    if(pos){
+      map.setView([pos.lat,pos.lng],15);
+      const focusMk = L.marker([pos.lat,pos.lng],{
+        icon: L.divIcon({
+          html:`<div style="width:44px;height:44px;border-radius:50%;background:#dc2626;border:3px solid #fff;box-shadow:0 2px 12px rgba(220,38,38,.5);display:flex;align-items:center;justify-content:center;font-size:20px;">🏢</div>`,
+          className:'',iconSize:[44,44],iconAnchor:[22,44],popupAnchor:[0,-46]
+        })
+      }).addTo(map);
+      focusMk.bindTooltip(`<b>${focusNm||''}</b>`,{permanent:true,direction:'top',offset:[0,-46],opacity:1});
+      msgHide();
+      setTimeout(()=>loadCos(pos.lat, pos.lng), 300);
+    } else {
+      msgHide();
+      msg('주소를 찾을 수 없습니다. 검색창에서 수정 후 재검색하세요.', 5000);
+    }
+    return;
+  }
+
+  /* 현재 위치 먼저 가져온 후 주변 거래처 표시 */
+  if(navigator.geolocation){
+    msg('현재 위치 확인 중...',0);
+    navigator.geolocation.getCurrentPosition(
+      pos=>{
+        const {latitude:lat,longitude:lng}=pos.coords;
+        if(_myMk) map.removeLayer(_myMk);
+        _myMk=L.circleMarker([lat,lng],{radius:9,fillColor:'#2563eb',color:'#fff',weight:2.5,fillOpacity:1})
+          .addTo(map).bindTooltip('📍 현재 위치');
+        map.setView([lat,lng],13);
+        msgHide();
+        loadCos(lat, lng);
+      },
+      ()=>{ msgHide(); loadCos(); },
+      {enableHighAccuracy:true,timeout:8000}
+    );
+  } else {
+    loadCos();
+  }
+})();
+</script>
+</body>
+</html>

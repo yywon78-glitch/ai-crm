@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>명함관리 사용설명서</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.guide-hero{background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;padding:32px 20px 28px;text-align:center;}
+.guide-hero-ic{font-size:52px;margin-bottom:10px;}
+.guide-hero-t{font-size:22px;font-weight:800;margin-bottom:6px;}
+.guide-hero-s{font-size:13px;opacity:.8;line-height:1.6;}
+
+.sec{padding:20px 16px 0;}
+.sec-ttl{font-size:11px;font-weight:800;color:var(--t3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;}
+
+.card{background:var(--card);border-radius:14px;margin-bottom:10px;overflow:hidden;border:1px solid var(--bdr);}
+.card-hdr{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--bdr2);}
+.card-ic{font-size:22px;width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.card-ic.blue{background:#dbeafe;}
+.card-ic.green{background:#dcfce7;}
+.card-ic.amber{background:#fef3c7;}
+.card-ic.purple{background:#ede9fe;}
+.card-ttl{font-size:15px;font-weight:700;}
+.card-sub{font-size:12px;color:var(--t2);margin-top:1px;}
+.card-body{padding:12px 16px 14px;}
+
+.step{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--bdr2);}
+.step:last-child{border-bottom:none;}
+.step-num{width:22px;height:22px;border-radius:50%;background:var(--blue);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.step-body{flex:1;}
+.step-t{font-size:13px;font-weight:700;margin-bottom:2px;}
+.step-s{font-size:12px;color:var(--t2);line-height:1.6;}
+
+.tip{background:#eff6ff;border-left:3px solid var(--blue);border-radius:0 8px 8px 0;padding:10px 12px;margin-top:8px;font-size:12px;color:#1d4ed8;line-height:1.6;}
+.warn{background:#fff7ed;border-left:3px solid #f59e0b;border-radius:0 8px 8px 0;padding:10px 12px;margin-top:8px;font-size:12px;color:#92400e;line-height:1.6;}
+
+.tag-row{display:flex;flex-wrap:wrap;gap:6px;padding:4px 0;}
+.tag-item{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:8px;font-size:12px;font-weight:600;}
+.tag-item.b-bl{background:rgba(37,99,235,.1);color:#1d4ed8;}
+.tag-item.b-gn{background:rgba(22,163,74,.1);color:#15803d;}
+.tag-item.b-am{background:rgba(217,119,6,.1);color:#92400e;}
+.tag-item.b-rd{background:rgba(220,38,38,.1);color:#dc2626;}
+
+.feat-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bdr2);}
+.feat-row:last-child{border-bottom:none;}
+.feat-ic{font-size:18px;width:32px;text-align:center;flex-shrink:0;}
+.feat-body{flex:1;}
+.feat-t{font-size:13px;font-weight:600;}
+.feat-s{font-size:11px;color:var(--t2);margin-top:1px;}
+
+.bottom-pad{height:40px;}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="hdr">
+    <div class="hdr-back" onclick="history.back()">←</div>
+    <span class="hdr-t">명함관리 사용설명서</span>
+  </header>
+
+  <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+
+    <!-- 히어로 -->
+    <div class="guide-hero">
+      <div class="guide-hero-ic">🪪</div>
+      <div class="guide-hero-t">명함관리</div>
+      <div class="guide-hero-s">AI가 명함을 자동으로 인식합니다.<br>거래처별로 정리하고 방문 이력까지 한눈에 확인하세요.</div>
+    </div>
+
+    <!-- 명함 목록 -->
+    <div class="sec">
+      <div class="sec-ttl">명함 목록</div>
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-ic blue">📋</div>
+          <div><div class="card-ttl">목록 보기 & 정렬</div><div class="card-sub">저장된 명함을 다양한 방식으로 조회</div></div>
+        </div>
+        <div class="card-body">
+          <div class="feat-row">
+            <div class="feat-ic">🔤</div>
+            <div class="feat-body"><div class="feat-t">이름순</div><div class="feat-s">가나다 순으로 전체 명함 정렬</div></div>
+          </div>
+          <div class="feat-row">
+            <div class="feat-ic">🏢</div>
+            <div class="feat-body"><div class="feat-t">거래처순</div><div class="feat-s">회사별로 그룹화하여 표시</div></div>
+          </div>
+          <div class="feat-row">
+            <div class="feat-ic">⭐</div>
+            <div class="feat-body"><div class="feat-t">즐겨찾기</div><div class="feat-s">즐겨찾기로 등록한 명함만 표시</div></div>
+          </div>
+          <div class="feat-row">
+            <div class="feat-ic">🔍</div>
+            <div class="feat-body"><div class="feat-t">검색</div><div class="feat-s">이름, 회사명, 전화번호로 검색 가능</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 태그 설명 -->
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-ic amber">🏷️</div>
+          <div><div class="card-ttl">명함 태그</div><div class="card-sub">거래 관계에 따라 분류</div></div>
+        </div>
+        <div class="card-body">
+          <div class="tag-row">
+            <div class="tag-item b-bl">🔵 고객 — 현재 거래 중인 고객</div>
+            <div class="tag-item b-gn">🟢 VIP — 핵심 중요 고객</div>
+            <div class="tag-item b-am">🟡 잠재 — 아직 거래 전 잠재 고객</div>
+            <div class="tag-item b-rd">🔴 휴면 — 거래가 없는 비활성 고객</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI 스캔 -->
+    <div class="sec">
+      <div class="sec-ttl">AI 명함 스캔</div>
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-ic green">📷</div>
+          <div><div class="card-ttl">카메라로 명함 스캔</div><div class="card-sub">AI가 자동으로 정보를 추출합니다</div></div>
+        </div>
+        <div class="card-body">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <div class="step-t">명함 촬영</div>
+              <div class="step-s">명함 화면의 📷 버튼을 탭하여 카메라로 촬영합니다. 갤러리에서 기존 사진을 선택할 수도 있습니다.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <div class="step-t">방향 조정</div>
+              <div class="step-s">↺ 좌회전 / ↻ 우회전 버튼으로 명함이 바르게 보이도록 조정합니다.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <div class="step-t">인식 버튼 탭</div>
+              <div class="step-s">AI가 명함의 이름·회사·직책·전화·이메일·주소를 자동으로 읽어냅니다.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <div class="step-t">내용 확인 & 저장</div>
+              <div class="step-s">인식 결과를 확인하고 필요하면 수정한 뒤 저장합니다.</div>
+            </div>
+          </div>
+          <div class="tip">💡 명함이 2장 이상 찍혔을 경우, 각 명함을 선택해 한 번에 저장할 수 있습니다.</div>
+          <div class="warn">⚠️ 이미 저장된 명함(이름+회사 동일)은 업데이트 여부를 묻고 덮어씁니다.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 명함 상세 -->
+    <div class="sec">
+      <div class="sec-ttl">명함 상세</div>
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-ic purple">👤</div>
+          <div><div class="card-ttl">명함 상세 화면</div><div class="card-sub">명함 탭 시 열리는 상세 정보</div></div>
+        </div>
+        <div class="card-body">
+          <div class="feat-row">
+            <div class="feat-ic">⭐</div>
+            <div class="feat-body"><div class="feat-t">즐겨찾기</div><div class="feat-s">☆ 탭하면 ★로 등록. 빠르게 찾아야 하는 연락처에 사용</div></div>
+          </div>
+          <div class="feat-row">
+            <div class="feat-ic">✏️</div>
+            <div class="feat-body"><div class="feat-t">편집</div><div class="feat-s">저장된 정보를 직접 수정</div></div>
+          </div>
+          <div class="feat-row">
+            <div class="feat-ic">📱</div>
+            <div class="feat-body"><div class="feat-t">전화 바로걸기</div><div class="feat-s">전화번호 옆 [전화] 버튼으로 바로 발신</div></div>
+          </div>
+          <div class="feat-row">
+            <div class="feat-ic">✉️</div>
+            <div class="feat-body"><div class="feat-t">메일 바로보내기</div><div class="feat-s">이메일 옆 [메일] 버튼으로 메일앱 바로 실행</div></div>
+          </div>
+          <div class="feat-row">
+            <div class="feat-ic">📍</div>
+            <div class="feat-body"><div class="feat-t">지도 바로보기</div><div class="feat-s">주소 옆 [지도] 버튼으로 카카오맵에서 위치 확인</div></div>
+          </div>
+          <div class="feat-row">
+            <div class="feat-ic">🏢</div>
+            <div class="feat-body"><div class="feat-t">거래처 이동</div><div class="feat-s">회사명 탭 시 해당 거래처 상세 화면으로 이동</div></div>
+          </div>
+          <div class="feat-row">
+            <div class="feat-ic">📝</div>
+            <div class="feat-body"><div class="feat-t">방문기록 추가</div><div class="feat-s">이 명함 담당자와의 미팅을 바로 기록</div></div>
+          </div>
+          <div class="feat-row">
+            <div class="feat-ic">📅</div>
+            <div class="feat-body"><div class="feat-t">방문 이력</div><div class="feat-s">해당 거래처의 방문 이력 전체 표시</div></div>
+          </div>
+          <div class="feat-row">
+            <div class="feat-ic">📷</div>
+            <div class="feat-body"><div class="feat-t">명함 원본 이미지</div><div class="feat-s">스캔 당시 촬영된 명함 이미지 확인</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 데이터 저장 안내 -->
+    <div class="sec">
+      <div class="sec-ttl">데이터 저장</div>
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-ic amber">💾</div>
+          <div><div class="card-ttl">저장 방식 안내</div><div class="card-sub">데이터는 기기에 로컬 저장됩니다</div></div>
+        </div>
+        <div class="card-body">
+          <div class="feat-row">
+            <div class="feat-ic">📱</div>
+            <div class="feat-body"><div class="feat-t">로컬 저장</div><div class="feat-s">모든 명함 데이터는 이 기기의 브라우저에만 저장됩니다</div></div>
+          </div>
+          <div class="feat-row">
+            <div class="feat-ic">🔄</div>
+            <div class="feat-body"><div class="feat-t">기기 간 공유 불가</div><div class="feat-s">다른 기기에서는 같은 데이터를 볼 수 없습니다</div></div>
+          </div>
+          <div class="warn">⚠️ 브라우저 데이터를 삭제하면 명함 정보도 함께 삭제됩니다. 중요한 데이터는 주기적으로 백업하세요.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-pad"></div>
+  </div>
+</div>
+</body>
+</html>

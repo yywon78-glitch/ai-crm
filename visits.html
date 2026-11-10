@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>방문기록</title>
+<link rel="stylesheet" href="shared.css?v=189">
+<style>
+/* ── 거래처 선택 바 ── */
+.co-bar{display:flex;align-items:center;gap:8px;padding:7px 14px;background:var(--blue-lt);border-bottom:1px solid var(--blue);flex-shrink:0;}
+.co-bar-nm{flex:1;font-size:13px;font-weight:700;color:var(--blue);}
+.co-bar-x{padding:4px 10px;background:#fff;border:1px solid var(--blue);border-radius:8px;font-size:12px;font-weight:700;color:var(--blue);cursor:pointer;}
+
+/* ── 달력 전체화면 오버레이 ── */
+#cal-overlay{position:fixed;inset:0;z-index:500;background:var(--bg);display:none;flex-direction:column;}
+#cal-overlay.open{display:flex;}
+.cal-ov-hdr{height:var(--hdr-h);flex-shrink:0;background:var(--card);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 14px;gap:8px;}
+.cal-ov-back{width:44px;height:44px;border-radius:50%;background:var(--bg);border:none;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.cal-ov-title{flex:1;font-size:16px;font-weight:700;}
+
+/* ── 달력 공통 ── */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;padding:10px 14px 4px;flex-shrink:0;}
+.cal-title{font-size:16px;font-weight:800;}
+.cal-nb{width:34px;height:34px;border:1.5px solid var(--bdr);border-radius:50%;background:var(--bg);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;}
+.cal-legend{display:flex;gap:14px;padding:3px 14px 5px;font-size:11px;color:var(--t2);flex-shrink:0;}
+.cal-legend span{display:flex;align-items:center;gap:4px;}
+.cal-dow{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:10px;font-weight:700;color:var(--t3);padding:4px 6px 2px;flex-shrink:0;}
+.cal-dow span:first-child{color:#ef4444;}
+.cal-dow span:last-child{color:#3b82f6;}
+/* 달력 그리드 — 셀 min-height를 CSS 변수로 제어 */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:auto;padding:0 6px 6px;gap:2px;}
+.cal-day{min-height:var(--cal-row-h,52px);border-radius:8px;display:flex;flex-direction:column;align-items:center;cursor:pointer;padding:4px 2px 3px;overflow:hidden;touch-action:manipulation;}
+.cal-day.empty{pointer-events:none;}
+.cal-day:active{background:var(--card2);}
+.cal-day.has-v{background:rgba(37,99,235,.05);}
+.cal-dn{font-size:13px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0;}
+.cal-day.today .cal-dn{background:var(--blue);color:#fff;font-weight:800;}
+.cal-day.has-sun .cal-dn{color:#ef4444;}
+.cal-day.has-sat .cal-dn{color:#3b82f6;}
+/* 날짜 안 회사명 — 크게 진하게 */
+.cal-co{font-size:10px;font-weight:700;line-height:1.25;padding:1.5px 4px;border-radius:4px;overflow:hidden;display:flex;align-items:center;gap:2px;width:100%;margin-top:2px;box-sizing:border-box;}
+.cal-co-nm{overflow:hidden;text-overflow:clip;white-space:nowrap;flex:1;min-width:0;}
+.cal-co-time{font-size:8px;font-weight:400;flex-shrink:0;opacity:.8;}
+.cal-co-tp{font-size:10px;flex-shrink:0;}
+.cal-co-v{background:rgba(37,99,235,.13);color:#1d4ed8;}
+.cal-co-p{background:rgba(245,158,11,.18);color:#92400e;}
+.dot{width:6px;height:6px;border-radius:50%;}
+.dot-v{background:var(--blue);}
+.dot-p{background:#f59e0b;}
+/* 드래그 리사이즈 핸들 */
+#cal-resize-h{height:22px;background:var(--bg);border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:center;cursor:row-resize;touch-action:none;flex-shrink:0;user-select:none;}
+#cal-resize-h::before{content:'';width:44px;height:4px;background:var(--t3);border-radius:2px;}
+/* 일자 클릭 팝업 */
+#modal-day{position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:20px;}
+#modal-day.open{display:flex;}
+.day-pop{background:var(--card);border-radius:18px;width:100%;max-width:420px;max-height:72vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.25);}
+.day-pop-hdr{padding:16px 18px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bdr);flex-shrink:0;}
+.day-pop-title{font-size:16px;font-weight:800;}
+.day-pop-x{width:32px;height:32px;border-radius:50%;background:var(--bg);border:none;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.day-pop-body{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;}
+
+/* ── 방문 카드 담당자 배지 ── */
+.v-who{display:flex;gap:5px;margin:4px 0;flex-wrap:wrap;}
+.v-side{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;}
+.v-our{background:#dbeafe;color:#1d4ed8;}
+.v-tgt{background:#dcfce7;color:#15803d;}
+
+/* ── 거래처 선택 시트 ── */
+.co-sel-item{display:flex;align-items:center;padding:13px 16px;border-bottom:1px solid var(--bdr2);cursor:pointer;gap:12px;touch-action:manipulation;}
+.co-sel-item:active{background:var(--card2);}
+.co-sel-nm{flex:1;font-size:15px;font-weight:700;}
+.co-sel-cnt{font-size:12px;color:var(--t2);}
+
+/* ── 특수 pill ── */
+.pill-cal{background:var(--blue-lt)!important;color:var(--blue)!important;border:1.5px solid var(--blue)!important;}
+.pill-co{background:var(--grn-lt)!important;color:var(--grn)!important;border:1.5px solid var(--grn)!important;}
+
+/* ── 목록 담당자 칩 ── */
+.target-chip{display:inline-flex;align-items:center;gap:3px;padding:5px 10px;background:var(--bg);border:1.5px solid var(--bdr);border-radius:20px;font-size:12px;cursor:pointer;margin:3px 3px 3px 0;}
+.target-chip.on{background:var(--grn-lt);border-color:var(--grn);color:var(--grn);}
+.side-lbl{font-size:11px;font-weight:700;color:var(--t3);margin-bottom:4px;}
+/* ── 공유 체크박스 / 배지 ── */
+.share-chk{width:20px;height:20px;border-radius:4px;border:2px solid #94a3b8;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;background:#fff;transition:all .15s;margin-right:4px;vertical-align:middle;}
+.share-chk.on{background:#2563eb;border-color:#2563eb;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z' fill='%23fff'/%3E%3C/svg%3E");background-size:13px;background-position:center;background-repeat:no-repeat;}
+.b-shared{font-size:10px;background:#dbeafe;color:#1d4ed8;border-radius:6px;padding:2px 5px;font-weight:700;margin-right:4px;flex-shrink:0;}
+#btn-vshare-save{flex-shrink:0;padding:5px 13px;border-radius:20px;border:1.5px solid var(--bdr);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;background:var(--bg);color:#94a3b8;transition:all .2s;}
+#btn-vshare-save.active{background:#2563eb;border-color:#2563eb;color:#fff;}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="hdr" style="flex-shrink:0;">
+    <span class="hdr-t">방문기록</span>
+    <button class="hdr-btn" onclick="openAddModal()">+ 기록</button>
+  </header>
+
+  <!-- 거래처 선택 표시 바 -->
+  <div class="co-bar" id="co-bar" style="display:none;">
+    <span class="co-bar-nm" id="co-bar-nm">🏢 —</span>
+    <span class="co-bar-x" onclick="clearCo()">× 전체</span>
+  </div>
+
+  <!-- 필터 pills + 공유저장 버튼 -->
+  <div style="display:flex;align-items:center;background:var(--card);border-bottom:1px solid var(--bdr);flex-shrink:0;">
+    <div class="pills" id="filter-pills" style="flex:1;border-bottom:none;min-width:0;">
+      <div class="pill on"    id="pill-all"    onclick="setFilter('all',this)">전체</div>
+      <div class="pill"       id="pill-mine"   onclick="setFilter('mine',this)">내명함</div>
+      <div class="pill"       id="pill-month"  onclick="setFilter('month',this)">이번달</div>
+      <div class="pill"       onclick="setFilter('상담',this)">💬 상담</div>
+      <div class="pill"       onclick="setFilter('견적',this)">📄 견적</div>
+      <div class="pill"       onclick="setFilter('인사',this)">🤝 인사</div>
+      <div class="pill pill-cal" onclick="openCalendar()">📅 달력</div>
+      <div class="pill pill-co"  onclick="openCoSelector()">🏢 거래처별</div>
+    </div>
+    <div style="padding:0 12px 0 0;flex-shrink:0;">
+      <button id="btn-vshare-save" onclick="saveSharedVisits()">공유저장</button>
+    </div>
+  </div>
+
+  <!-- 방문 목록 -->
+  <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0;">
+    <div class="tl" id="list" style="padding:14px;"></div>
+  </div>
+
+  <nav class="tabbar" id="tabbar" style="flex-shrink:0;"></nav>
+</div>
+
+<!-- ━━━━ 달력 전체화면 오버레이 ━━━━ -->
+<div id="cal-overlay">
+  <div class="cal-ov-hdr">
+    <button class="cal-ov-back" onclick="closeCalendar()">←</button>
+    <span class="cal-ov-title" id="cal-ov-title">방문 달력</span>
+  </div>
+
+  <!-- 달력 필터 pills -->
+  <div class="pills" style="flex-shrink:0;">
+    <div class="pill on" id="cpill-all"  onclick="setCalFilter('all',this)">전체일정</div>
+    <div class="pill"    id="cpill-mine" onclick="setCalFilter('mine',this)">내일정</div>
+    <div class="pill pill-co"            onclick="openCoSelectorForCal()">🔍 거래처별</div>
+    <div class="pill" id="cpill-co-nm" style="display:none;background:var(--grn-lt);color:var(--grn);border:1.5px solid var(--grn);" onclick="clearCalCo()">— × 전체</div>
+  </div>
+
+  <!-- 달력 섹션 (상하 드래그로 크기 조절) -->
+  <div id="cal-section" style="flex:none;height:360px;display:flex;flex-direction:column;background:var(--card);overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;">
+    <div class="cal-nav">
+      <button class="cal-nb" onclick="prevMonth()">‹</button>
+      <span class="cal-title" id="cal-title"></span>
+      <button class="cal-nb" onclick="nextMonth()">›</button>
+    </div>
+    <div class="cal-legend">
+      <span><span class="dot dot-v"></span>방문 완료</span>
+      <span><span class="dot dot-p"></span>방문 예정(오늘~)</span>
+    </div>
+    <div class="cal-dow">
+      <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+  </div>
+
+  <!-- 드래그 핸들 (상하 크기 조절) -->
+  <div id="cal-resize-h"></div>
+
+  <!-- 하단 공간 (일자 선택 안내) -->
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--t3);font-size:13px;pointer-events:none;">
+    ↑ 일자를 탭하면 방문기록을 확인합니다
+  </div>
+</div>
+
+<!-- ━━━━ 일자 클릭 팝업 ━━━━ -->
+<div id="modal-day" onclick="if(event.target===this)closeDayModal()">
+  <div class="day-pop">
+    <div class="day-pop-hdr">
+      <span class="day-pop-title" id="day-pop-title"></span>
+      <button class="day-pop-x" onclick="closeDayModal()">✕</button>
+    </div>
+    <div class="day-pop-body">
+      <div class="tl" id="day-list" style="padding:12px 14px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ━━━━ 거래처 선택 모달 ━━━━ -->
+<div class="moverlay" id="modal-co" onclick="if(event.target===this)closeCoSelector()">
+  <div class="msheet">
+    <div class="m-handle"></div>
+    <div class="m-title">거래처 선택</div>
+    <div style="padding:0 0 8px;">
+      <input class="finp" id="co-sel-srch" placeholder="🔍 거래처 검색..." oninput="filterCoSelList()" style="margin:0;">
+    </div>
+    <div id="co-sel-list" style="max-height:55vh;overflow-y:auto;margin:0 -20px;"></div>
+  </div>
+</div>
+
+<!-- ━━━━ 방문기록 추가 모달 ━━━━ -->
+<div class="moverlay" id="modal-add" style="z-index:600;" onclick="if(event.target===this)closeAddModal()">
+  <div class="msheet" style="max-height:93vh;">
+    <div class="m-handle"></div>
+    <div class="m-title">방문기록 추가</div>
+    <div class="m-body">
+      <div>
+        <div class="flb">거래처 *</div>
+        <select class="finp" id="a-co" onchange="onCoChange()" style="appearance:none;-webkit-appearance:none;"></select>
+      </div>
+      <div>
+        <div class="flb">상대측 담당자</div>
+        <div class="side-lbl">거래처 명함에서 선택</div>
+        <div id="target-chips" style="min-height:28px;"></div>
+        <input class="finp" id="a-target-extra" placeholder="직접 입력 (선택 외 추가 시)" style="margin-top:6px;">
+      </div>
+      <div>
+        <div class="flb">우리측 담당자</div>
+        <input class="finp" id="a-our" placeholder="예) 홍길동 과장, 이순신 대리">
+      </div>
+      <div>
+        <div class="flb">방문 유형</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;" id="a-type-grid"></div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <div style="flex:1;"><div class="flb">방문 날짜 *</div><input class="finp" type="date" id="a-dt"></div>
+        <div style="width:108px;"><div class="flb">방문 시각</div><input class="finp" type="time" id="a-time"></div>
+      </div>
+      <div>
+        <div class="flb">방문 내용</div>
+        <textarea class="finp" id="a-content" rows="4" style="resize:none;" placeholder="미팅 내용, 논의사항, 결과 등..."></textarea>
+      </div>
+      <div><div class="flb">다음 방문 예정일</div><input class="finp" type="date" id="a-next"></div>
+      <button class="m-btn" onclick="saveVisitNew()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 거래처 오버레이 -->
+<div class="overlay" id="overlay-co" style="z-index:100;"></div>
+
+<!-- 거래처 오버레이 내 방문모달 (nav.js 공통) -->
+<div class="moverlay" id="modal-visit" style="z-index:210;" onclick="if(event.target===this)closeVisitModal()">
+  <div class="msheet">
+    <div class="m-handle"></div>
+    <div class="m-title">방문기록 추가</div>
+    <div class="m-body">
+      <div style="font-size:13px;font-weight:600;color:var(--blue);padding:2px 0;" id="v-co-lbl"></div>
+      <div><div class="flb">방문 유형</div><div style="display:flex;gap:8px;flex-wrap:wrap;" id="type-grid"></div></div>
+      <div><div class="flb">방문 날짜</div><input class="finp" type="date" id="v-dt"></div>
+      <div><div class="flb">메모</div><textarea class="finp" id="v-memo" rows="3" style="resize:none;" placeholder="미팅 내용..."></textarea></div>
+      <div><div class="flb">다음 일정</div><input class="finp" type="date" id="v-next"></div>
+      <button class="m-btn" onclick="saveVisit()">저장</button>
+    </div>
+  </div>
+</div>
+
+<script src="data.js?v=189"></script>
+<script src="nav.js?v=189"></script>
+<script>
+const VTYPES  = ['🤝 인사','💬 상담','📄 견적','🔧 AS','🍽 식사','📞 전화'];
+const TODAY   = new Date().toISOString().split('T')[0];
+const _now    = new Date();
+let _yr = _now.getFullYear(), _mo = _now.getMonth();
+let _filter   = 'all';
+let _calFilter= 'all';
+let _selCo    = null;
+let _calSel   = null;
+const vChkSet = new Set(); /* 체크된 방문기록 ID */
+
+async function refreshSharedVisits(){
+  await SharedDriveDB.loadVisits();
+  renderList();
+}
+function tickVisit(id){
+  if(vChkSet.has(id)) vChkSet.delete(id); else vChkSet.add(id);
+  const chk = document.querySelector(`.share-chk[data-id="${id}"]`);
+  if(chk) chk.classList.toggle('on', vChkSet.has(id));
+  const btn = document.getElementById('btn-vshare-save');
+  if(btn){ btn.classList.toggle('active', vChkSet.size>0); btn.textContent = vChkSet.size ? `공유저장 (${vChkSet.size})` : '공유저장'; }
+}
+function saveSharedVisits(){
+  if(!vChkSet.size) return;
+  const me = GoogleAuth.getUserEmail();
+  const visits = DB.getVisits();
+  vChkSet.forEach(id=>{ const v=visits.find(x=>x.id===id); if(v){ v.shared=true; v.sharedBy=me; } });
+  DB.setVisits(visits);
+  if(GoogleAuth.isLoggedIn()) SharedDriveDB.syncVisits();
+  const cnt=vChkSet.size; vChkSet.clear();
+  const btn=document.getElementById('btn-vshare-save');
+  if(btn){ btn.classList.remove('active'); btn.textContent='공유저장'; }
+  toast(`☁️ ${cnt}건 공유 등록됐습니다`);
+  renderList();
+}
+
+/* ── 방문 목록 필터 헬퍼 ── */
+function _applyFilter(list, filter, coId){
+  const now=new Date(), ym=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  if(coId){
+    if(coId.startsWith('_nm_')) list=list.filter(v=>v.co===coId.slice(4));
+    else list=list.filter(v=>v.coId===coId);
+  }
+  if(filter==='month') list=list.filter(v=>v.dt.startsWith(ym));
+  else if(filter!=='all') list=list.filter(v=>v.tp.includes(filter));
+  return list.sort((a,b)=>(b.dt+(b.time||''))>(a.dt+(a.time||''))?1:-1);
+}
+
+/* ── 메인 목록 ── */
+function setFilter(f,el){
+  _filter=f;
+  document.querySelectorAll('#filter-pills .pill').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  renderList();
+}
+function renderList(){
+  const personal = DB.getVisits();
+  const personalIds = new Set(personal.map(v=>v.id));
+  const otherShared = DB.getDriveSharedVisits().filter(v=>!personalIds.has(v.id));
+
+  let list;
+  if(_filter==='mine') list = _applyFilter(personal, 'all', _selCo);
+  else list = _applyFilter([...personal, ...otherShared], _filter, _selCo);
+
+  const el=document.getElementById('list');
+  if(!list.length){el.innerHTML=`<div class="empty"><div class="empty-ic">📋</div><div class="empty-t">방문기록이 없습니다</div></div>`;return;}
+  el.innerHTML=list.map(v=>_visitItemHtml(v)).join('');
+}
+
+/* ── 거래처별 ── */
+function openCoSelector(){
+  const allVisits = [...DB.getVisits(), ...DB.getDriveSharedVisits().filter(v=>!DB.getVisits().find(x=>x.id===v.id))];
+  const coMap = {};
+  allVisits.forEach(v=>{ if(v.co) coMap[v.co] = (coMap[v.co]||0)+1; });
+  const coList = Object.entries(coMap).sort((a,b)=>b[1]-a[1]);
+  /* 검색창 초기화 */
+  const srch = document.getElementById('co-sel-srch');
+  if(srch) srch.value = '';
+  /* 목록 렌더 */
+  document.getElementById('co-sel-list').innerHTML=
+    `<div class="co-sel-item" id="co-sel-all" onclick="selectCo(null)"><span class="co-sel-nm">📋 전체 거래처</span><span class="co-sel-cnt">${allVisits.length}건</span></div>`+
+    coList.map(([nm,cnt])=>`<div class="co-sel-item" data-nm="${nm}" onclick="selectCoByNm('${nm}')"><span class="co-sel-nm">🏢 ${nm}</span><span class="co-sel-cnt">${cnt}건</span></div>`).join('');
+  document.getElementById('modal-co').classList.add('show');
+}
+
+function filterCoSelList(){
+  const q = document.getElementById('co-sel-srch').value.trim();
+  document.querySelectorAll('#co-sel-list .co-sel-item').forEach(el=>{
+    const nm = el.dataset.nm || '';
+    el.style.display = (!q || nm.includes(q) || !nm) ? '' : 'none';
+  });
+}
+function closeCoSelector(){document.getElementById('modal-co').classList.remove('show');}
+function selectCoByNm(nm){
+  closeCoSelector();
+  if(_calCoMode){ _calCoMode=false; _calCo='_nm_'+nm; renderCalendar(); return; }
+  _selCo = '_nm_'+nm;
+  document.getElementById('co-bar-nm').textContent='🏢 '+nm;
+  document.getElementById('co-bar').style.display='flex';
+  renderList();
+}
+let _calCoMode = false;
+
+function selectCo(coId){
+  closeCoSelector();
+  if(_calCoMode){
+    // 달력 모드: 달력 거래처 필터만 변경
+    _calCoMode=false;
+    _calCo=coId;
+    const nm=coId?DB.getCos().find(c=>c.id===coId)?.nm||'':'';
+    const nmPill=document.getElementById('cpill-co-nm');
+    if(coId){ nmPill.textContent='🏢 '+nm+' ×'; nmPill.style.display=''; }
+    else     { nmPill.style.display='none'; }
+    document.getElementById('cal-ov-title').textContent=coId?('🏢 '+nm):'방문 달력';
+    renderCalendar();
+    return;
+  }
+  _selCo=coId;
+  const bar=document.getElementById('co-bar');
+  if(coId){
+    const co=DB.getCos().find(c=>c.id===coId);
+    document.getElementById('co-bar-nm').textContent='🏢 '+(co?.nm||'');
+    bar.style.display='flex';
+  } else {
+    bar.style.display='none';
+  }
+  renderList();
+}
+function clearCo(){selectCo(null);}
+
+/* ── 달력 열기/닫기 ── */
+function openCalendar(){
+  document.getElementById('cal-ov-title').textContent=
+    _selCo ? '🏢 '+(DB.getCos().find(c=>c.id===_selCo)?.nm||'') : '방문 달력';
+  document.getElementById('cal-overlay').classList.add('open');
+  renderCalendar();
+}
+function closeCalendar(){document.getElementById('cal-overlay').classList.remove('open');}
+
+/* ── 드래그 리사이즈 — 섹션 높이 + 달력 셀 높이 동시 조절 ── */
+(function(){
+  const handle=document.getElementById('cal-resize-h');
+  const calSec=document.getElementById('cal-section');
+  let sy=0, baseH=360;
+  function getH(){ return calSec.offsetHeight; }
+  function setH(h){
+    const maxH=window.innerHeight-130; // 헤더+pills+핸들 제외
+    const clamped=Math.max(150,Math.min(maxH,h));
+    calSec.style.height=clamped+'px';
+    const rowH=Math.max(28,Math.floor((clamped-110)/6));
+    document.documentElement.style.setProperty('--cal-row-h',rowH+'px');
+  }
+
+  handle.addEventListener('touchstart',e=>{
+    sy=e.touches[0].clientY; baseH=getH(); e.preventDefault();
+  },{passive:false});
+  handle.addEventListener('touchmove',e=>{
+    setH(baseH+(e.touches[0].clientY-sy));
+    e.preventDefault();
+  },{passive:false});
+  handle.addEventListener('mousedown',e=>{
+    sy=e.clientY; baseH=getH();
+    const mm=ev=>setH(baseH+(ev.clientY-sy));
+    const mu=()=>{document.removeEventListener('mousemove',mm);document.removeEventListener('mouseup',mu);};
+    document.addEventListener('mousemove',mm);
+    document.addEventListener('mouseup',mu);
+    e.preventDefault();
+  });
+  // 초기: 화면 꽉 차게
+  setH(window.innerHeight);
+})();
+
+/* ── 달력 필터 ── */
+let _calCo = null; // 달력 전용 거래처 필터
+
+function setCalFilter(f,el){
+  _calFilter=f;
+  document.getElementById('cpill-all').classList.toggle('on', f==='all');
+  document.getElementById('cpill-mine').classList.toggle('on', f==='mine');
+  renderCalendar();
+}
+
+function openCoSelectorForCal(){
+  // 거래처 선택 시트를 열되, 선택 시 달력 필터 적용
+  _calCoMode = true;
+  openCoSelector();
+}
+
+function clearCalCo(){
+  _calCo=null;
+  document.getElementById('cpill-co-nm').style.display='none';
+  document.getElementById('cal-ov-title').textContent='방문 달력';
+  renderCalendar();
+}
+
+function prevMonth(){if(_mo===0){_mo=11;_yr--;}else _mo--;renderCalendar();}
+function nextMonth(){if(_mo===11){_mo=0;_yr++;}else _mo++;renderCalendar();}
+
+/* ── 달력 소스 — 전체/내일정 분기 ── */
+function _calSrc(){
+  if(_calFilter==='mine') return DB.getVisits();
+  const personal=DB.getVisits();
+  const pIds=new Set(personal.map(v=>v.id));
+  return [...personal, ...DB.getDriveSharedVisits().filter(v=>!pIds.has(v.id))];
+}
+
+/* ── 달력 렌더 (회사명 셀 표시, 과거 예정일 제외) ── */
+function renderCalendar(){
+  const pad=n=>String(n).padStart(2,'0');
+  document.getElementById('cal-title').textContent=`${_yr}년 ${_mo+1}월`;
+  const ym=`${_yr}-${pad(_mo+1)}`;
+  let src=_calSrc();
+  const _co=_calCo||_selCo; // 달력 전용 거래처 우선, 없으면 메인 거래처
+  if(_co) src=src.filter(v=>v.coId===_co||v.co===(_co.startsWith('_nm_')?_co.slice(4):null));
+  if(_calFilter==='month'){const now=new Date();const tym=`${now.getFullYear()}-${pad(now.getMonth()+1)}`;src=src.filter(v=>v.dt.startsWith(tym));}
+  else if(_calFilter!=='all') src=src.filter(v=>v.tp.includes(_calFilter));
+
+  // 날짜별 방문 상세 수집 {v:[{co,tp,time}], p:[{co,tp}]}
+  const vMap={};
+  src.forEach(v=>{
+    if(v.dt&&v.dt.startsWith(ym)){
+      if(!vMap[v.dt]) vMap[v.dt]={v:[],p:[]};
+      vMap[v.dt].v.push({co:v.co,tp:v.tp,time:v.time||''});
+    }
+    if(v.next&&v.next.startsWith(ym)&&v.next>=TODAY){
+      if(!vMap[v.next]) vMap[v.next]={v:[],p:[]};
+      vMap[v.next].p.push({co:v.co,tp:v.tp});
+    }
+  });
+
+  const first=new Date(_yr,_mo,1).getDay();
+  const days=new Date(_yr,_mo+1,0).getDate();
+  let html='';
+  for(let i=0;i<first;i++) html+='<div class="cal-day empty"></div>';
+  for(let d=1;d<=days;d++){
+    const ds=`${_yr}-${pad(_mo+1)}-${pad(d)}`;
+    const m=vMap[ds]; const dow=(first+d-1)%7;
+    const hasAny=m&&(m.v.length||m.p.length);
+    const cls=['cal-day',ds===TODAY?'today':'',dow===0?'has-sun':'',dow===6?'has-sat':'',hasAny?'has-v':''].filter(Boolean).join(' ');
+    // 방문완료: 거래처 → 시간 → 목적 순 (전부 표시, ... 없음)
+    const vHtml=(m?.v||[]).map(({co})=>
+      `<span class="cal-co cal-co-v"><span class="cal-co-nm">${co}</span></span>`
+    ).join('');
+    const pHtml=(m?.p||[]).map(({co})=>
+      `<span class="cal-co cal-co-p"><span class="cal-co-nm">${co}</span></span>`
+    ).join('');
+    html+=`<div class="${cls}" onclick="selectDate('${ds}')"><span class="cal-dn">${d}</span>${vHtml}${pHtml}</div>`;
+  }
+  document.getElementById('cal-grid').innerHTML=html;
+}
+
+/* ── 일자 클릭 팝업 ── */
+function selectDate(ds){
+  let src=_calSrc();
+  const _co=_calCo||_selCo;
+  if(_co) src=src.filter(v=>v.coId===_co);
+  if(_calFilter==='month'){const now=new Date();const ym=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;src=src.filter(v=>v.dt.startsWith(ym));}
+  else if(_calFilter!=='all') src=src.filter(v=>v.tp.includes(_calFilter));
+  // 해당 날짜: 방문 완료 + 오늘 이후 예정
+  const list=src.filter(v=>v.dt===ds||(v.next===ds&&ds>=TODAY))
+    .sort((a,b)=>(b.dt+(b.time||''))>(a.dt+(a.time||''))?1:-1);
+  const d=new Date(ds+'T00:00');
+  const days=['일','월','화','수','목','금','토'];
+  document.getElementById('day-pop-title').textContent=`${d.getMonth()+1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
+  const el=document.getElementById('day-list');
+  el.innerHTML=list.length
+    ? list.map(v=>_visitItemHtml(v,v.next===ds&&v.dt!==ds)).join('')
+    : '<div style="padding:24px;text-align:center;color:var(--t3);">📭 방문기록이 없습니다</div>';
+  document.getElementById('modal-day').classList.add('open');
+}
+function closeDayModal(){document.getElementById('modal-day').classList.remove('open');}
+
+/* ── 방문 아이템 HTML ── */
+function _visitItemHtml(v,isPlan){
+  const tgt=[...(v.targets||[]),v.targetExtra||''].filter(Boolean).join(', ');
+  const our=v.ourTargets||'';
+  const content=v.content||v.memo||'';
+  const timeStr=v.time?' '+v.time:'';
+  const dt=isPlan?v.next:v.dt;
+  const me = GoogleAuth.getUserEmail();
+  const isMine = v.shared && (!v.sharedBy || v.sharedBy === me);
+  const shareEl = v.shared
+    ? `<span class="b-shared" style="${isMine?'':'background:#fef3c7;color:#92400e;border:1px solid #fde68a;'}">${isMine?'☁️내공유':'☁️공유'}</span>`
+    : `<span class="share-chk${vChkSet.has(v.id)?' on':''}" data-id="${v.id}" onclick="event.stopPropagation();tickVisit('${v.id}')"></span>`;
+  return `<div class="tl-item" onclick="openCoOverlay('${v.coId}')" ${isPlan?'style="border-left:3px solid #f59e0b;"':''}>
+    <div class="tl-dot">${v.tp.split(' ')[0]}</div>
+    <div class="tl-body">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;">
+        <div class="tl-tp">${v.tp}${isPlan?'<span style="margin-left:5px;font-size:10px;background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:8px;">예정</span>':''}</div>
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+          <span style="font-size:11px;color:var(--t3);">${dt}${timeStr}</span>
+          ${shareEl}
+        </div>
+      </div>
+      <div style="font-size:13px;font-weight:700;color:var(--blue);margin:3px 0;">${v.co}</div>
+      <div class="v-who">
+        ${our?`<span class="v-side v-our">우리: ${our}</span>`:''}
+        ${tgt?`<span class="v-side v-tgt">상대: ${tgt}</span>`:''}
+      </div>
+      ${content?`<div style="font-size:13px;line-height:1.65;margin-top:3px;">${content}</div>`:''}
+      ${v.next&&!isPlan?`<div class="tl-next">📅 다음 예정: ${v.next}</div>`:''}
+    </div>
+  </div>`;
+}
+
+/* ── 추가 모달 ── */
+let _selTargets=new Set();
+function openAddModal(){
+  _selTargets=new Set();
+  const cos=DB.getCos();
+  document.getElementById('a-co').innerHTML=`<option value="">— 거래처 선택 —</option>`+cos.map(c=>`<option value="${c.id}"${_selCo===c.id?' selected':''}>${c.nm}</option>`).join('');
+  document.getElementById('a-dt').value=TODAY;
+  document.getElementById('a-time').value='';
+  document.getElementById('a-content').value='';
+  document.getElementById('a-next').value='';
+  document.getElementById('a-target-extra').value='';
+  document.getElementById('a-our').value='';
+  document.getElementById('target-chips').innerHTML='';
+  if(_selCo) onCoChange();
+  const g=document.getElementById('a-type-grid');
+  g.innerHTML=VTYPES.map(t=>`<div class="bx b-bl" style="cursor:pointer;padding:7px 12px;" onclick="_selType(this)">${t}</div>`).join('');
+  _selType(g.children[0]);
+  document.getElementById('modal-add').classList.add('show');
+}
+function closeAddModal(){document.getElementById('modal-add').classList.remove('show');}
+function _selType(el){
+  document.querySelectorAll('#a-type-grid .bx').forEach(b=>{b.style.background='';b.style.border='';b.style.color='';delete b.dataset.on;});
+  el.style.background='var(--grn-lt)';el.style.border='1.5px solid var(--grn)';el.style.color='var(--grn)';el.dataset.on='1';
+}
+function onCoChange(){
+  const coId=document.getElementById('a-co').value;
+  if(!coId){document.getElementById('target-chips').innerHTML='';return;}
+  const coNm=DB.getCos().find(c=>c.id===coId)?.nm||'';
+  const cards=DB.getCards().filter(c=>c.co===coNm);
+  _selTargets=new Set();
+  const wrap=document.getElementById('target-chips');
+  if(!cards.length){wrap.innerHTML='<span style="font-size:12px;color:var(--t3);">등록된 명함 없음</span>';return;}
+  wrap.innerHTML=cards.map(c=>`<span class="target-chip" data-nm="${c.nm}" onclick="_toggleTarget(this)">${c.nm}<span style="font-size:10px;opacity:.6;margin-left:3px;">${c.tl||''}</span></span>`).join('');
+}
+function _toggleTarget(el){
+  const nm=el.dataset.nm;
+  if(_selTargets.has(nm)){_selTargets.delete(nm);el.classList.remove('on');}
+  else{_selTargets.add(nm);el.classList.add('on');}
+}
+function saveVisitNew(){
+  const coId=document.getElementById('a-co').value;
+  if(!coId){toast('거래처를 선택해주세요');return;}
+  const co=DB.getCos().find(c=>c.id===coId);
+  const dt=document.getElementById('a-dt').value;
+  if(!dt){toast('날짜를 입력해주세요');return;}
+  const selEl=[...document.querySelectorAll('#a-type-grid .bx')].find(b=>b.dataset.on);
+  const tp=selEl?selEl.textContent:VTYPES[0];
+  const targets=[..._selTargets];
+  const targetExtra=document.getElementById('a-target-extra').value.trim();
+  const ourTargets=document.getElementById('a-our').value.trim();
+  const time=document.getElementById('a-time').value;
+  const content=document.getElementById('a-content').value.trim();
+  const next=document.getElementById('a-next').value||null;
+  const visits=DB.getVisits();
+  visits.unshift({id:'v'+Date.now(),co:co?.nm||'',coId,tp,dt,time,targets,targetExtra,ourTargets,content,memo:content,next});
+  DB.setVisits(visits);
+  closeAddModal();
+  renderList();
+  if(document.getElementById('cal-overlay').classList.contains('open')) renderCalendar();
+  toast('방문기록이 저장됐습니다 ✓');
+}
+
+renderTabBar('visits');
+renderList();
+if(GoogleAuth.isLoggedIn()) refreshSharedVisits();
+if(qp('cal')==='1') openCalendar();
+window.addEventListener('pageshow', e => { if(e.persisted) renderList(); });
+document.addEventListener('visibilitychange', () => { if(!document.hidden) renderList(); });
+</script>
+</body>
+</html>

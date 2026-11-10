@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>명함 스캔</title>
+<link rel="stylesheet" href="shared.css?v=190">
+<style>
+/* ── 회전/인식 화면 ── */
+#rotate-view{display:none;position:fixed;inset:0;z-index:20;flex-direction:column;background:#000;}
+#rotate-view.show{display:flex;}
+.rv-img-wrap{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+#rv-img{max-width:100%;max-height:100%;object-fit:contain;}
+.rv-btns{flex-shrink:0;padding:14px 16px 28px;background:var(--card);border-top:1px solid var(--bdr);display:flex;flex-direction:column;gap:10px;}
+.rv-rot-row{display:flex;gap:10px;}
+.rv-rot-btn{flex:1;padding:14px;border-radius:12px;background:var(--bg);border:1.5px solid var(--bdr);font-size:20px;font-weight:700;cursor:pointer;touch-action:manipulation;color:var(--t1);}
+.rv-ocr-btn{width:100%;padding:18px;border-radius:14px;background:var(--blue);color:#fff;border:none;font-size:20px;font-weight:700;cursor:pointer;touch-action:manipulation;}
+
+/* ── OCR 결과 화면 ── */
+#result-view{display:none;}
+#result-view.show{display:flex;}
+.res-img-wrap{background:#111;display:flex;align-items:center;justify-content:center;}
+.res-img{width:100%;max-height:200px;object-fit:contain;display:block;}
+.res-ph{color:rgba(255,255,255,.4);font-size:13px;padding:32px 20px;text-align:center;}
+.fgrp{padding:0 14px;margin-bottom:12px;}
+#multi-box{display:none;position:fixed;inset:0;z-index:300;background:var(--bg);flex-direction:column;}
+#multi-box.show{display:flex;}
+</style>
+</head>
+<body>
+
+<!-- 파일 input (위치기반 숨김 — display:none 사용 안 함) -->
+<input type="file" id="inp-cam" accept="image/*" capture="environment"
+       style="position:fixed;top:-300px;left:-300px;width:1px;height:1px;opacity:0;">
+<input type="file" id="inp-gal" accept="image/*" multiple
+       style="position:fixed;top:-300px;left:-300px;width:1px;height:1px;opacity:0;">
+
+<!-- 직접 접근 시 cam-trigger (label 방식) -->
+<label id="cam-trigger" for="inp-cam"
+  style="position:fixed;inset:0;z-index:10;display:none;flex-direction:column;align-items:center;justify-content:center;background:var(--bg);gap:16px;cursor:pointer;touch-action:manipulation;">
+  <div id="trig-ic" style="font-size:72px;">📷</div>
+  <div id="trig-t1" style="font-size:18px;font-weight:700;color:var(--t1);">탭하여 촬영</div>
+  <div id="trig-t2" style="font-size:13px;color:var(--t2);">명함을 카메라로 스캔합니다</div>
+</label>
+
+<!-- 회전/인식 화면 -->
+<div id="rotate-view">
+  <header class="hdr" style="flex-shrink:0;background:#111;border-bottom:1px solid #333;">
+    <div class="hdr-back" onclick="backToCamera()" style="color:#fff;">←</div>
+    <span class="hdr-t" style="color:#fff;" id="rv-title">회전 조정 후 인식</span>
+  </header>
+  <div class="rv-img-wrap">
+    <img id="rv-img" src="">
+  </div>
+  <div class="rv-btns">
+    <div class="rv-rot-row">
+      <button class="rv-rot-btn" onclick="rotate(-90)">↺ 좌회전</button>
+      <button class="rv-rot-btn" onclick="rotate(90)">↻ 우회전</button>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="rv-ocr-btn" style="flex:4;" onclick="startOCR()">인식</button>
+      <button onclick="passCard()" style="flex:1;border-radius:14px;background:#6b7280;color:#fff;border:none;font-size:15px;font-weight:700;cursor:pointer;touch-action:manipulation;">건너뛰기</button>
+    </div>
+  </div>
+</div>
+
+<!-- OCR 결과 -->
+<div id="result-view" class="page">
+  <header class="hdr">
+    <div class="hdr-back" onclick="history.back()">←</div>
+    <span class="hdr-t" id="result-title">스캔 결과</span>
+    <span id="result-saved" style="font-size:12px;font-weight:700;background:var(--blue-lt);color:var(--blue);border-radius:10px;padding:3px 9px;margin-right:4px;"></span>
+    <button id="btn-pass" class="hdr-btn" onclick="passCard()" style="background:#6b7280;display:none;margin-right:4px;">건너뛰기</button>
+    <button class="hdr-btn" onclick="retake()" style="background:var(--t2);margin-right:6px;">재촬영</button>
+    <button class="hdr-btn" onclick="saveCard()">저장</button>
+  </header>
+  <div class="body">
+    <div class="res-img-wrap">
+      <img id="res-img" class="res-img" style="display:none;">
+      <div class="res-ph" id="res-ph">📷 명함 이미지</div>
+    </div>
+    <div style="height:14px;"></div>
+    <div class="fgrp"><div class="flb">이름 *</div><input class="finp" id="f-nm" placeholder="이름"></div>
+    <div class="fgrp"><div class="flb">회사</div><input class="finp" id="f-co" placeholder="회사명"></div>
+    <div class="fgrp"><div class="flb">직책</div><input class="finp" id="f-tl" placeholder="직책 / 부서"></div>
+    <div class="fgrp"><div class="flb">휴대전화</div><input class="finp" id="f-mob" placeholder="010-0000-0000" type="tel"></div>
+    <div class="fgrp"><div class="flb">유선전화</div><input class="finp" id="f-ph" placeholder="02-0000-0000" type="tel"></div>
+    <div class="fgrp"><div class="flb">이메일</div><input class="finp" id="f-em" placeholder="email@company.com" type="email"></div>
+    <div class="fgrp"><div class="flb">주소</div><input class="finp" id="f-addr" placeholder="주소"></div>
+    <div style="height:24px;"></div>
+  </div>
+</div>
+
+<!-- 여러 명함 -->
+<div id="multi-box">
+  <header class="hdr">
+    <div class="hdr-back" onclick="document.getElementById('multi-box').classList.remove('show');retake()">←</div>
+    <span class="hdr-t" id="multi-title">명함 선택</span>
+    <button class="hdr-btn" onclick="saveMulti()">선택 저장</button>
+  </header>
+  <div style="padding:12px 14px;font-size:13px;color:var(--t2);">저장할 명함을 선택하세요 (전체 선택됨)</div>
+  <div class="body"><div class="bp" id="multi-list"></div></div>
+</div>
+
+<!-- 로딩 -->
+<div class="ld" id="ld"><div class="spinner"></div><p id="ld-msg">명함 인식 중...</p></div>
+
+<!-- 오류 -->
+<div id="err-box" style="display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.85);align-items:center;justify-content:center;padding:24px;">
+  <div style="background:#fff;border-radius:16px;padding:24px;max-width:340px;width:100%;">
+    <div style="font-size:16px;font-weight:700;color:#dc2626;margin-bottom:12px;">❌ 인식 오류</div>
+    <div id="err-msg" style="font-size:13px;color:#374151;line-height:1.6;word-break:break-all;margin-bottom:20px;"></div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeErr();retake()" style="flex:1;padding:12px;border-radius:10px;background:#f3f4f6;color:#374151;border:none;font-size:15px;font-weight:700;cursor:pointer;">재촬영</button>
+      <button onclick="closeErr();startOCR()" style="flex:1;padding:12px;border-radius:10px;background:#2563eb;color:#fff;border:none;font-size:15px;font-weight:700;cursor:pointer;">다시 인식</button>
+    </div>
+  </div>
+</div>
+
+<script src="data.js?v=190"></script>
+<script src="nav.js?v=190"></script>
+<script>
+let _imgData   = null;
+let _captured  = null;
+let _fromIndex = false;
+let _queue     = [];
+let _idbQueue  = 0; /* IndexedDB 큐 남은 수 */
+let _idbIdx    = 0; /* IDB에서 꺼낸 인덱스 */
+const COLORS   = ['#2563eb','#16a34a','#d97706','#7c3aed','#dc2626','#0891b2'];
+
+/* ── 유틸 ── */
+function showRotate(dataUrl){
+  _imgData = dataUrl;
+  document.getElementById('rv-img').src = dataUrl;
+  document.getElementById('rv-title').textContent =
+    (_queue.length > 0 || _idbQueue > 0) ? `회전 조정 후 인식 (이후 ${_queue.length + _idbQueue}장)` : '회전 조정 후 인식';
+  document.getElementById('rotate-view').classList.add('show');
+}
+function hideRotate(){
+  document.getElementById('rotate-view').classList.remove('show');
+}
+function showErr(msg){
+  document.getElementById('ld').classList.remove('show');
+  document.getElementById('err-msg').textContent = msg;
+  document.getElementById('err-box').style.display = 'flex';
+  /* 오류 시에도 헤더 건너뛰기 버튼 상태 갱신 */
+  const passBtn = document.getElementById('btn-pass');
+  if(passBtn) passBtn.style.display = '';
+}
+function closeErr(){
+  document.getElementById('err-box').style.display = 'none';
+}
+
+/* ── 회전 ── */
+function rotate(deg){
+  const img = new Image();
+  img.onload = ()=>{
+    const swap = Math.abs(deg)===90;
+    const c = document.createElement('canvas');
+    c.width  = swap ? img.height : img.width;
+    c.height = swap ? img.width  : img.height;
+    const ctx = c.getContext('2d');
+    ctx.translate(c.width/2, c.height/2);
+    ctx.rotate(deg * Math.PI/180);
+    ctx.drawImage(img, -img.width/2, -img.height/2);
+    _imgData = c.toDataURL('image/jpeg', 0.9);
+    document.getElementById('rv-img').src = _imgData;
+  };
+  img.src = _imgData;
+}
+
+/* ── 네비게이션 ── */
+function backToCamera(){
+  hideRotate();
+  if(_fromIndex){ history.back(); return; }
+  document.getElementById('cam-trigger').style.display = 'flex';
+}
+function retake(){
+  document.getElementById('result-view').classList.remove('show');
+  const ri=document.getElementById('res-img'); ri.style.display='none'; ri.src='';
+  document.getElementById('res-ph').style.display='';
+  hideRotate();
+  if(_fromIndex){ history.back(); return; }
+  document.getElementById('cam-trigger').style.display = 'flex';
+}
+
+/* ── 파일 선택 핸들러 ── */
+function onFile(e){
+  const f = e.target.files[0];
+  if(!f) return;
+  e.target.value = '';
+  const r = new FileReader();
+  r.onload = ev => showRotate(ev.target.result);
+  r.readAsDataURL(f);
+  document.getElementById('cam-trigger').style.display = 'none';
+}
+document.getElementById('inp-cam').onchange = onFile;
+
+/* 갤러리: 여러 장 선택 지원 */
+document.getElementById('inp-gal').onchange = function(e){
+  const files = [...e.target.files];
+  e.target.value = '';
+  if(!files.length) return;
+  document.getElementById('cam-trigger').style.display = 'none';
+  const readAll = files.map(f => new Promise(resolve=>{
+    const r = new FileReader();
+    r.onload = ev => resolve(ev.target.result);
+    r.readAsDataURL(f);
+  }));
+  Promise.all(readAll).then(urls=>{
+    sessionStorage.setItem('scan_idx',   '1');
+    sessionStorage.setItem('scan_total', urls.length.toString());
+    if(urls.length === 1){
+      showRotate(urls[0]);
+    } else {
+      _queue = urls.slice(1);
+      toast(`${urls.length}장 선택됨 — 순서대로 처리합니다`);
+      showRotate(urls[0]);
+    }
+  });
+};
+
+/* ── 진입 경로 결정 ── */
+const _pending = sessionStorage.getItem('scan_data');
+_queue = JSON.parse(sessionStorage.getItem('scan_queue')||'[]');
+_idbQueue = parseInt(sessionStorage.getItem('scan_queue_idb')||'0');
+sessionStorage.removeItem('scan_queue');
+sessionStorage.removeItem('scan_queue_idb');
+if(_pending){
+  _fromIndex = true;
+  sessionStorage.removeItem('scan_data');
+  sessionStorage.removeItem('scan_mode');
+  showRotate(_pending);
+} else {
+  // 직접 진입 — 갤러리 모드 체크
+  if(new URLSearchParams(location.search).get('gal')){
+    document.getElementById('cam-trigger').setAttribute('for','inp-gal');
+    document.getElementById('trig-ic').textContent  = '🖼️';
+    document.getElementById('trig-t1').textContent  = '탭하여 갤러리 선택';
+    document.getElementById('trig-t2').textContent  = '사진첩에서 명함을 선택합니다';
+  }
+  document.getElementById('cam-trigger').style.display = 'flex';
+}
+
+/* ── OCR 시작 ── */
+function startOCR(){
+  if(!_imgData){ showErr('이미지가 없습니다'); return; }
+  hideRotate();
+  processImage(_imgData);
+}
+
+function resizeImage(dataUrl, maxW, quality){
+  return new Promise(resolve=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const sw=img.naturalWidth||img.width, sh=img.naturalHeight||img.height;
+      const scale=Math.min(1, maxW/Math.max(sw,sh));
+      const c=document.createElement('canvas');
+      c.width=Math.round(sw*scale); c.height=Math.round(sh*scale);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      resolve(c.toDataURL('image/jpeg',quality));
+    };
+    img.src=dataUrl;
+  });
+}
+function resizeForOCR(dataUrl){ return resizeImage(dataUrl,2400,0.9); }
+function resizeForStore(dataUrl){ return resizeImage(dataUrl,480,0.70); }
+
+async function processImage(dataUrl){
+  const ldMsg = document.getElementById('ld-msg');
+  document.getElementById('ld').classList.add('show');
+
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbzrb9CZcNzK0Qb95pNpf9ts9sx8Jcy6QiFk8-jzYgwQd61Q3LYu4QRFQeFuE7T5aRuR/exec';
+
+  try{
+    ldMsg.textContent = '이미지 준비 중...';
+    const [forOCR, forStore] = await Promise.all([resizeForOCR(dataUrl), resizeForStore(dataUrl)]);
+    _captured = forStore;
+    const base64 = forOCR.split(',')[1];
+    ldMsg.textContent = 'AI 명함 인식 중...';
+
+    const res = await fetch(GAS_URL,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain'},
+      body: JSON.stringify({
+        model:'claude-haiku-4-5-20251001',
+        max_tokens:2048,
+        messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:'image/jpeg',data:base64}},
+          {type:'text',text:'명함 이미지에서 정보를 추출해. JSON 배열만 반환(다른 텍스트 없이). 형식: [{nm,co,tl,mob,ph,em,addr},...]. 규칙: nm(이름)과 co(회사명)는 한글이 있으면 무조건 한글로 적어. 영문만 있을 때만 영문 사용. nm(이름)은 절대 띄어쓰기 하지 마. 예: "홍길동" O, "홍 길동" X. tl=직책/부서, mob=휴대전화(010-), ph=유선전화(02-등), em=이메일, addr=주소. 전화번호는 하이픈 포함. 명함이 1장이어도 배열로. 없는 필드는 빈 문자열.'}
+        ]}]
+      })
+    });
+
+    if(!res.ok){
+      const err = await res.json().catch(()=>({}));
+      showErr(`API ${res.status}: ${err.error?.message||JSON.stringify(err)}`);
+      return;
+    }
+
+    const data = await res.json();
+    const text = data.content?.[0]?.text||'';
+    if(!text){ showErr('응답 없음: '+JSON.stringify(data)); return; }
+
+    const arrMatch = text.match(/\[[\s\S]*\]/);
+    if(!arrMatch){ showErr('인식 실패:\n\n'+text); return; }
+
+    const cards = JSON.parse(arrMatch[0]);
+    document.getElementById('ld').classList.remove('show');
+    if(!cards.length){ showErr('명함을 찾을 수 없습니다. 회전 후 다시 시도해보세요.'); return; }
+
+    if(cards.length===1){
+      fillForm(cards[0]);
+      const ri = document.getElementById('res-img');
+      ri.src = dataUrl; ri.style.display='block';
+      document.getElementById('res-ph').style.display='none';
+      updateResultHeader();
+      document.getElementById('result-view').classList.add('show');
+    } else {
+      showMulti(cards);
+    }
+  }catch(e){
+    showErr(e.message);
+  }
+}
+
+function fillForm(info){
+  document.getElementById('f-nm').value   = info.nm   ||'';
+  document.getElementById('f-co').value   = info.co   ||'';
+  document.getElementById('f-tl').value   = info.tl   ||'';
+  document.getElementById('f-mob').value  = info.mob  ||'';
+  document.getElementById('f-ph').value   = info.ph   ||'';
+  document.getElementById('f-em').value   = info.em   ||'';
+  document.getElementById('f-addr').value = info.addr ||'';
+}
+
+function showMulti(cards){
+  _multiCards = cards;
+  document.getElementById('multi-title').textContent = `명함 ${cards.length}장 인식됨`;
+  document.getElementById('multi-list').innerHTML = cards.map((c,i)=>`
+    <div id="mcard-${i}" style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;margin-bottom:9px;transition:opacity .2s;">
+      <input type="checkbox" checked data-i="${i}" style="width:18px;height:18px;flex-shrink:0;accent-color:var(--blue);" onchange="if(!this.checked)_passCard(${i})">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.nm||'(이름없음)'} <span style="font-size:12px;font-weight:400;color:var(--t2);">${c.tl||''}</span></div>
+        <div style="font-size:13px;color:var(--blue);margin-top:2px;">${c.co||''}</div>
+        <div style="font-size:12px;color:var(--t2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${[c.mob,c.ph,c.em].filter(Boolean).join(' · ')}</div>
+      </div>
+      <button id="mpass-${i}" onclick="_passCard(${i})" style="flex-shrink:0;padding:8px 14px;border-radius:9px;background:var(--bg);border:1.5px solid var(--bdr);font-size:13px;font-weight:700;color:var(--t2);cursor:pointer;touch-action:manipulation;">패스</button>
+    </div>`).join('');
+  document.getElementById('multi-box').classList.add('show');
+}
+
+function _passCard(i){
+  const card = document.getElementById(`mcard-${i}`);
+  if(!card) return;
+  card.querySelector('input[type=checkbox]').checked = false;
+  card.style.opacity = '0.35';
+  const btn = document.getElementById(`mpass-${i}`);
+  btn.textContent = '패스됨';
+  btn.style.cssText = 'flex-shrink:0;padding:8px 14px;border-radius:9px;background:var(--red-lt);border:1.5px solid var(--red);font-size:13px;font-weight:700;color:var(--red);cursor:default;';
+  btn.disabled = true;
+}
+
+function saveMulti(){
+  const selected=[...document.querySelectorAll('#multi-list input[type=checkbox]:checked')].map(el=>_multiCards[+el.dataset.i]);
+  if(!selected.length){ toast('저장할 명함을 선택해주세요'); return; }
+  const saved=DB.getCards(); let added=0,updated=0;
+  const newIds=[];
+  selected.forEach(info=>{
+    const nm=(info.nm||'').trim(); if(!nm) return;
+    const co=(info.co||'').trim();
+    const mob=(info.mob||'').trim();
+    const dup=saved.find(c=>c.nm===nm&&mob&&c.mob===mob&&(c.co||'')===(co||''));
+    if(dup){
+      Object.assign(dup,{tl:info.tl||'',mob:info.mob||'',ph:info.ph||'',em:info.em||'',addr:info.addr||''});
+      if(_captured) newIds.push(dup.id);
+      updated++;
+    } else {
+      const id='c'+Date.now()+Math.random();
+      saved.unshift({id,nm,co,tl:info.tl||'',mob:info.mob||'',ph:info.ph||'',em:info.em||'',addr:info.addr||'',tag:'고객',cl:COLORS[Math.floor(Math.random()*COLORS.length)],fav:false,img:null});
+      if(_captured) newIds.push(id);
+      added++;
+    }
+  });
+  DB.setCards(saved);
+  // 이미지는 IndexedDB에 별도 저장 (용량 제한 없음)
+  if(_captured) newIds.forEach(id=>{ ImgDB.set(id, _captured).catch(()=>{}); });
+  document.getElementById('multi-box').classList.remove('show');
+  toast(`저장 ${added}장, 업데이트 ${updated}장 ✓`);
+  setTimeout(()=>_goAfterSave('index.html'),1200);
+}
+
+function _goAfterSave(dest){
+  if(_queue.length > 0){
+    const next = _queue.shift();
+    const idx = (parseInt(sessionStorage.getItem('scan_idx')||'1')) + 1;
+    sessionStorage.setItem('scan_idx', idx.toString());
+    _captured = null;
+    setTimeout(()=>{
+      document.getElementById('result-view').classList.remove('show');
+      closeErr(); showRotate(next);
+    }, 1200);
+    return;
+  }
+  /* IDB 큐에 남은 이미지가 있으면 꺼냄 */
+  if(_idbQueue > 0){
+    const key = '_sq_' + _idbIdx++;
+    _idbQueue--;
+    const idx = (parseInt(sessionStorage.getItem('scan_idx')||'1')) + 1;
+    sessionStorage.setItem('scan_idx', idx.toString());
+    _captured = null;
+    ImgDB.get(key).then(url=>{
+      ImgDB.del(key).catch(()=>{});
+      setTimeout(()=>{
+        document.getElementById('result-view').classList.remove('show');
+        closeErr(); showRotate(url);
+      }, 1200);
+    });
+    return;
+  }
+  sessionStorage.removeItem('scan_idx');
+  sessionStorage.removeItem('scan_total');
+  sessionStorage.removeItem('scan_back');
+  setTimeout(()=>{ location.href=dest; }, 1200);
+}
+
+/* 이 명함 패스 → 다음으로 */
+function passCard(){
+  closeErr();
+  _goAfterSave('cards.html');
+}
+
+/* 결과 헤더 진행 표시 업데이트 */
+function updateResultHeader(){
+  const idx     = sessionStorage.getItem('scan_idx');
+  const total   = sessionStorage.getItem('scan_total');
+  const titleEl = document.getElementById('result-title');
+  const savedEl = document.getElementById('result-saved');
+  const passBtn = document.getElementById('btn-pass');
+
+  if(idx && total && parseInt(total) > 1){
+    titleEl.textContent = `스캔 결과 (${idx}/${total}장)`;
+  } else {
+    titleEl.textContent = '스캔 결과';
+  }
+  if(savedEl) savedEl.textContent = `저장 ${DB.getCards().length}장`;
+  if(passBtn) passBtn.style.display = '';
+}
+
+function saveCard(){
+  const nm=document.getElementById('f-nm').value.trim();
+  if(!nm){ toast('이름을 입력해주세요'); return; }
+  const co=document.getElementById('f-co').value.trim();
+  const mob=document.getElementById('f-mob').value.trim();
+  const cards=DB.getCards();
+  const dup=cards.find(c=>c.nm===nm&&mob&&c.mob===mob&&(c.co||'')===(co||''));
+  if(dup){
+    if(!confirm(`이미 등록된 명함입니다.\n\n${nm} / ${mob} / ${co}\n\n업데이트할까요?`)) return;
+    dup.tl=document.getElementById('f-tl').value.trim();
+    dup.mob=document.getElementById('f-mob').value.trim();
+    dup.ph=document.getElementById('f-ph').value.trim();
+    dup.em=document.getElementById('f-em').value.trim();
+    dup.addr=document.getElementById('f-addr').value.trim();
+    DB.setCards(cards);
+    if(_captured) ImgDB.set(dup.id, _captured).catch(()=>{});
+    toast('업데이트됐습니다 ✓');
+    _goAfterSave('cards.html?sort=recent');
+    return;
+  }
+  const newId='c'+Date.now();
+  cards.unshift({id:newId,nm,co,tl:document.getElementById('f-tl').value.trim(),mob:document.getElementById('f-mob').value.trim(),ph:document.getElementById('f-ph').value.trim(),em:document.getElementById('f-em').value.trim(),addr:document.getElementById('f-addr').value.trim(),tag:'고객',cl:COLORS[Math.floor(Math.random()*COLORS.length)],fav:false,img:null});
+  DB.setCards(cards);
+  if(_captured) ImgDB.set(newId, _captured).catch(()=>{});
+  toast('명함이 저장됐습니다 ✓');
+  _goAfterSave('cards.html?sort=recent');
+}
+</script>
+</body>
+</html>
