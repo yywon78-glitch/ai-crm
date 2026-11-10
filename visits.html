@@ -134,10 +134,10 @@
 
   <!-- 달력 필터 pills -->
   <div class="pills" style="flex-shrink:0;">
-    <div class="pill on" id="cpill-all"  onclick="setCalFilter('all',this)">전체일정</div>
-    <div class="pill"    id="cpill-mine" onclick="setCalFilter('mine',this)">내일정</div>
-    <div class="pill pill-co"            onclick="openCoSelectorForCal()">🔍 거래처별</div>
-    <div class="pill" id="cpill-co-nm" style="display:none;background:var(--grn-lt);color:var(--grn);border:1.5px solid var(--grn);" onclick="clearCalCo()">— × 전체</div>
+    <div class="pill on" id="cpill-all"  onclick="setCalFilter('all')">전체일정</div>
+    <div class="pill"    id="cpill-mine" onclick="setCalFilter('mine')">내일정</div>
+    <div class="pill"    id="cpill-co"   onclick="setCalFilter('co')">🔍 거래처별</div>
+    <div class="pill" id="cpill-co-nm" style="display:none;background:var(--grn-lt);color:var(--grn);border:1.5px solid var(--grn);font-weight:700;" onclick="clearCalCo()">— × 전체</div>
   </div>
 
   <!-- 달력 섹션 (상하 드래그로 크기 조절) -->
@@ -343,7 +343,14 @@ function filterCoSelList(){
 function closeCoSelector(){document.getElementById('modal-co').classList.remove('show');}
 function selectCoByNm(nm){
   closeCoSelector();
-  if(_calCoMode){ _calCoMode=false; _calCo='_nm_'+nm; renderCalendar(); return; }
+  if(_calCoMode){
+    _calCoMode=false; _calFilter='co'; _calCo='_nm_'+nm;
+    _updateCalPills();
+    const nmPill=document.getElementById('cpill-co-nm');
+    nmPill.textContent='🏢 '+nm+' ×'; nmPill.style.display='';
+    document.getElementById('cal-ov-title').textContent='🏢 '+nm;
+    renderCalendar(); return;
+  }
   _selCo = '_nm_'+nm;
   document.getElementById('co-bar-nm').textContent='🏢 '+nm;
   document.getElementById('co-bar').style.display='flex';
@@ -423,23 +430,30 @@ function closeCalendar(){document.getElementById('cal-overlay').classList.remove
 /* ── 달력 필터 ── */
 let _calCo = null; // 달력 전용 거래처 필터
 
-function setCalFilter(f,el){
+function _updateCalPills(){
+  document.getElementById('cpill-all').classList.toggle('on',  _calFilter==='all');
+  document.getElementById('cpill-mine').classList.toggle('on', _calFilter==='mine');
+  document.getElementById('cpill-co').classList.toggle('on',   _calFilter==='co');
+}
+
+function setCalFilter(f){
   _calFilter=f;
-  document.getElementById('cpill-all').classList.toggle('on', f==='all');
-  document.getElementById('cpill-mine').classList.toggle('on', f==='mine');
+  if(f!=='co'){ _calCo=null; document.getElementById('cpill-co-nm').style.display='none'; document.getElementById('cal-ov-title').textContent='방문 달력'; }
+  _updateCalPills();
+  if(f==='co'){ openCoSelectorForCal(); return; }
   renderCalendar();
 }
 
 function openCoSelectorForCal(){
-  // 거래처 선택 시트를 열되, 선택 시 달력 필터 적용
   _calCoMode = true;
   openCoSelector();
 }
 
 function clearCalCo(){
-  _calCo=null;
+  _calCo=null; _calFilter='all';
   document.getElementById('cpill-co-nm').style.display='none';
   document.getElementById('cal-ov-title').textContent='방문 달력';
+  _updateCalPills();
   renderCalendar();
 }
 
@@ -460,10 +474,11 @@ function renderCalendar(){
   document.getElementById('cal-title').textContent=`${_yr}년 ${_mo+1}월`;
   const ym=`${_yr}-${pad(_mo+1)}`;
   let src=_calSrc();
-  const _co=_calCo||_selCo; // 달력 전용 거래처 우선, 없으면 메인 거래처
-  if(_co) src=src.filter(v=>v.coId===_co||v.co===(_co.startsWith('_nm_')?_co.slice(4):null));
-  if(_calFilter==='month'){const now=new Date();const tym=`${now.getFullYear()}-${pad(now.getMonth()+1)}`;src=src.filter(v=>v.dt.startsWith(tym));}
-  else if(_calFilter!=='all') src=src.filter(v=>v.tp.includes(_calFilter));
+  /* 거래처별 필터 */
+  if(_calFilter==='co' && _calCo){
+    const coNm=_calCo.startsWith('_nm_')?_calCo.slice(4):null;
+    src=coNm ? src.filter(v=>v.co===coNm) : src.filter(v=>v.coId===_calCo);
+  }
 
   // 날짜별 방문 상세 수집 {v:[{co,tp,time}], p:[{co,tp}]}
   const vMap={};
@@ -502,8 +517,10 @@ function renderCalendar(){
 /* ── 일자 클릭 팝업 ── */
 function selectDate(ds){
   let src=_calSrc();
-  const _co=_calCo||_selCo;
-  if(_co) src=src.filter(v=>v.coId===_co);
+  if(_calFilter==='co' && _calCo){
+    const coNm=_calCo.startsWith('_nm_')?_calCo.slice(4):null;
+    src=coNm ? src.filter(v=>v.co===coNm) : src.filter(v=>v.coId===_calCo);
+  }
   if(_calFilter==='month'){const now=new Date();const ym=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;src=src.filter(v=>v.dt.startsWith(ym));}
   else if(_calFilter!=='all') src=src.filter(v=>v.tp.includes(_calFilter));
   // 해당 날짜: 방문 완료 + 오늘 이후 예정
